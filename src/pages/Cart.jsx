@@ -6,6 +6,7 @@ function Cart({
   onRemove,
   onUpdateQuantity,
   onWishlistClick,
+  onCheckout,
 }) {
   const [coupon, setCoupon] = useState("");
   const [couponApplied, setCouponApplied] =
@@ -128,8 +129,6 @@ function Cart({
         </button>
 
         <h1>Cart</h1>
-
-        {/* WISHLIST BUTTON */}
 
         <button
           className="cart-heart"
@@ -441,9 +440,11 @@ function Cart({
 
         </div>
 
+
         <button
           type="button"
           className="pay-now-button"
+          onClick={onCheckout}
         >
           Pay Now →
         </button>

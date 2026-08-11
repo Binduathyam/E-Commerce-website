@@ -8,21 +8,19 @@ function Wishlist({
   return (
     <section className="wishlist-page">
 
-      {/* HEADER */}
-
       <div className="wishlist-header">
 
         <button
           className="wishlist-back-button"
           onClick={onBack}
-          title="Back"
         >
           ←
         </button>
 
-        <h1>Wishlist</h1>
-
-        {/* CART BUTTON */}
+        <div className="wishlist-title">
+          <h1>My Wishlist</h1>
+          <span>{wishlist.length} items</span>
+        </div>
 
         <button
           className="wishlist-cart-button"
@@ -34,9 +32,6 @@ function Wishlist({
 
       </div>
 
-
-      {/* EMPTY WISHLIST */}
-
       {wishlist.length === 0 ? (
 
         <div className="empty-wishlist">
@@ -45,9 +40,7 @@ function Wishlist({
             ♡
           </div>
 
-          <h2>
-            Your Wishlist is Empty
-          </h2>
+          <h2>Your Wishlist is Empty</h2>
 
           <p>
             Save the products you love
@@ -74,8 +67,6 @@ function Wishlist({
               key={product.id}
             >
 
-              {/* PRODUCT IMAGE */}
-
               <div className="wishlist-product-image">
 
                 <img
@@ -83,23 +74,17 @@ function Wishlist({
                   alt={product.name}
                 />
 
+                <button
+                  className="wishlist-remove-button"
+                  onClick={() =>
+                    onRemove(product.id)
+                  }
+                  title="Remove"
+                >
+                  ×
+                </button>
+
               </div>
-
-
-              {/* REMOVE HEART */}
-
-              <button
-                className="wishlist-remove-button"
-                onClick={() =>
-                  onRemove(product.id)
-                }
-                title="Remove from Wishlist"
-              >
-                ♥
-              </button>
-
-
-              {/* PRODUCT INFORMATION */}
 
               <div className="wishlist-product-info">
 
@@ -113,9 +98,7 @@ function Wishlist({
 
                 <p className="wishlist-price">
                   ₹
-                  {product.price.toLocaleString(
-                    "en-IN"
-                  )}
+                  {product.price.toLocaleString("en-IN")}
                 </p>
 
                 <button
@@ -124,7 +107,7 @@ function Wishlist({
                     onAddToCart(product)
                   }
                 >
-                  🛒 Add to Cart
+                  MOVE TO CART
                 </button>
 
               </div>
