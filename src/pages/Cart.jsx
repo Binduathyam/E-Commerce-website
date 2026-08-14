@@ -14,7 +14,7 @@ function Cart({
 
   const subtotal = cart.reduce(
     (sum, item) =>
-      sum + item.price * item.quantity,
+      sum + Number(item.price) * item.quantity,
     0
   );
 
@@ -62,6 +62,7 @@ function Cart({
         <div className="cart-header">
 
           <button
+            type="button"
             className="cart-back-button"
             onClick={onBack}
             title="Back"
@@ -72,6 +73,7 @@ function Cart({
           <h1>Cart</h1>
 
           <button
+            type="button"
             className="cart-heart"
             onClick={onWishlistClick}
             title="Wishlist"
@@ -97,6 +99,7 @@ function Cart({
           </p>
 
           <button
+            type="button"
             className="continue-shopping-button"
             onClick={onBack}
           >
@@ -121,6 +124,7 @@ function Cart({
       <div className="cart-header">
 
         <button
+          type="button"
           className="cart-back-button"
           onClick={onBack}
           title="Back"
@@ -131,6 +135,7 @@ function Cart({
         <h1>Cart</h1>
 
         <button
+          type="button"
           className="cart-heart"
           onClick={onWishlistClick}
           title="Wishlist"
@@ -139,7 +144,6 @@ function Cart({
         </button>
 
       </div>
-
 
       {/* CART PRODUCTS */}
 
@@ -163,7 +167,6 @@ function Cart({
 
             </div>
 
-
             {/* PRODUCT DETAILS */}
 
             <div className="cart-product-info">
@@ -178,11 +181,10 @@ function Cart({
 
               <p className="cart-price">
                 ₹
-                {item.price.toLocaleString(
+                {Number(item.price).toLocaleString(
                   "en-IN"
                 )}
               </p>
-
 
               {/* QUANTITY */}
 
@@ -220,7 +222,6 @@ function Cart({
 
             </div>
 
-
             {/* PRICE + REMOVE */}
 
             <div className="cart-product-actions">
@@ -228,7 +229,7 @@ function Cart({
               <strong>
                 ₹
                 {(
-                  item.price *
+                  Number(item.price) *
                   item.quantity
                 ).toLocaleString(
                   "en-IN"
@@ -252,7 +253,6 @@ function Cart({
         ))}
 
       </div>
-
 
       {/* COUPON */}
 
@@ -299,7 +299,6 @@ function Cart({
 
       </div>
 
-
       {/* ORDER DETAILS */}
 
       <div className="order-details">
@@ -307,7 +306,6 @@ function Cart({
         <h2>
           Order Details
         </h2>
-
 
         <div className="order-row">
 
@@ -324,7 +322,6 @@ function Cart({
 
         </div>
 
-
         <div className="order-row saving-row">
 
           <span>
@@ -339,7 +336,6 @@ function Cart({
           </strong>
 
         </div>
-
 
         <div className="order-row">
 
@@ -356,7 +352,6 @@ function Cart({
 
         </div>
 
-
         <div className="order-row">
 
           <span>
@@ -371,7 +366,6 @@ function Cart({
 
         </div>
 
-
         <div className="order-row">
 
           <span>
@@ -384,9 +378,7 @@ function Cart({
 
         </div>
 
-
         <div className="order-divider"></div>
-
 
         <div className="amount-payable">
 
@@ -403,7 +395,6 @@ function Cart({
 
         </div>
 
-
         {/* RETURN POLICY */}
 
         <div className="return-policy">
@@ -419,7 +410,6 @@ function Cart({
         </div>
 
       </div>
-
 
       {/* BOTTOM PAY BAR */}
 
@@ -439,7 +429,6 @@ function Cart({
           </strong>
 
         </div>
-
 
         <button
           type="button"

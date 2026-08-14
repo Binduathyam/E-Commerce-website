@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 
 import Navbar from "./components/Navbar";
 import Hero from "./components/Hero";
@@ -13,8 +13,6 @@ import Login from "./pages/Login";
 import Registration from "./pages/Registration";
 import Footer from "./components/Footer";
 
-import products from "./data/products";
-
 import "./App.css";
 
 function App() {
@@ -24,6 +22,53 @@ function App() {
 
   const [search, setSearch] = useState("");
   const [category, setCategory] = useState("All");
+
+  /* =========================
+     PRODUCTS FROM BACKEND
+  ========================= */
+
+  const [products, setProducts] = useState([]);
+  const [productsLoading, setProductsLoading] =
+    useState(true);
+  const [productsError, setProductsError] =
+    useState("");
+
+  useEffect(() => {
+    const fetchProducts = async () => {
+      try {
+        setProductsLoading(true);
+        setProductsError("");
+
+        const response = await fetch(
+          "http://localhost:5000/api/products"
+        );
+
+        const data = await response.json();
+
+        if (!response.ok || !data.success) {
+          throw new Error(
+            data.message ||
+              "Failed to fetch products"
+          );
+        }
+
+        setProducts(data.products || []);
+      } catch (error) {
+        console.error(
+          "Products fetch error:",
+          error
+        );
+
+        setProductsError(
+          "Unable to load products. Please make sure the backend is running."
+        );
+      } finally {
+        setProductsLoading(false);
+      }
+    };
+
+    fetchProducts();
+  }, []);
 
   /* =========================
      LOAD MORE
@@ -39,18 +84,140 @@ function App() {
   const [cart, setCart] = useState([]);
 
   /* =========================
+     LOGGED-IN USER
+  ========================= */
+
+  const [loggedInUser, setLoggedInUser] =
+    useState(null);
+
+  const CART_API_URL =
+    "http://localhost:5000/api/cart";
+
+  /* =========================
+     LOAD USER CART
+  ========================= */
+
+  const loadCart = async (userId) => {
+    if (!userId) return;
+
+    try {
+      const response = await fetch(
+        `${CART_API_URL}/${userId}`
+      );
+
+      const data = await response.json();
+
+      if (!response.ok || !data.success) {
+        throw new Error(
+          data.message ||
+            "Failed to load cart"
+        );
+      }
+
+      const dbCart = (
+        data.cart || []
+      ).map((item) => ({
+        id: item.product_id,
+        cartItemId: item.id,
+        user_id: item.user_id,
+        product_id: item.product_id,
+        name: item.name,
+        price: Number(item.price),
+        category: item.category,
+        image: item.image,
+        quantity: Number(item.quantity),
+      }));
+
+      setCart(dbCart);
+    } catch (error) {
+      console.error(
+        "Load cart error:",
+        error
+      );
+    }
+  };
+
+  useEffect(() => {
+    if (loggedInUser?.id) {
+      loadCart(loggedInUser.id);
+    } else {
+      setCart([]);
+    }
+  }, [loggedInUser]);
+
+  /* =========================
      WISHLIST
   ========================= */
 
   const [wishlist, setWishlist] =
     useState([]);
 
+  const WISHLIST_API_URL =
+    "http://localhost:5000/api/wishlist";
+
+  /* =========================
+     LOAD USER WISHLIST
+  ========================= */
+
+  const loadWishlist = async (userId) => {
+    if (!userId) {
+      setWishlist([]);
+      return;
+    }
+
+    try {
+      const response = await fetch(
+        `${WISHLIST_API_URL}/${userId}`
+      );
+
+      const data = await response.json();
+
+      if (!response.ok || !data.success) {
+        throw new Error(
+          data.message ||
+            "Failed to load wishlist"
+        );
+      }
+
+      const dbWishlist = (
+        data.wishlist || []
+      ).map((item) => ({
+        id: item.product_id,
+        wishlistItemId: item.id,
+        user_id: item.user_id,
+        product_id: item.product_id,
+        name: item.name,
+        price: Number(item.price),
+        category: item.category,
+        image: item.image,
+        description: item.description,
+      }));
+
+      setWishlist(dbWishlist);
+    } catch (error) {
+      console.error(
+        "Load wishlist error:",
+        error
+      );
+    }
+  };
+
+  useEffect(() => {
+    if (loggedInUser?.id) {
+      loadWishlist(loggedInUser.id);
+    } else {
+      setWishlist([]);
+    }
+  }, [loggedInUser]);
+
   /* =========================
      PRODUCT DETAILS
   ========================= */
 
-  const [selectedProduct, setSelectedProduct] =
-    useState(null);
+  const [
+    selectedProduct,
+    setSelectedProduct,
+  ] = useState(null);
 
   /* =========================
      PAGE STATES
@@ -65,15 +232,23 @@ function App() {
   const [showCheckout, setShowCheckout] =
     useState(false);
 
-  const [showOrderSuccess, setShowOrderSuccess] =
-    useState(false);
-  const [showOrderTracking, setShowOrderTracking] =
-   useState(false);
-  const [showLogin, setShowLogin] =
-  useState(false);
+  const [
+    showOrderSuccess,
+    setShowOrderSuccess,
+  ] = useState(false);
 
-  const [showRegistration, setShowRegistration] =
-  useState(false);
+  const [
+    showOrderTracking,
+    setShowOrderTracking,
+  ] = useState(false);
+
+  const [showLogin, setShowLogin] =
+    useState(false);
+
+  const [
+    showRegistration,
+    setShowRegistration,
+  ] = useState(false);
 
   const [orderData, setOrderData] =
     useState(null);
@@ -82,105 +257,292 @@ function App() {
      ADD TO CART
   ========================= */
 
-  const addToCart = (product) => {
-    setCart((currentCart) => {
-      const existingProduct =
-        currentCart.find(
-          (item) =>
-            item.id === product.id
-        );
+  const addToCart = async (product) => {
+    if (!loggedInUser?.id) {
+      setShowLogin(true);
+      return;
+    }
 
-      if (existingProduct) {
-        return currentCart.map(
-          (item) =>
-            item.id === product.id
-              ? {
-                  ...item,
-                  quantity:
-                    item.quantity + 1,
-                }
-              : item
+    try {
+      const response = await fetch(
+        CART_API_URL,
+        {
+          method: "POST",
+
+          headers: {
+            "Content-Type":
+              "application/json",
+          },
+
+          body: JSON.stringify({
+            user_id: loggedInUser.id,
+            product_id: product.id,
+            quantity: 1,
+          }),
+        }
+      );
+
+      const data =
+        await response.json();
+
+      if (
+        !response.ok ||
+        !data.success
+      ) {
+        throw new Error(
+          data.message ||
+            "Failed to add product to cart"
         );
       }
 
-      return [
-        ...currentCart,
-        {
-          ...product,
-          quantity: 1,
-        },
-      ];
-    });
+      await loadCart(
+        loggedInUser.id
+      );
+
+      console.log(
+        "Product added to MySQL cart:",
+        product.name
+      );
+    } catch (error) {
+      console.error(
+        "Add to cart error:",
+        error
+      );
+
+      alert(
+        error.message ||
+          "Failed to add product to cart"
+      );
+    }
   };
 
   /* =========================
      REMOVE FROM CART
   ========================= */
 
-  const removeFromCart = (productId) => {
-    setCart((currentCart) =>
-      currentCart.filter(
-        (item) =>
-          item.id !== productId
-      )
-    );
+  const removeFromCart = async (
+    productId
+  ) => {
+    if (!loggedInUser?.id) {
+      setShowLogin(true);
+      return;
+    }
+
+    try {
+      const response = await fetch(
+        `${CART_API_URL}/${productId}`,
+        {
+          method: "DELETE",
+
+          headers: {
+            "Content-Type":
+              "application/json",
+          },
+
+          body: JSON.stringify({
+            user_id: loggedInUser.id,
+          }),
+        }
+      );
+
+      const data =
+        await response.json();
+
+      if (
+        !response.ok ||
+        !data.success
+      ) {
+        throw new Error(
+          data.message ||
+            "Failed to remove product"
+        );
+      }
+
+      await loadCart(
+        loggedInUser.id
+      );
+    } catch (error) {
+      console.error(
+        "Remove cart error:",
+        error
+      );
+
+      alert(
+        error.message ||
+          "Failed to remove product"
+      );
+    }
   };
 
   /* =========================
      UPDATE CART QUANTITY
   ========================= */
 
-  const updateQuantity = (
+  const updateQuantity = async (
     productId,
     change
   ) => {
-    setCart((currentCart) =>
-      currentCart
-        .map((item) => {
-          if (
-            item.id === productId
-          ) {
-            return {
-              ...item,
-              quantity:
-                item.quantity + change,
-            };
-          }
+    if (!loggedInUser?.id) {
+      setShowLogin(true);
+      return;
+    }
 
-          return item;
-        })
-        .filter(
-          (item) =>
-            item.quantity > 0
-        )
-    );
+    const currentItem =
+      cart.find(
+        (item) =>
+          item.id === productId
+      );
+
+    if (!currentItem) return;
+
+    const newQuantity =
+      currentItem.quantity +
+      change;
+
+    try {
+      const response = await fetch(
+        `${CART_API_URL}/${productId}`,
+        {
+          method: "PUT",
+
+          headers: {
+            "Content-Type":
+              "application/json",
+          },
+
+          body: JSON.stringify({
+            user_id: loggedInUser.id,
+            quantity: newQuantity,
+          }),
+        }
+      );
+
+      const data =
+        await response.json();
+
+      if (
+        !response.ok ||
+        !data.success
+      ) {
+        throw new Error(
+          data.message ||
+            "Failed to update cart"
+        );
+      }
+
+      await loadCart(
+        loggedInUser.id
+      );
+    } catch (error) {
+      console.error(
+        "Update cart error:",
+        error
+      );
+
+      alert(
+        error.message ||
+          "Failed to update cart"
+      );
+    }
   };
 
   /* =========================
      ADD / REMOVE WISHLIST
   ========================= */
 
-  const toggleWishlist = (product) => {
+  const toggleWishlist = async (
+    product
+  ) => {
+    if (!loggedInUser?.id) {
+      setShowLogin(true);
+      return;
+    }
+
     const alreadyAdded =
       wishlist.some(
         (item) =>
           item.id === product.id
       );
 
-    if (alreadyAdded) {
-      setWishlist(
-        (currentWishlist) =>
-          currentWishlist.filter(
-            (item) =>
-              item.id !== product.id
-          )
+    try {
+      if (alreadyAdded) {
+        const response =
+          await fetch(
+            `${WISHLIST_API_URL}/${product.id}`,
+            {
+              method: "DELETE",
+
+              headers: {
+                "Content-Type":
+                  "application/json",
+              },
+
+              body: JSON.stringify({
+                user_id:
+                  loggedInUser.id,
+              }),
+            }
+          );
+
+        const data =
+          await response.json();
+
+        if (
+          !response.ok ||
+          !data.success
+        ) {
+          throw new Error(
+            data.message ||
+              "Failed to remove product from wishlist"
+          );
+        }
+      } else {
+        const response =
+          await fetch(
+            WISHLIST_API_URL,
+            {
+              method: "POST",
+
+              headers: {
+                "Content-Type":
+                  "application/json",
+              },
+
+              body: JSON.stringify({
+                user_id:
+                  loggedInUser.id,
+                product_id:
+                  product.id,
+              }),
+            }
+          );
+
+        const data =
+          await response.json();
+
+        if (
+          !response.ok ||
+          !data.success
+        ) {
+          throw new Error(
+            data.message ||
+              "Failed to add product to wishlist"
+          );
+        }
+      }
+
+      await loadWishlist(
+        loggedInUser.id
       );
-    } else {
-      setWishlist(
-        (currentWishlist) => [
-          ...currentWishlist,
-          product,
-        ]
+    } catch (error) {
+      console.error(
+        "Wishlist update error:",
+        error
+      );
+
+      alert(
+        error.message ||
+          "Failed to update wishlist"
       );
     }
   };
@@ -189,16 +551,60 @@ function App() {
      REMOVE FROM WISHLIST
   ========================= */
 
-  const removeFromWishlist = (
+  const removeFromWishlist = async (
     productId
   ) => {
-    setWishlist(
-      (currentWishlist) =>
-        currentWishlist.filter(
-          (item) =>
-            item.id !== productId
-        )
-    );
+    if (!loggedInUser?.id) {
+      setShowLogin(true);
+      return;
+    }
+
+    try {
+      const response =
+        await fetch(
+          `${WISHLIST_API_URL}/${productId}`,
+          {
+            method: "DELETE",
+
+            headers: {
+              "Content-Type":
+                "application/json",
+            },
+
+            body: JSON.stringify({
+              user_id:
+                loggedInUser.id,
+            }),
+          }
+        );
+
+      const data =
+        await response.json();
+
+      if (
+        !response.ok ||
+        !data.success
+      ) {
+        throw new Error(
+          data.message ||
+            "Failed to remove product from wishlist"
+        );
+      }
+
+      await loadWishlist(
+        loggedInUser.id
+      );
+    } catch (error) {
+      console.error(
+        "Remove wishlist error:",
+        error
+      );
+
+      alert(
+        error.message ||
+          "Failed to remove product from wishlist"
+      );
+    }
   };
 
   /* =========================
@@ -206,24 +612,27 @@ function App() {
   ========================= */
 
   const filteredProducts =
-    products.filter((product) => {
-      const matchesSearch =
-        product.name
-          .toLowerCase()
-          .includes(
-            search.toLowerCase()
-          );
+    products.filter(
+      (product) => {
+        const matchesSearch =
+          product.name
+            .toLowerCase()
+            .includes(
+              search.toLowerCase()
+            );
 
-      const matchesCategory =
-        category === "All" ||
-        product.category ===
-          category;
+        const matchesCategory =
+          category === "All" ||
+          product.category
+            ?.toLowerCase() ===
+            category.toLowerCase();
 
-      return (
-        matchesSearch &&
-        matchesCategory
-      );
-    });
+        return (
+          matchesSearch &&
+          matchesCategory
+        );
+      }
+    );
 
   /* =========================
      VISIBLE PRODUCTS
@@ -276,79 +685,113 @@ function App() {
   );
 
   /* =================================================
+     LOGIN PAGE
+  ================================================= */
+
+  if (showLogin) {
+    return (
+      <div className="app">
+        <Login
+          onBack={() => {
+            setShowLogin(false);
+          }}
+
+          onRegister={() => {
+            setShowLogin(false);
+            setShowRegistration(true);
+          }}
+
+          onLoginSuccess={(user) => {
+            console.log(
+              "Logged in user:",
+              user
+            );
+
+            setLoggedInUser(user);
+            setShowLogin(false);
+          }}
+        />
+      </div>
+    );
+  }
+
+  /* =================================================
+     REGISTRATION PAGE
+  ================================================= */
+
+  if (showRegistration) {
+    return (
+      <div className="app">
+        <Registration
+          onBack={() => {
+            setShowRegistration(false);
+          }}
+
+          onLogin={() => {
+            setShowRegistration(false);
+            setShowLogin(true);
+          }}
+        />
+      </div>
+    );
+  }
+
+  /* =================================================
+     ORDER TRACKING PAGE
+  ================================================= */
+
+  if (showOrderTracking) {
+    return (
+      <div className="app">
+
+        <OrderTracking
+          order={orderData}
+
+          onBack={() => {
+            setShowOrderTracking(false);
+            setShowOrderSuccess(true);
+          }}
+        />
+
+      </div>
+    );
+  }
+
+  /* =================================================
      ORDER SUCCESS PAGE
   ================================================= */
- if (showLogin) {
-  return (
-    <div className="app">
-      <Login
-        onBack={() => {
-          setShowLogin(false);
-        }}
-        onRegister={() => {
-          setShowLogin(false);
-          setShowRegistration(true);
-        }}
-        onLoginSuccess={() => {
-          setShowLogin(false);
-        }}
-      />
-    </div>
-  );
-}
 
-if (showRegistration) {
-  return (
-    <div className="app">
-      <Registration
-        onBack={() => {
-          setShowRegistration(false);
-        }}
-        onLogin={() => {
-          setShowRegistration(false);
-          setShowLogin(true);
-        }}
-      />
-    </div>
-  );
-}
-  if (showOrderTracking) {
-  return (
-    <div className="app">
+  if (showOrderSuccess) {
+    return (
+      <div className="app">
 
-      <OrderTracking
-        order={orderData}
-        onBack={() => {
-          setShowOrderTracking(false);
-          setShowOrderSuccess(true);
-        }}
-      />
+        <OrderSuccess
+          order={orderData}
 
-    </div>
-  );
-}
+          onContinueShopping={() => {
+            setShowOrderSuccess(false);
+            setOrderData(null);
 
-if (showOrderSuccess) {
-  return (
-    <div className="app">
+            /*
+              IMPORTANT:
+              The Orders API clears the database cart
+              after a successful order.
+            */
+            setCart([]);
 
-      <OrderSuccess
-        order={orderData}
-        onContinueShopping={() => {
-          setShowOrderSuccess(false);
-          setOrderData(null);
-          setCart([]);
-          setVisibleCount(20);
-        }}
-        onTrackOrder={() => {
-          setShowOrderSuccess(false);
-          setShowOrderTracking(true);
-        }}
-      />
+            setVisibleCount(20);
+          }}
 
-    </div>
-  );
-}
+          onTrackOrder={() => {
+            setShowOrderSuccess(false);
+            setShowOrderTracking(true);
+          }}
+        />
+
+      </div>
+    );
+  }
+
   /* =================================================
      CHECKOUT PAGE
   ================================================= */
@@ -362,14 +805,17 @@ if (showOrderSuccess) {
           setSearch={
             handleSearchChange
           }
+
           cartCount={cartCount}
+
           wishlistCount={
             wishlist.length
           }
+
           onLoginClick={() => {
-    setShowCheckout(false);
-    setShowLogin(true);
-  }}
+            setShowCheckout(false);
+            setShowLogin(true);
+          }}
 
           onCartClick={() => {
             setShowCheckout(false);
@@ -384,6 +830,15 @@ if (showOrderSuccess) {
 
         <Checkout
           cart={cart}
+
+          /*
+            IMPORTANT:
+            Logged-in user's ID is now
+            passed to Checkout so that
+            the address can be stored
+            in MySQL against that user.
+          */
+          loggedInUser={loggedInUser}
 
           onBack={() => {
             setShowCheckout(false);
@@ -416,13 +871,16 @@ if (showOrderSuccess) {
           setSearch={
             handleSearchChange
           }
+
           cartCount={cartCount}
+
           wishlistCount={
             wishlist.length
           }
-           onLoginClick={() => {
-    setShowLogin(true);
-  }}
+
+          onLoginClick={() => {
+            setShowLogin(true);
+          }}
 
           onCartClick={() => {
             setShowWishlist(false);
@@ -472,17 +930,20 @@ if (showOrderSuccess) {
           setSearch={
             handleSearchChange
           }
+
           cartCount={cartCount}
+
           wishlistCount={
             wishlist.length
           }
-           onLoginClick={() => {
-    setShowLogin(true);
-  }}
 
-          onCartClick={() =>
-            setShowCart(true)
-          }
+          onLoginClick={() => {
+            setShowLogin(true);
+          }}
+
+          onCartClick={() => {
+            setShowCart(true);
+          }}
 
           onWishlistClick={() => {
             setShowCart(false);
@@ -533,14 +994,16 @@ if (showOrderSuccess) {
           setSearch={
             handleSearchChange
           }
+
           cartCount={cartCount}
+
           wishlistCount={
             wishlist.length
           }
 
           onLoginClick={() => {
-    setShowLogin(true);
-  }}
+            setShowLogin(true);
+          }}
 
           onCartClick={() => {
             setSelectedProduct(null);
@@ -581,13 +1044,16 @@ if (showOrderSuccess) {
         setSearch={
           handleSearchChange
         }
+
         cartCount={cartCount}
+
         wishlistCount={
           wishlist.length
         }
-         onLoginClick={() => {
-    setShowLogin(true);
-  }}
+
+        onLoginClick={() => {
+          setShowLogin(true);
+        }}
 
         onCartClick={() =>
           setShowCart(true)
@@ -607,55 +1073,56 @@ if (showOrderSuccess) {
       {/* =========================
           CATEGORIES
       ========================= */}
-    {!search.trim() && (
-      <section className="categories">
 
-        <div className="section-title">
+      {!search.trim() && (
+        <section className="categories">
 
-          <p>
-            EXPLORE
-          </p>
+          <div className="section-title">
 
-          <h2>
-            Shop by Category
-          </h2>
+            <p>
+              EXPLORE
+            </p>
 
-        </div>
+            <h2>
+              Shop by Category
+            </h2>
 
-        <div className="category-buttons">
+          </div>
 
-          {[
-            "All",
-            "Electronics",
-            "Fashion",
-            "Home",
-          ].map((item) => (
+          <div className="category-buttons">
 
-            <button
-              key={item}
-              type="button"
+            {[
+              "All",
+              "Electronics",
+              "Fashion",
+              "Home",
+            ].map((item) => (
 
-              className={
-                category === item
-                  ? "category active-category"
-                  : "category"
-              }
+              <button
+                key={item}
+                type="button"
 
-              onClick={() =>
-                handleCategoryChange(
-                  item
-                )
-              }
-            >
-              {item}
-            </button>
+                className={
+                  category === item
+                    ? "category active-category"
+                    : "category"
+                }
 
-          ))}
+                onClick={() =>
+                  handleCategoryChange(
+                    item
+                  )
+                }
+              >
+                {item}
+              </button>
 
-        </div>
+            ))}
 
-      </section>
-    )}
+          </div>
+
+        </section>
+      )}
 
       {/* =========================
           PRODUCTS
@@ -690,49 +1157,88 @@ if (showOrderSuccess) {
 
         {/* PRODUCT GRID */}
 
-        <div className="product-grid">
+        {productsLoading && (
+          <div className="no-products">
 
-          {visibleProducts.map(
-            (product) => (
+            <h3>
+              Loading products...
+            </h3>
 
-              <ProductCard
-                key={product.id}
-                product={product}
+            <p>
+              Please wait while we load
+              the latest products.
+            </p>
 
-                onAddToCart={
-                  addToCart
-                }
+          </div>
+        )}
 
-                onToggleWishlist={
-                  toggleWishlist
-                }
+        {!productsLoading &&
+          productsError && (
+            <div className="no-products">
 
-                isWishlisted={
-                  wishlist.some(
-                    (item) =>
-                      item.id ===
-                      product.id
-                  )
-                }
+              <div className="no-products-icon">
+                ⚠️
+              </div>
 
-                onViewDetails={() =>
-                  setSelectedProduct(
-                    product
-                  )
-                }
-              />
+              <h3>
+                Unable to load products
+              </h3>
 
-            )
+              <p>
+                {productsError}
+              </p>
+
+            </div>
           )}
 
-        </div>
+        {!productsLoading &&
+          !productsError && (
+            <div className="product-grid">
+
+              {visibleProducts.map(
+                (product) => (
+
+                  <ProductCard
+                    key={product.id}
+                    product={product}
+
+                    onAddToCart={
+                      addToCart
+                    }
+
+                    onToggleWishlist={
+                      toggleWishlist
+                    }
+
+                    isWishlisted={
+                      wishlist.some(
+                        (item) =>
+                          item.id ===
+                          product.id
+                      )
+                    }
+
+                    onViewDetails={() =>
+                      setSelectedProduct(
+                        product
+                      )
+                    }
+                  />
+
+                )
+              )}
+
+            </div>
+          )}
 
         {/* =========================
             LOAD MORE
         ========================= */}
 
-        {visibleCount <
-          filteredProducts.length && (
+        {!productsLoading &&
+          !productsError &&
+          visibleCount <
+            filteredProducts.length && (
 
           <div className="load-more-container">
 
@@ -748,15 +1254,16 @@ if (showOrderSuccess) {
             </button>
 
           </div>
-
         )}
 
         {/* =========================
             NO PRODUCTS
         ========================= */}
 
-        {filteredProducts.length ===
-          0 && (
+        {!productsLoading &&
+          !productsError &&
+          filteredProducts.length ===
+            0 && (
 
           <div className="no-products">
 
@@ -774,7 +1281,6 @@ if (showOrderSuccess) {
             </p>
 
           </div>
-
         )}
 
       </section>

@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { API_BASE_URL } from "../api";
 
 function Login({
   onBack,
@@ -23,17 +24,18 @@ function Login({
     setErrors((current) => ({
       ...current,
       [name]: "",
+      general: "",
     }));
   };
 
-  const handleLogin = (e) => {
+  const handleLogin = async (e) => {
     e.preventDefault();
 
     const newErrors = {};
 
+    // Email validation
     if (!formData.email.trim()) {
-      newErrors.email =
-        "Email is required";
+      newErrors.email = "Email is required";
     } else if (
       !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(
         formData.email
@@ -43,6 +45,7 @@ function Login({
         "Enter a valid email address";
     }
 
+    // Password validation
     if (!formData.password) {
       newErrors.password =
         "Password is required";
@@ -50,19 +53,100 @@ function Login({
 
     setErrors(newErrors);
 
-    if (
-      Object.keys(newErrors).length === 0
-    ) {
-      if (onLoginSuccess) {
-        onLoginSuccess();
+    if (Object.keys(newErrors).length > 0) {
+      return;
+    }
+
+    try {
+      const response = await fetch(
+        `${API_BASE_URL}/api/auth/login`,
+        {
+          method: "POST",
+
+          headers: {
+            "Content-Type": "application/json",
+          },
+
+          body: JSON.stringify({
+            email: formData.email
+              .trim()
+              .toLowerCase(),
+            password: formData.password,
+          }),
+        }
+      );
+
+      const data = await response.json();
+
+      console.log("Login response:", data);
+
+      // Backend returned error
+      if (!response.ok) {
+        setErrors({
+          general:
+            data.message ||
+            "Invalid email or password",
+        });
+
+        return;
       }
+
+      // Make sure backend returned user data
+      if (!data.user) {
+        setErrors({
+          general:
+            "Login successful, but user details were not received.",
+        });
+
+        return;
+      }
+
+      // Login successful
+      console.log(
+        "Login successful:",
+        data.user
+      );
+
+      console.log(
+        "Logged-in User ID:",
+        data.user.id
+      );
+
+      /*
+        Send complete logged-in user
+        to App.jsx.
+
+        App.jsx will store it in:
+
+        loggedInUser
+
+        and use:
+
+        loggedInUser.id
+
+        for Cart API.
+      */
+      if (onLoginSuccess) {
+        onLoginSuccess(data.user);
+      }
+    } catch (error) {
+      console.error(
+        "Login error:",
+        error
+      );
+
+      setErrors({
+        general:
+          "Unable to connect to the server.",
+      });
     }
   };
 
   return (
     <section className="auth-page">
-
       <div className="auth-card">
+
+        {/* BACK */}
 
         <button
           type="button"
@@ -71,6 +155,8 @@ function Login({
         >
           ←
         </button>
+
+        {/* HEADER */}
 
         <div className="auth-header">
 
@@ -87,6 +173,8 @@ function Login({
           </span>
 
         </div>
+
+        {/* FORM */}
 
         <form
           className="auth-form"
@@ -110,6 +198,7 @@ function Login({
               placeholder="Enter your email"
               value={formData.email}
               onChange={handleChange}
+              autoComplete="email"
             />
 
             {errors.email && (
@@ -137,6 +226,7 @@ function Login({
               placeholder="Enter your password"
               value={formData.password}
               onChange={handleChange}
+              autoComplete="current-password"
             />
 
             {errors.password && (
@@ -147,6 +237,16 @@ function Login({
 
           </div>
 
+          {/* BACKEND ERROR */}
+
+          {errors.general && (
+            <small>
+              {errors.general}
+            </small>
+          )}
+
+          {/* LOGIN BUTTON */}
+
           <button
             type="submit"
             className="auth-submit-button"
@@ -155,6 +255,8 @@ function Login({
           </button>
 
         </form>
+
+        {/* REGISTER */}
 
         <div className="auth-switch">
 
@@ -172,7 +274,6 @@ function Login({
         </div>
 
       </div>
-
     </section>
   );
 }

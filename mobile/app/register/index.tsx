@@ -1,15 +1,16 @@
 import { useRouter } from 'expo-router';
 import React from 'react';
 import {
-    KeyboardAvoidingView,
-    Platform,
-    ScrollView,
-    StyleSheet,
-    Text,
-    TextInput,
-    TouchableOpacity,
-    View,
+  KeyboardAvoidingView,
+  Platform,
+  ScrollView,
+  StyleSheet,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  View,
 } from 'react-native';
+import { API_BASE_URL } from '../../config/api';
 
 export default function RegisterScreen() {
   const router = useRouter();
@@ -26,7 +27,7 @@ export default function RegisterScreen() {
   const [showConfirmPassword, setShowConfirmPassword] =
     React.useState(false);
 
-  const handleRegister = () => {
+  const handleRegister = async () => {
     if (
       !name ||
       !email ||
@@ -58,10 +59,47 @@ export default function RegisterScreen() {
       return;
     }
 
-    // Backend registration will be connected later.
-    alert('Registration successful');
+    try {
+      const response = await fetch(
+        `${API_BASE_URL}/api/auth/register`,
+        {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            name,
+            email,
+            phone,
+            password,
+          }),
+        }
+      );
 
-    router.push('/login' as any);
+      const data = await response.json();
+
+      if (!response.ok) {
+        alert(
+          data.message || 'Registration failed'
+        );
+        return;
+      }
+
+      alert(
+        data.message || 'Registration successful'
+      );
+
+      router.push('/login' as any);
+    } catch (error) {
+      console.error(
+        'Registration error:',
+        error
+      );
+
+      alert(
+        'Unable to connect to the server. Make sure the backend is running.'
+      );
+    }
   };
 
   return (
@@ -159,7 +197,9 @@ export default function RegisterScreen() {
 
           <TouchableOpacity
             onPress={() =>
-              setShowPassword((value) => !value)
+              setShowPassword(
+                (value) => !value
+              )
             }
           >
             <Text style={styles.showText}>
@@ -191,7 +231,9 @@ export default function RegisterScreen() {
             }
           >
             <Text style={styles.showText}>
-              {showConfirmPassword ? 'Hide' : 'Show'}
+              {showConfirmPassword
+                ? 'Hide'
+                : 'Show'}
             </Text>
           </TouchableOpacity>
         </View>

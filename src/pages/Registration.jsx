@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { API_BASE_URL } from "../api";
 
 function Registration({
   onBack,
@@ -24,19 +25,22 @@ function Registration({
     setErrors((current) => ({
       ...current,
       [name]: "",
+      general: "",
     }));
   };
 
-  const handleRegister = (e) => {
+  const handleRegister = async (e) => {
     e.preventDefault();
 
     const newErrors = {};
 
+    // Business Name validation
     if (!formData.businessName.trim()) {
       newErrors.businessName =
         "Business Name is required";
     }
 
+    // Email validation
     if (!formData.email.trim()) {
       newErrors.email =
         "Email is required";
@@ -49,6 +53,7 @@ function Registration({
         "Enter a valid email address";
     }
 
+    // Password validation
     if (!formData.password) {
       newErrors.password =
         "Password is required";
@@ -59,6 +64,7 @@ function Registration({
         "Password must be at least 6 characters";
     }
 
+    // Confirm password validation
     if (!formData.confirmPassword) {
       newErrors.confirmPassword =
         "Confirm Password is required";
@@ -72,16 +78,63 @@ function Registration({
 
     setErrors(newErrors);
 
-    if (
-      Object.keys(newErrors).length === 0
-    ) {
+    // Stop if validation errors exist
+    if (Object.keys(newErrors).length > 0) {
+      return;
+    }
+
+    try {
+      const response = await fetch(
+        `${API_BASE_URL}/api/auth/register`,
+        {
+          method: "POST",
+
+          headers: {
+            "Content-Type": "application/json",
+          },
+
+          body: JSON.stringify({
+            name: formData.businessName,
+            email: formData.email,
+            password: formData.password,
+          }),
+        }
+      );
+
+      const data = await response.json();
+
+      // Backend returned an error
+      if (!response.ok) {
+        setErrors({
+          general:
+            data.message ||
+            "Registration failed",
+        });
+
+        return;
+      }
+
+      // Registration successful
       alert(
+        data.message ||
         "Registration successful!"
       );
 
+      // Go to Login
       if (onLogin) {
         onLogin();
       }
+
+    } catch (error) {
+      console.error(
+        "Registration error:",
+        error
+      );
+
+      setErrors({
+        general:
+          "Unable to connect to the server.",
+      });
     }
   };
 
@@ -228,6 +281,14 @@ function Registration({
             )}
 
           </div>
+
+          {/* BACKEND ERROR */}
+
+          {errors.general && (
+            <small>
+              {errors.general}
+            </small>
+          )}
 
           <button
             type="submit"

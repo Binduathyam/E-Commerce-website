@@ -1,7 +1,9 @@
 import { useState } from "react";
+import { API_BASE_URL } from "../api";
 
 function Checkout({
   cart,
+  loggedInUser,
   onBack,
   onOrderPlaced,
 }) {
@@ -27,10 +29,12 @@ function Checkout({
   });
 
   const [errors, setErrors] = useState({});
+  const [loading, setLoading] = useState(false);
 
   const subtotal = cart.reduce(
     (total, item) =>
-      total + item.price * item.quantity,
+      total +
+      Number(item.price) * Number(item.quantity),
     0
   );
 
@@ -42,7 +46,9 @@ function Checkout({
 
   const total = Math.max(
     0,
-    subtotal + deliveryFee + platformFee
+    subtotal +
+      deliveryFee +
+      platformFee
   );
 
   /* =========================
@@ -60,6 +66,7 @@ function Checkout({
     setErrors((current) => ({
       ...current,
       [name]: "",
+      general: "",
     }));
   };
 
@@ -78,6 +85,7 @@ function Checkout({
     setErrors((current) => ({
       ...current,
       [name]: "",
+      general: "",
     }));
   };
 
@@ -96,7 +104,9 @@ function Checkout({
       newErrors.phone =
         "Phone number is required";
     } else if (
-      !/^[6-9]\d{9}$/.test(formData.phone)
+      !/^[6-9]\d{9}$/.test(
+        formData.phone
+      )
     ) {
       newErrors.phone =
         "Enter a valid 10-digit phone number";
@@ -128,7 +138,9 @@ function Checkout({
       newErrors.pincode =
         "PIN code is required";
     } else if (
-      !/^\d{6}$/.test(formData.pincode)
+      !/^\d{6}$/.test(
+        formData.pincode
+      )
     ) {
       newErrors.pincode =
         "Enter a valid 6-digit PIN code";
@@ -148,9 +160,16 @@ function Checkout({
 
     if (paymentMethod === "card") {
       const cleanCardNumber =
-        cardData.cardNumber.replace(/\s/g, "");
+        cardData.cardNumber.replace(
+          /\s/g,
+          ""
+        );
 
-      if (!/^\d{16}$/.test(cleanCardNumber)) {
+      if (
+        !/^\d{16}$/.test(
+          cleanCardNumber
+        )
+      ) {
         newErrors.cardNumber =
           "Enter a valid 16-digit card number";
       }
@@ -169,7 +188,11 @@ function Checkout({
           "Use MM/YY format";
       }
 
-      if (!/^\d{3,4}$/.test(cardData.cvv)) {
+      if (
+        !/^\d{3,4}$/.test(
+          cardData.cvv
+        )
+      ) {
         newErrors.cvv =
           "Enter a valid CVV";
       }
@@ -183,36 +206,223 @@ function Checkout({
   };
 
   /* =========================
-     PLACE ORDER
+     SAVE ADDRESS + PLACE ORDER
   ========================= */
 
-  const handlePlaceOrder = () => {
+  const handlePlaceOrder = async () => {
     if (!validateForm()) {
       return;
     }
 
-    const order = {
-      customer: formData,
-      paymentMethod,
-      upiApp:
-        paymentMethod === "upi"
-          ? upiApp
-          : null,
-      card:
-        paymentMethod === "card"
-          ? {
-              cardName: cardData.cardName,
-              lastFour:
-                cardData.cardNumber
-                  .replace(/\s/g, "")
-                  .slice(-4),
-            }
-          : null,
-      total,
-    };
+    if (!loggedInUser?.id) {
+      setErrors({
+        general:
+          "Please login before placing an order.",
+      });
 
-    if (onOrderPlaced) {
-      onOrderPlaced(order);
+      return;
+    }
+
+    if (!cart || cart.length === 0) {
+      setErrors({
+        general:
+          "Your cart is empty.",
+      });
+
+      return;
+    }
+
+    try {
+      setLoading(true);
+
+      /* =========================
+         SAVE ADDRESS TO MYSQL
+      ========================= */
+
+      const addressResponse = await fetch(
+        `${API_BASE_URL}/api/addresses`,
+        {
+          method: "POST",
+
+          headers: {
+            "Content-Type": "application/json",
+          },
+
+          body: JSON.stringify({
+            user_id: loggedInUser.id,
+            full_name:
+              formData.name.trim(),
+            phone:
+              formData.phone.trim(),
+            address_line:
+              formData.address.trim(),
+            city:
+              formData.city.trim(),
+            state: "Tamil Nadu",
+            pincode:
+              formData.pincode.trim(),
+          }),
+        }
+      );
+
+      const addressData =
+        await addressResponse.json();
+
+      if (!addressResponse.ok) {
+        setErrors({
+          general:
+            addressData.message ||
+            "Failed to save address.",
+        });
+
+        return;
+      }
+
+      console.log(
+        "Address saved:",
+        addressData.address
+      );
+
+      const addressId =
+        addressData.address?.id;
+
+      if (!addressId) {
+        setErrors({
+          general:
+            "Address was saved, but address ID was not returned.",
+        });
+
+        return;
+      }
+
+      /* =========================
+         CREATE ORDER IN MYSQL
+      ========================= */
+
+      const orderItems = cart.map((item) => ({
+        product_id:
+          item.product_id || item.id,
+        quantity:
+          Number(item.quantity),
+        price:
+          Number(item.price),
+      }));
+
+      const orderResponse = await fetch(
+        `${API_BASE_URL}/api/orders`,
+        {
+          method: "POST",
+
+          headers: {
+            "Content-Type": "application/json",
+          },
+
+          body: JSON.stringify({
+            user_id: loggedInUser.id,
+            address_id: addressId,
+            total_amount: total,
+            payment_method: paymentMethod,
+            items: orderItems,
+          }),
+        }
+      );
+
+      const orderData =
+        await orderResponse.json();
+
+      if (!orderResponse.ok) {
+        setErrors({
+          general:
+            orderData.message ||
+            "Failed to create order.",
+        });
+
+        return;
+      }
+
+      console.log(
+        "Order created:",
+        orderData
+      );
+
+      /* =========================
+         LOCAL ORDER OBJECT
+         ========================= */
+
+      const order = {
+        id:
+          orderData.order_id,
+
+        customer: {
+          ...formData,
+        },
+
+        userId:
+          loggedInUser.id,
+
+        addressId,
+
+        paymentMethod,
+
+        upiApp:
+          paymentMethod === "upi"
+            ? upiApp
+            : null,
+
+        card:
+          paymentMethod === "card"
+            ? {
+                cardName:
+                  cardData.cardName,
+
+                lastFour:
+                  cardData.cardNumber
+                    .replace(/\s/g, "")
+                    .slice(-4),
+              }
+            : null,
+
+        items: cart,
+
+        subtotal,
+
+        deliveryFee,
+
+        platformFee,
+
+        total,
+
+        orderStatus:
+          "Placed",
+
+        paymentStatus:
+          "Pending",
+      };
+
+      console.log(
+        "Order prepared:",
+        order
+      );
+
+      /* =========================
+         SEND TO APP
+      ========================= */
+
+      if (onOrderPlaced) {
+        onOrderPlaced(order);
+      }
+    } catch (error) {
+      console.error(
+        "Checkout error:",
+        error
+      );
+
+      setErrors({
+        general:
+          "Unable to connect to the server. Please try again.",
+      });
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -224,8 +434,10 @@ function Checkout({
       <div className="checkout-header">
 
         <button
+          type="button"
           className="checkout-back-button"
           onClick={onBack}
+          disabled={loading}
         >
           ←
         </button>
@@ -235,7 +447,6 @@ function Checkout({
         <div></div>
 
       </div>
-
 
       <div className="checkout-container">
 
@@ -260,7 +471,10 @@ function Checkout({
               <div className="form-group">
 
                 <label>
-                  Full Name <span className="required-star">*</span>
+                  Full Name{" "}
+                  <span className="required-star">
+                    *
+                  </span>
                 </label>
 
                 <input
@@ -269,6 +483,7 @@ function Checkout({
                   placeholder="Enter your full name"
                   value={formData.name}
                   onChange={handleChange}
+                  disabled={loading}
                 />
 
                 {errors.name && (
@@ -279,7 +494,6 @@ function Checkout({
 
               </div>
 
-
               {/* PHONE + EMAIL */}
 
               <div className="form-row">
@@ -287,7 +501,10 @@ function Checkout({
                 <div className="form-group">
 
                   <label>
-                    Phone Number <span className="required-star">*</span>
+                    Phone Number{" "}
+                    <span className="required-star">
+                      *
+                    </span>
                   </label>
 
                   <input
@@ -297,6 +514,7 @@ function Checkout({
                     value={formData.phone}
                     onChange={handleChange}
                     maxLength="10"
+                    disabled={loading}
                   />
 
                   {errors.phone && (
@@ -307,11 +525,13 @@ function Checkout({
 
                 </div>
 
-
                 <div className="form-group">
 
                   <label>
-                    Email <span className="required-star">*</span>
+                    Email{" "}
+                    <span className="required-star">
+                      *
+                    </span>
                   </label>
 
                   <input
@@ -320,6 +540,7 @@ function Checkout({
                     placeholder="Enter your email"
                     value={formData.email}
                     onChange={handleChange}
+                    disabled={loading}
                   />
 
                   {errors.email && (
@@ -332,13 +553,15 @@ function Checkout({
 
               </div>
 
-
               {/* ADDRESS */}
 
               <div className="form-group">
 
                 <label>
-                  Address <span className="required-star">*</span>
+                  Address{" "}
+                  <span className="required-star">
+                    *
+                  </span>
                 </label>
 
                 <textarea
@@ -347,6 +570,7 @@ function Checkout({
                   value={formData.address}
                   onChange={handleChange}
                   rows="4"
+                  disabled={loading}
                 />
 
                 {errors.address && (
@@ -357,7 +581,6 @@ function Checkout({
 
               </div>
 
-
               {/* CITY + PIN */}
 
               <div className="form-row">
@@ -365,7 +588,10 @@ function Checkout({
                 <div className="form-group">
 
                   <label>
-                    City <span className="required-star">*</span>
+                    City{" "}
+                    <span className="required-star">
+                      *
+                    </span>
                   </label>
 
                   <input
@@ -374,6 +600,7 @@ function Checkout({
                     placeholder="Enter city"
                     value={formData.city}
                     onChange={handleChange}
+                    disabled={loading}
                   />
 
                   {errors.city && (
@@ -384,11 +611,13 @@ function Checkout({
 
                 </div>
 
-
                 <div className="form-group">
 
                   <label>
-                    PIN Code <span className="required-star">*</span>
+                    PIN Code{" "}
+                    <span className="required-star">
+                      *
+                    </span>
                   </label>
 
                   <input
@@ -398,6 +627,7 @@ function Checkout({
                     value={formData.pincode}
                     onChange={handleChange}
                     maxLength="6"
+                    disabled={loading}
                   />
 
                   {errors.pincode && (
@@ -413,7 +643,6 @@ function Checkout({
             </div>
 
           </div>
-
 
           {/* =========================
               PAYMENT METHOD
@@ -448,8 +677,10 @@ function Checkout({
                     setPaymentMethod(
                       e.target.value
                     );
+
                     setErrors({});
                   }}
+                  disabled={loading}
                 />
 
                 <div>
@@ -466,7 +697,6 @@ function Checkout({
                 </div>
 
               </label>
-
 
               {/* UPI */}
 
@@ -489,8 +719,10 @@ function Checkout({
                     setPaymentMethod(
                       e.target.value
                     );
+
                     setErrors({});
                   }}
+                  disabled={loading}
                 />
 
                 <div>
@@ -508,24 +740,31 @@ function Checkout({
 
               </label>
 
-
               {/* UPI APPS */}
 
               {paymentMethod === "upi" && (
 
                 <div className="upi-options">
 
-  <div className="upi-heading">
-    <strong>Choose UPI App</strong>
-    <span>Select an app to continue</span>
-  </div>
+                  <div className="upi-heading">
 
-  <div className="upi-app-grid">
+                    <strong>
+                      Choose UPI App
+                    </strong>
+
+                    <span>
+                      Select an app to continue
+                    </span>
+
+                  </div>
+
+                  <div className="upi-app-grid">
 
                     <button
                       type="button"
                       className={
-                        upiApp === "Google Pay"
+                        upiApp ===
+                        "Google Pay"
                           ? "upi-app selected"
                           : "upi-app"
                       }
@@ -534,11 +773,11 @@ function Checkout({
                           "Google Pay"
                         )
                       }
+                      disabled={loading}
                     >
                       <span>G</span>
                       Google Pay
                     </button>
-
 
                     <button
                       type="button"
@@ -548,13 +787,15 @@ function Checkout({
                           : "upi-app"
                       }
                       onClick={() =>
-                        setUpiApp("PhonePe")
+                        setUpiApp(
+                          "PhonePe"
+                        )
                       }
+                      disabled={loading}
                     >
                       <span>पे</span>
                       PhonePe
                     </button>
-
 
                     <button
                       type="button"
@@ -566,6 +807,7 @@ function Checkout({
                       onClick={() =>
                         setUpiApp("Paytm")
                       }
+                      disabled={loading}
                     >
                       <span>P</span>
                       Paytm
@@ -582,7 +824,6 @@ function Checkout({
                 </div>
 
               )}
-
 
               {/* CARD */}
 
@@ -605,8 +846,10 @@ function Checkout({
                     setPaymentMethod(
                       e.target.value
                     );
+
                     setErrors({});
                   }}
+                  disabled={loading}
                 />
 
                 <div>
@@ -622,7 +865,6 @@ function Checkout({
                 </div>
 
               </label>
-
 
               {/* CARD DETAILS */}
 
@@ -643,8 +885,11 @@ function Checkout({
                       value={
                         cardData.cardNumber
                       }
-                      onChange={handleCardChange}
+                      onChange={
+                        handleCardChange
+                      }
                       maxLength="19"
+                      disabled={loading}
                     />
 
                     {errors.cardNumber && (
@@ -654,7 +899,6 @@ function Checkout({
                     )}
 
                   </div>
-
 
                   <div className="form-group">
 
@@ -669,7 +913,10 @@ function Checkout({
                       value={
                         cardData.cardName
                       }
-                      onChange={handleCardChange}
+                      onChange={
+                        handleCardChange
+                      }
+                      disabled={loading}
                     />
 
                     {errors.cardName && (
@@ -679,7 +926,6 @@ function Checkout({
                     )}
 
                   </div>
-
 
                   <div className="form-row">
 
@@ -700,6 +946,7 @@ function Checkout({
                           handleCardChange
                         }
                         maxLength="5"
+                        disabled={loading}
                       />
 
                       {errors.expiry && (
@@ -709,7 +956,6 @@ function Checkout({
                       )}
 
                     </div>
-
 
                     <div className="form-group">
 
@@ -728,6 +974,7 @@ function Checkout({
                           handleCardChange
                         }
                         maxLength="4"
+                        disabled={loading}
                       />
 
                       {errors.cvv && (
@@ -748,8 +995,17 @@ function Checkout({
 
           </div>
 
-        </div>
+          {/* GENERAL ERROR */}
 
+          {errors.general && (
+            <div className="form-group">
+              <small>
+                {errors.general}
+              </small>
+            </div>
+          )}
+
+        </div>
 
         {/* =========================
             RIGHT SIDE
@@ -762,7 +1018,6 @@ function Checkout({
             <h2>
               Order Summary
             </h2>
-
 
             <div className="checkout-products">
 
@@ -793,8 +1048,8 @@ function Checkout({
                   <strong>
                     ₹
                     {(
-                      item.price *
-                      item.quantity
+                      Number(item.price) *
+                      Number(item.quantity)
                     ).toLocaleString(
                       "en-IN"
                     )}
@@ -806,9 +1061,7 @@ function Checkout({
 
             </div>
 
-
             <div className="checkout-divider"></div>
-
 
             <div className="checkout-total-row">
 
@@ -825,7 +1078,6 @@ function Checkout({
 
             </div>
 
-
             <div className="checkout-total-row">
 
               <span>
@@ -840,7 +1092,6 @@ function Checkout({
 
             </div>
 
-
             <div className="checkout-total-row">
 
               <span>
@@ -853,9 +1104,7 @@ function Checkout({
 
             </div>
 
-
             <div className="checkout-divider"></div>
-
 
             <div className="checkout-final-total">
 
@@ -872,12 +1121,17 @@ function Checkout({
 
             </div>
 
-
             <button
+              type="button"
               className="place-order-button"
-              onClick={handlePlaceOrder}
+              onClick={
+                handlePlaceOrder
+              }
+              disabled={loading}
             >
-              Place Order
+              {loading
+                ? "Saving Address..."
+                : "Place Order"}
             </button>
 
           </div>
