@@ -1,10 +1,17 @@
 import { useEffect, useState } from "react";
 import { API_BASE_URL } from "../api";
 
-function OrderHistory({ loggedInUser, onBack }) {
+function OrderHistory({
+  loggedInUser,
+  onBack,
+  onViewDetails,
+  onTrackOrder,
+}) {
   const [orders, setOrders] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState("");
+  const [loading, setLoading] =
+    useState(true);
+  const [error, setError] =
+    useState("");
 
   useEffect(() => {
     const fetchOrders = async () => {
@@ -14,22 +21,35 @@ function OrderHistory({ loggedInUser, onBack }) {
       }
 
       try {
+        setLoading(true);
+        setError("");
+
         const response = await fetch(
           `${API_BASE_URL}/api/orders/${loggedInUser.id}`
         );
 
-        const data = await response.json();
+        const data =
+          await response.json();
 
         if (!response.ok) {
           throw new Error(
-            data.message || "Failed to fetch orders"
+            data.message ||
+              "Failed to fetch orders"
           );
         }
 
-        setOrders(data.orders || []);
+        setOrders(
+          data.orders || []
+        );
       } catch (err) {
-        console.error("Order history error:", err);
-        setError("Unable to load your orders.");
+        console.error(
+          "Order history error:",
+          err
+        );
+
+        setError(
+          "Unable to load your orders."
+        );
       } finally {
         setLoading(false);
       }
@@ -41,7 +61,10 @@ function OrderHistory({ loggedInUser, onBack }) {
   return (
     <section className="orders-page">
 
-      {/* HEADER */}
+      {/* =====================================
+          HEADER
+      ====================================== */}
+
       <div className="orders-header">
 
         <button
@@ -52,138 +75,330 @@ function OrderHistory({ loggedInUser, onBack }) {
           ←
         </button>
 
-        <h1>My Orders</h1>
+        <div>
+          <p className="orders-header-label">
+            ACCOUNT
+          </p>
+
+          <h1>
+            My Orders
+          </h1>
+        </div>
 
       </div>
 
-      {/* LOADING */}
+
+      {/* =====================================
+          LOADING
+      ====================================== */}
+
       {loading && (
         <div className="orders-message">
-          Loading your orders...
+
+          <div>
+
+            <div className="orders-message-icon">
+              📦
+            </div>
+
+            <h2>
+              Loading your orders...
+            </h2>
+
+            <p>
+              Please wait while we fetch
+              your order history.
+            </p>
+
+          </div>
+
         </div>
       )}
 
-      {/* ERROR */}
+
+      {/* =====================================
+          ERROR
+      ====================================== */}
+
       {!loading && error && (
         <div className="orders-message">
-          {error}
+
+          <div>
+
+            <div className="orders-message-icon">
+              ⚠️
+            </div>
+
+            <h2>
+              Something went wrong
+            </h2>
+
+            <p>
+              {error}
+            </p>
+
+          </div>
+
         </div>
       )}
 
-      {/* NO ORDERS */}
+
+      {/* =====================================
+          NO ORDERS
+      ====================================== */}
+
       {!loading &&
         !error &&
         orders.length === 0 && (
+
           <div className="orders-empty">
 
             <div className="orders-empty-icon">
               📦
             </div>
 
-            <h2>No orders yet</h2>
+            <h2>
+              No orders yet
+            </h2>
 
             <p>
-              Your completed orders will
-              appear here.
+              Your orders will appear here
+              after you place your first order.
             </p>
+
+            <button
+              type="button"
+              className="orders-empty-back"
+              onClick={onBack}
+            >
+              Continue Shopping
+            </button>
 
           </div>
         )}
 
-      {/* ORDERS */}
+
+      {/* =====================================
+          ORDERS LIST
+      ====================================== */}
+
       {!loading &&
         !error &&
         orders.length > 0 && (
+
           <div className="orders-list">
 
-            {orders.map((order) => (
-              <div
-                className="order-card"
-                key={order.id}
-              >
+            {orders.map((order) => {
 
-                <div className="order-card-header">
+              const totalAmount =
+                Number(
+                  order.total_amount || 0
+                );
 
-                  <div>
-                    <h2>
-                      Order #{order.id}
-                    </h2>
+              const paymentMethod =
+                String(
+                  order.payment_method ||
+                    "cod"
+                ).toLowerCase();
 
-                    <p>
-                      {new Date(
-                        order.created_at
-                      ).toLocaleString("en-IN")}
-                    </p>
+              const paymentText =
+                paymentMethod === "cod"
+                  ? "Cash on Delivery"
+                  : paymentMethod === "upi"
+                  ? "UPI"
+                  : "Credit / Debit Card";
+
+              return (
+                <div
+                  className="order-card"
+                  key={order.id}
+                >
+
+                  {/* =================================
+                      ORDER BASIC INFO
+                  ================================== */}
+
+                  <div className="order-card-header">
+
+                    <div>
+
+                      <p className="order-card-label">
+                        ORDER
+                      </p>
+
+                      <h2>
+                        #{order.id}
+                      </h2>
+
+                      <p>
+                        {order.created_at
+                          ? new Date(
+                              order.created_at
+                            ).toLocaleString(
+                              "en-IN"
+                            )
+                          : "Date unavailable"}
+                      </p>
+
+                    </div>
+
+                    <span className="order-status">
+                      {order.order_status ||
+                        "Placed"}
+                    </span>
+
                   </div>
 
-                  <span className="order-status">
-                    {order.order_status}
-                  </span>
+
+                  {/* =================================
+                      ORDER SUMMARY
+                  ================================== */}
+
+                  <div className="order-card-details">
+
+                    <div className="order-detail-row">
+
+                      <span>
+                        Total Amount
+                      </span>
+
+                      <strong>
+                        ₹
+                        {totalAmount.toLocaleString(
+                          "en-IN"
+                        )}
+                      </strong>
+
+                    </div>
+
+
+                    <div className="order-detail-row">
+
+                      <span>
+                        Payment
+                      </span>
+
+                      <strong>
+                        {paymentText}
+                      </strong>
+
+                    </div>
+
+
+                    <div className="order-detail-row">
+
+                      <span>
+                        Payment Status
+                      </span>
+
+                      <strong>
+                        {order.payment_status ||
+                          "Pending"}
+                      </strong>
+
+                    </div>
+
+                  </div>
+
+
+                  {/* =================================
+                      DELIVERY ADDRESS
+                  ================================== */}
+
+                  <div className="order-address">
+
+                    <h3>
+                      📍 Delivery Address
+                    </h3>
+
+                    {order.full_name && (
+                      <p>
+                        <strong>
+                          {order.full_name}
+                        </strong>
+                      </p>
+                    )}
+
+                    {order.phone && (
+                      <p>
+                        {order.phone}
+                      </p>
+                    )}
+
+                    {order.address_line && (
+                      <p>
+                        {order.address_line}
+                      </p>
+                    )}
+
+                    {(order.city ||
+                      order.state ||
+                      order.pincode) && (
+                      <p>
+
+                        {order.city || ""}
+
+                        {order.state
+                          ? `, ${order.state}`
+                          : ""}
+
+                        {order.pincode
+                          ? ` - ${order.pincode}`
+                          : ""}
+
+                      </p>
+                    )}
+
+                  </div>
+
+
+                  {/* =================================
+                      ACTIONS
+                  ================================== */}
+
+                  <div className="order-card-actions">
+
+                    <button
+                      type="button"
+                      className="order-view-details-button"
+                      onClick={() => {
+
+                        if (onViewDetails) {
+                          onViewDetails(
+                            order
+                          );
+                        }
+
+                      }}
+                    >
+                      View Details
+                      <span>
+                        →
+                      </span>
+                    </button>
+
+
+                    <button
+                      type="button"
+                      className="order-track-button-small"
+                      onClick={() => {
+
+                        if (onTrackOrder) {
+                          onTrackOrder(
+                            order
+                          );
+                        }
+
+                      }}
+                    >
+                      🚚 Track Order
+                    </button>
+
+                  </div>
 
                 </div>
-
-                <div className="order-card-details">
-
-                  <div className="order-detail-row">
-                    <span>Total Amount</span>
-
-                    <strong>
-                      ₹
-                      {Number(
-                        order.total_amount
-                      ).toLocaleString("en-IN")}
-                    </strong>
-                  </div>
-
-                  <div className="order-detail-row">
-                    <span>Payment</span>
-
-                    <strong>
-                      {String(
-                        order.payment_method
-                      ).toUpperCase()}
-                    </strong>
-                  </div>
-
-                  <div className="order-detail-row">
-                    <span>Payment Status</span>
-
-                    <strong>
-                      {order.payment_status}
-                    </strong>
-                  </div>
-
-                </div>
-
-                {/* ADDRESS */}
-                <div className="order-address">
-
-                  <h3>Delivery Address</h3>
-
-                  <p>
-                    <strong>
-                      {order.full_name}
-                    </strong>
-                  </p>
-
-                  <p>
-                    {order.phone}
-                  </p>
-
-                  <p>
-                    {order.address_line}
-                  </p>
-
-                  <p>
-                    {order.city},{" "}
-                    {order.state} -{" "}
-                    {order.pincode}
-                  </p>
-
-                </div>
-
-              </div>
-            ))}
+              );
+            })}
 
           </div>
         )}

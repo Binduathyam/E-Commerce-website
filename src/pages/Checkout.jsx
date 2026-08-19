@@ -7,6 +7,10 @@ function Checkout({
   onBack,
   onOrderPlaced,
 }) {
+  // =========================================
+  // ADDRESS FORM
+  // =========================================
+
   const [formData, setFormData] = useState({
     name: "",
     phone: "",
@@ -16,25 +20,31 @@ function Checkout({
     pincode: "",
   });
 
+  // =========================================
+  // PAYMENT
+  // =========================================
+
   const [paymentMethod, setPaymentMethod] =
     useState("cod");
 
   const [upiApp, setUpiApp] = useState("");
 
-  const [cardData, setCardData] = useState({
-    cardNumber: "",
-    cardName: "",
-    expiry: "",
-    cvv: "",
-  });
+  // =========================================
+  // STATES
+  // =========================================
 
   const [errors, setErrors] = useState({});
   const [loading, setLoading] = useState(false);
 
-  const subtotal = cart.reduce(
+  // =========================================
+  // ORDER CALCULATION
+  // =========================================
+
+  const subtotal = (cart || []).reduce(
     (total, item) =>
       total +
-      Number(item.price) * Number(item.quantity),
+      Number(item.price || 0) *
+        Number(item.quantity || 0),
     0
   );
 
@@ -46,14 +56,12 @@ function Checkout({
 
   const total = Math.max(
     0,
-    subtotal +
-      deliveryFee +
-      platformFee
+    subtotal + deliveryFee + platformFee
   );
 
-  /* =========================
-     ADDRESS FORM
-  ========================= */
+  // =========================================
+  // ADDRESS INPUT
+  // =========================================
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -70,28 +78,9 @@ function Checkout({
     }));
   };
 
-  /* =========================
-     CARD FORM
-  ========================= */
-
-  const handleCardChange = (e) => {
-    const { name, value } = e.target;
-
-    setCardData((current) => ({
-      ...current,
-      [name]: value,
-    }));
-
-    setErrors((current) => ({
-      ...current,
-      [name]: "",
-      general: "",
-    }));
-  };
-
-  /* =========================
-     VALIDATION
-  ========================= */
+  // =========================================
+  // VALIDATION
+  // =========================================
 
   const validateForm = () => {
     const newErrors = {};
@@ -105,7 +94,7 @@ function Checkout({
         "Phone number is required";
     } else if (
       !/^[6-9]\d{9}$/.test(
-        formData.phone
+        formData.phone.trim()
       )
     ) {
       newErrors.phone =
@@ -117,7 +106,7 @@ function Checkout({
         "Email is required";
     } else if (
       !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(
-        formData.email
+        formData.email.trim()
       )
     ) {
       newErrors.email =
@@ -139,63 +128,20 @@ function Checkout({
         "PIN code is required";
     } else if (
       !/^\d{6}$/.test(
-        formData.pincode
+        formData.pincode.trim()
       )
     ) {
       newErrors.pincode =
         "Enter a valid 6-digit PIN code";
     }
 
-    /* UPI */
-
+    // UPI app selection
     if (
       paymentMethod === "upi" &&
       !upiApp
     ) {
       newErrors.upiApp =
         "Please select a UPI app";
-    }
-
-    /* CARD */
-
-    if (paymentMethod === "card") {
-      const cleanCardNumber =
-        cardData.cardNumber.replace(
-          /\s/g,
-          ""
-        );
-
-      if (
-        !/^\d{16}$/.test(
-          cleanCardNumber
-        )
-      ) {
-        newErrors.cardNumber =
-          "Enter a valid 16-digit card number";
-      }
-
-      if (!cardData.cardName.trim()) {
-        newErrors.cardName =
-          "Card holder name is required";
-      }
-
-      if (
-        !/^(0[1-9]|1[0-2])\/\d{2}$/.test(
-          cardData.expiry
-        )
-      ) {
-        newErrors.expiry =
-          "Use MM/YY format";
-      }
-
-      if (
-        !/^\d{3,4}$/.test(
-          cardData.cvv
-        )
-      ) {
-        newErrors.cvv =
-          "Enter a valid CVV";
-      }
     }
 
     setErrors(newErrors);
@@ -205,226 +151,706 @@ function Checkout({
     );
   };
 
-  /* =========================
-     SAVE ADDRESS + PLACE ORDER
-  ========================= */
+  // =========================================
+  // LOAD RAZORPAY SCRIPT
+  // =========================================
 
-  const handlePlaceOrder = async () => {
-    if (!validateForm()) {
-      return;
-    }
+  const loadRazorpay = () => {
+    return new Promise((resolve) => {
+      if (window.Razorpay) {
+        resolve(true);
+        return;
+      }
 
-    if (!loggedInUser?.id) {
-      setErrors({
-        general:
-          "Please login before placing an order.",
-      });
+      const script =
+        document.createElement("script");
 
-      return;
-    }
+      script.src =
+        "https://checkout.razorpay.com/v1/checkout.js";
 
-    if (!cart || cart.length === 0) {
-      setErrors({
-        general:
-          "Your cart is empty.",
-      });
+      script.onload = () => {
+        resolve(true);
+      };
 
-      return;
-    }
+      script.onerror = () => {
+        resolve(false);
+      };
 
-    try {
-      setLoading(true);
+      document.body.appendChild(script);
+    });
+  };
 
-      /* =========================
-         SAVE ADDRESS TO MYSQL
-      ========================= */
+  // =========================================
+  // PREPARE ORDER ITEMS
+  // =========================================
 
-      const addressResponse = await fetch(
+  const prepareOrderItems = () => {
+    return cart.map((item) => ({
+      product_id:
+        item.product_id || item.id,
+
+      quantity:
+        Number(item.quantity || 0),
+
+      price:
+        Number(item.price || 0),
+    }));
+  };
+
+  // =========================================
+  // SAVE ADDRESS
+  // =========================================
+
+  const saveAddress = async () => {
+    const addressResponse =
+      await fetch(
         `${API_BASE_URL}/api/addresses`,
         {
           method: "POST",
 
           headers: {
-            "Content-Type": "application/json",
+            "Content-Type":
+              "application/json",
           },
 
           body: JSON.stringify({
-            user_id: loggedInUser.id,
+            user_id:
+              loggedInUser.id,
+
             full_name:
               formData.name.trim(),
+
             phone:
               formData.phone.trim(),
+
             address_line:
               formData.address.trim(),
+
             city:
               formData.city.trim(),
-            state: "Tamil Nadu",
+
+            state:
+              "Tamil Nadu",
+
             pincode:
               formData.pincode.trim(),
           }),
         }
       );
 
-      const addressData =
-        await addressResponse.json();
+    const addressData =
+      await addressResponse.json();
 
-      if (!addressResponse.ok) {
-        setErrors({
-          general:
-            addressData.message ||
-            "Failed to save address.",
-        });
-
-        return;
-      }
-
-      console.log(
-        "Address saved:",
-        addressData.address
+    if (!addressResponse.ok) {
+      throw new Error(
+        addressData.message ||
+          "Failed to save address."
       );
+    }
 
-      const addressId =
-        addressData.address?.id;
+    const addressId =
+      addressData.address?.id;
 
-      if (!addressId) {
-        setErrors({
-          general:
-            "Address was saved, but address ID was not returned.",
-        });
+    if (!addressId) {
+      throw new Error(
+        "Address was saved, but address ID was not returned."
+      );
+    }
 
-        return;
-      }
+    return addressId;
+  };
 
-      /* =========================
-         CREATE ORDER IN MYSQL
-      ========================= */
+  // =========================================
+  // CREATE NORMAL COD ORDER
+  // =========================================
 
-      const orderItems = cart.map((item) => ({
-        product_id:
-          item.product_id || item.id,
-        quantity:
-          Number(item.quantity),
-        price:
-          Number(item.price),
-      }));
-
-      const orderResponse = await fetch(
+  const createCODOrder = async (
+    addressId,
+    orderItems
+  ) => {
+    const orderResponse =
+      await fetch(
         `${API_BASE_URL}/api/orders`,
         {
           method: "POST",
 
           headers: {
-            "Content-Type": "application/json",
+            "Content-Type":
+              "application/json",
           },
 
           body: JSON.stringify({
-            user_id: loggedInUser.id,
-            address_id: addressId,
-            total_amount: total,
-            payment_method: paymentMethod,
-            items: orderItems,
+            user_id:
+              loggedInUser.id,
+
+            address_id:
+              addressId,
+
+            total_amount:
+              total,
+
+            payment_method:
+              "Cash on Delivery",
+
+            items:
+              orderItems,
           }),
         }
       );
 
-      const orderData =
-        await orderResponse.json();
+    const orderData =
+      await orderResponse.json();
 
-      if (!orderResponse.ok) {
+    if (!orderResponse.ok) {
+      throw new Error(
+        orderData.message ||
+          "Failed to create order."
+      );
+    }
+
+    return orderData;
+  };
+
+  // =========================================
+  // CREATE RAZORPAY TEST ORDER
+  // =========================================
+
+  const createRazorpayOrder =
+    async () => {
+      const response =
+        await fetch(
+          `${API_BASE_URL}/api/payment/create-order`,
+          {
+            method: "POST",
+
+            headers: {
+              "Content-Type":
+                "application/json",
+            },
+
+            body: JSON.stringify({
+              user_id:
+                loggedInUser.id,
+
+              total_amount:
+                total,
+            }),
+          }
+        );
+
+      const data =
+        await response.json();
+
+      if (!response.ok) {
+        throw new Error(
+          data.message ||
+            "Failed to create payment order."
+        );
+      }
+
+      return data;
+    };
+
+  // =========================================
+  // VERIFY RAZORPAY PAYMENT
+  // =========================================
+
+  const verifyRazorpayPayment =
+    async ({
+      razorpay_order_id,
+      razorpay_payment_id,
+      razorpay_signature,
+      addressId,
+      orderItems,
+    }) => {
+      const response =
+        await fetch(
+          `${API_BASE_URL}/api/payment/verify`,
+          {
+            method: "POST",
+
+            headers: {
+              "Content-Type":
+                "application/json",
+            },
+
+            body: JSON.stringify({
+              razorpay_order_id,
+
+              razorpay_payment_id,
+
+              razorpay_signature,
+
+              user_id:
+                loggedInUser.id,
+
+              address_id:
+                addressId,
+
+              total_amount:
+                total,
+
+              items:
+                orderItems,
+            }),
+          }
+        );
+
+      const data =
+        await response.json();
+
+      if (!response.ok) {
+        throw new Error(
+          data.message ||
+            "Payment verification failed."
+        );
+      }
+
+      return data;
+    };
+
+  // =========================================
+  // CREATE LOCAL ORDER OBJECT
+  // =========================================
+
+  const buildOrderObject = ({
+    orderId,
+    addressId,
+    paymentStatus,
+    paymentName,
+    paymentId = null,
+  }) => {
+    return {
+      id: orderId,
+
+      user_id:
+        loggedInUser.id,
+
+      customer: {
+        ...formData,
+      },
+
+      userId:
+        loggedInUser.id,
+
+      addressId,
+
+      paymentMethod:
+        paymentName,
+
+      payment_method:
+        paymentName,
+
+      paymentId,
+
+      upiApp:
+        paymentMethod === "upi"
+          ? upiApp
+          : null,
+
+      items: cart,
+
+      subtotal,
+
+      deliveryFee,
+
+      platformFee,
+
+      total,
+
+      total_amount:
+        total,
+
+      order_status:
+        "Placed",
+
+      payment_status:
+        paymentStatus,
+
+      orderStatus:
+        "Placed",
+
+      paymentStatus:
+        paymentStatus,
+    };
+  };
+
+  // =========================================
+  // FINISH ORDER
+  // =========================================
+
+  const finishOrder = (order) => {
+    console.log(
+      "Order created:",
+      order
+    );
+
+    if (onOrderPlaced) {
+      onOrderPlaced(order);
+    }
+  };
+
+  // =========================================
+  // RAZORPAY PAYMENT
+  // =========================================
+
+  const startRazorpayPayment =
+    async ({
+      addressId,
+      orderItems,
+    }) => {
+      // ---------------------------------------
+      // LOAD RAZORPAY
+      // ---------------------------------------
+
+      const razorpayLoaded =
+        await loadRazorpay();
+
+      if (!razorpayLoaded) {
+        throw new Error(
+          "Unable to load Razorpay. Please check your internet connection."
+        );
+      }
+
+      // ---------------------------------------
+      // CREATE RAZORPAY SERVER ORDER
+      // ---------------------------------------
+
+      const paymentOrder =
+        await createRazorpayOrder();
+
+      // ---------------------------------------
+      // RAZORPAY CHECKOUT OPTIONS
+      // ---------------------------------------
+
+      const options = {
+        key:
+          paymentOrder.key_id,
+
+        amount:
+          paymentOrder.amount,
+
+        currency:
+          paymentOrder.currency || "INR",
+
+        name:
+          "ShopEase",
+
+        description:
+          "ShopEase Order Payment",
+
+        order_id:
+          paymentOrder.razorpay_order_id,
+
+        prefill: {
+          name:
+            formData.name.trim(),
+
+          email:
+            formData.email.trim(),
+
+          contact:
+            formData.phone.trim(),
+        },
+
+        notes: {
+          user_id:
+            String(loggedInUser.id),
+
+          address_id:
+            String(addressId),
+        },
+
+        theme: {
+          color:
+            "#7c3aed",
+        },
+
+        handler:
+          async function (paymentResponse) {
+            try {
+              // Keep loading while verification
+              setLoading(true);
+
+              setErrors({});
+
+              // --------------------------------
+              // VERIFY PAYMENT ON BACKEND
+              // --------------------------------
+
+              const verified =
+                await verifyRazorpayPayment({
+                  razorpay_order_id:
+                    paymentResponse.razorpay_order_id,
+
+                  razorpay_payment_id:
+                    paymentResponse.razorpay_payment_id,
+
+                  razorpay_signature:
+                    paymentResponse.razorpay_signature,
+
+                  addressId,
+
+                  orderItems,
+                });
+
+              // --------------------------------
+              // BUILD ORDER
+              // --------------------------------
+
+              const order =
+                buildOrderObject({
+                  orderId:
+                    verified.order_id,
+
+                  addressId,
+
+                  paymentStatus:
+                    "Paid",
+
+                  paymentName:
+                    "Razorpay",
+
+                  paymentId:
+                    paymentResponse.razorpay_payment_id,
+                });
+
+              finishOrder(order);
+            } catch (error) {
+              console.error(
+                "Payment verification error:",
+                error
+              );
+
+              setErrors({
+                general:
+                  error.message ||
+                  "Payment verification failed. Please contact support if money was deducted.",
+              });
+            } finally {
+              setLoading(false);
+            }
+          },
+
+        modal: {
+          ondismiss: function () {
+            setLoading(false);
+
+            setErrors({
+              general:
+                "Payment was cancelled. Your order was not placed.",
+            });
+          },
+        },
+      };
+
+      // ---------------------------------------
+      // OPEN RAZORPAY
+      // ---------------------------------------
+
+      const razorpay =
+        new window.Razorpay(
+          options
+        );
+
+      razorpay.on(
+        "payment.failed",
+        function (response) {
+          console.error(
+            "Razorpay payment failed:",
+            response
+          );
+
+          setLoading(false);
+
+          setErrors({
+            general:
+              response.error?.description ||
+              "Payment failed. Please try again.",
+          });
+        }
+      );
+
+      razorpay.open();
+    };
+
+  // =========================================
+  // PLACE ORDER
+  // =========================================
+
+  const handlePlaceOrder =
+    async () => {
+      if (!validateForm()) {
+        return;
+      }
+
+      if (!loggedInUser?.id) {
         setErrors({
           general:
-            orderData.message ||
-            "Failed to create order.",
+            "Please login before placing an order.",
         });
 
         return;
       }
 
-      console.log(
-        "Order created:",
-        orderData
-      );
+      if (
+        !cart ||
+        cart.length === 0
+      ) {
+        setErrors({
+          general:
+            "Your cart is empty.",
+        });
 
-      /* =========================
-         LOCAL ORDER OBJECT
-         ========================= */
-
-      const order = {
-        id:
-          orderData.order_id,
-
-        customer: {
-          ...formData,
-        },
-
-        userId:
-          loggedInUser.id,
-
-        addressId,
-
-        paymentMethod,
-
-        upiApp:
-          paymentMethod === "upi"
-            ? upiApp
-            : null,
-
-        card:
-          paymentMethod === "card"
-            ? {
-                cardName:
-                  cardData.cardName,
-
-                lastFour:
-                  cardData.cardNumber
-                    .replace(/\s/g, "")
-                    .slice(-4),
-              }
-            : null,
-
-        items: cart,
-
-        subtotal,
-
-        deliveryFee,
-
-        platformFee,
-
-        total,
-
-        orderStatus:
-          "Placed",
-
-        paymentStatus:
-          "Pending",
-      };
-
-      console.log(
-        "Order prepared:",
-        order
-      );
-
-      /* =========================
-         SEND TO APP
-      ========================= */
-
-      if (onOrderPlaced) {
-        onOrderPlaced(order);
+        return;
       }
-    } catch (error) {
-      console.error(
-        "Checkout error:",
-        error
-      );
 
-      setErrors({
-        general:
-          "Unable to connect to the server. Please try again.",
-      });
-    } finally {
-      setLoading(false);
-    }
-  };
+      try {
+        setLoading(true);
+        setErrors({});
+
+        // -------------------------------------
+        // SAVE ADDRESS
+        // -------------------------------------
+
+        const addressId =
+          await saveAddress();
+
+        // -------------------------------------
+        // PREPARE ITEMS
+        // -------------------------------------
+
+        const orderItems =
+          prepareOrderItems();
+
+        // -------------------------------------
+        // COD
+        // -------------------------------------
+
+        if (
+          paymentMethod === "cod"
+        ) {
+          const orderData =
+            await createCODOrder(
+              addressId,
+              orderItems
+            );
+
+          const order =
+            buildOrderObject({
+              orderId:
+                orderData.order_id,
+
+              addressId,
+
+              paymentStatus:
+                "Pending",
+
+              paymentName:
+                "Cash on Delivery",
+            });
+
+          finishOrder(order);
+
+          setLoading(false);
+
+          return;
+        }
+
+        // -------------------------------------
+        // ONLINE PAYMENT
+        // -------------------------------------
+
+        /*
+          UPI + Card both go through
+          Razorpay Sandbox.
+
+          We DO NOT create our MySQL order
+          before payment succeeds.
+        */
+
+        await startRazorpayPayment({
+          addressId,
+
+          orderItems,
+        });
+
+        /*
+          Do not set loading false here.
+
+          Razorpay handler will do it after:
+          success / failure / dismiss.
+        */
+      } catch (error) {
+        console.error(
+          "Checkout error:",
+          error
+        );
+
+        setErrors({
+          general:
+            error.message ||
+            "Unable to connect to the server. Please try again.",
+        });
+
+        setLoading(false);
+      }
+    };
+
+  // =========================================
+  // EMPTY CART
+  // =========================================
+
+  if (
+    !cart ||
+    cart.length === 0
+  ) {
+    return (
+      <section className="checkout-page">
+        <div className="checkout-header">
+          <button
+            type="button"
+            className="checkout-back-button"
+            onClick={onBack}
+          >
+            ←
+          </button>
+
+          <h1>
+            Checkout
+          </h1>
+
+          <div></div>
+        </div>
+
+        <div className="checkout-empty">
+          <div>
+            🛒
+          </div>
+
+          <h2>
+            Your cart is empty
+          </h2>
+
+          <p>
+            Add some products before
+            proceeding to checkout.
+          </p>
+
+          <button
+            type="button"
+            onClick={onBack}
+          >
+            Continue Shopping
+          </button>
+        </div>
+      </section>
+    );
+  }
+
+  // =========================================
+  // UI
+  // =========================================
 
   return (
     <section className="checkout-page">
@@ -442,7 +868,9 @@ function Checkout({
           ←
         </button>
 
-        <h1>Checkout</h1>
+        <h1>
+          Checkout
+        </h1>
 
         <div></div>
 
@@ -450,9 +878,9 @@ function Checkout({
 
       <div className="checkout-container">
 
-        {/* =========================
+        {/* ===================================
             LEFT SIDE
-        ========================= */}
+        ==================================== */}
 
         <div className="checkout-left">
 
@@ -481,8 +909,12 @@ function Checkout({
                   type="text"
                   name="name"
                   placeholder="Enter your full name"
-                  value={formData.name}
-                  onChange={handleChange}
+                  value={
+                    formData.name
+                  }
+                  onChange={
+                    handleChange
+                  }
                   disabled={loading}
                 />
 
@@ -511,8 +943,12 @@ function Checkout({
                     type="tel"
                     name="phone"
                     placeholder="10-digit mobile number"
-                    value={formData.phone}
-                    onChange={handleChange}
+                    value={
+                      formData.phone
+                    }
+                    onChange={
+                      handleChange
+                    }
                     maxLength="10"
                     disabled={loading}
                   />
@@ -538,8 +974,12 @@ function Checkout({
                     type="email"
                     name="email"
                     placeholder="Enter your email"
-                    value={formData.email}
-                    onChange={handleChange}
+                    value={
+                      formData.email
+                    }
+                    onChange={
+                      handleChange
+                    }
                     disabled={loading}
                   />
 
@@ -567,8 +1007,12 @@ function Checkout({
                 <textarea
                   name="address"
                   placeholder="House No, Street, Area"
-                  value={formData.address}
-                  onChange={handleChange}
+                  value={
+                    formData.address
+                  }
+                  onChange={
+                    handleChange
+                  }
                   rows="4"
                   disabled={loading}
                 />
@@ -598,8 +1042,12 @@ function Checkout({
                     type="text"
                     name="city"
                     placeholder="Enter city"
-                    value={formData.city}
-                    onChange={handleChange}
+                    value={
+                      formData.city
+                    }
+                    onChange={
+                      handleChange
+                    }
                     disabled={loading}
                   />
 
@@ -624,8 +1072,12 @@ function Checkout({
                     type="text"
                     name="pincode"
                     placeholder="6-digit PIN"
-                    value={formData.pincode}
-                    onChange={handleChange}
+                    value={
+                      formData.pincode
+                    }
+                    onChange={
+                      handleChange
+                    }
                     maxLength="6"
                     disabled={loading}
                   />
@@ -644,9 +1096,9 @@ function Checkout({
 
           </div>
 
-          {/* =========================
+          {/* =================================
               PAYMENT METHOD
-          ========================= */}
+          ================================== */}
 
           <div className="checkout-card">
 
@@ -671,7 +1123,8 @@ function Checkout({
                   name="payment"
                   value="cod"
                   checked={
-                    paymentMethod === "cod"
+                    paymentMethod ===
+                    "cod"
                   }
                   onChange={(e) => {
                     setPaymentMethod(
@@ -698,11 +1151,12 @@ function Checkout({
 
               </label>
 
-              {/* UPI */}
+              {/* ONLINE PAYMENT */}
 
               <label
                 className={
-                  paymentMethod === "upi"
+                  paymentMethod ===
+                    "online"
                     ? "payment-option selected"
                     : "payment-option"
                 }
@@ -711,14 +1165,17 @@ function Checkout({
                 <input
                   type="radio"
                   name="payment"
-                  value="upi"
+                  value="online"
                   checked={
-                    paymentMethod === "upi"
+                    paymentMethod ===
+                    "online"
                   }
                   onChange={(e) => {
                     setPaymentMethod(
                       e.target.value
                     );
+
+                    setUpiApp("");
 
                     setErrors({});
                   }}
@@ -728,267 +1185,61 @@ function Checkout({
                 <div>
 
                   <strong>
-                    UPI
+                    Online Payment
                   </strong>
 
                   <span>
-                    Google Pay, PhonePe,
-                    Paytm and more
+                    UPI, Cards, Net Banking
+                    and more
                   </span>
 
                 </div>
 
               </label>
 
-              {/* UPI APPS */}
+              {/* ONLINE PAYMENT INFORMATION */}
 
-              {paymentMethod === "upi" && (
-
+              {paymentMethod ===
+                "online" && (
                 <div className="upi-options">
 
                   <div className="upi-heading">
 
                     <strong>
-                      Choose UPI App
+                      Secure Online Payment
                     </strong>
 
                     <span>
-                      Select an app to continue
+                      Razorpay Sandbox /
+                      Test Environment
                     </span>
 
                   </div>
 
-                  <div className="upi-app-grid">
-
-                    <button
-                      type="button"
-                      className={
-                        upiApp ===
-                        "Google Pay"
-                          ? "upi-app selected"
-                          : "upi-app"
-                      }
-                      onClick={() =>
-                        setUpiApp(
-                          "Google Pay"
-                        )
-                      }
-                      disabled={loading}
-                    >
-                      <span>G</span>
-                      Google Pay
-                    </button>
-
-                    <button
-                      type="button"
-                      className={
-                        upiApp === "PhonePe"
-                          ? "upi-app selected"
-                          : "upi-app"
-                      }
-                      onClick={() =>
-                        setUpiApp(
-                          "PhonePe"
-                        )
-                      }
-                      disabled={loading}
-                    >
-                      <span>पे</span>
-                      PhonePe
-                    </button>
-
-                    <button
-                      type="button"
-                      className={
-                        upiApp === "Paytm"
-                          ? "upi-app selected"
-                          : "upi-app"
-                      }
-                      onClick={() =>
-                        setUpiApp("Paytm")
-                      }
-                      disabled={loading}
-                    >
-                      <span>P</span>
-                      Paytm
-                    </button>
-
-                  </div>
-
-                  {errors.upiApp && (
-                    <small>
-                      {errors.upiApp}
-                    </small>
-                  )}
-
-                </div>
-
-              )}
-
-              {/* CARD */}
-
-              <label
-                className={
-                  paymentMethod === "card"
-                    ? "payment-option selected"
-                    : "payment-option"
-                }
-              >
-
-                <input
-                  type="radio"
-                  name="payment"
-                  value="card"
-                  checked={
-                    paymentMethod === "card"
-                  }
-                  onChange={(e) => {
-                    setPaymentMethod(
-                      e.target.value
-                    );
-
-                    setErrors({});
-                  }}
-                  disabled={loading}
-                />
-
-                <div>
-
-                  <strong>
-                    Credit / Debit Card
-                  </strong>
-
-                  <span>
-                    Secure card payment
-                  </span>
-
-                </div>
-
-              </label>
-
-              {/* CARD DETAILS */}
-
-              {paymentMethod === "card" && (
-
-                <div className="card-payment-form">
-
-                  <div className="form-group">
-
-                    <label>
-                      Card Number
-                    </label>
-
-                    <input
-                      type="text"
-                      name="cardNumber"
-                      placeholder="1234 5678 9012 3456"
-                      value={
-                        cardData.cardNumber
-                      }
-                      onChange={
-                        handleCardChange
-                      }
-                      maxLength="19"
-                      disabled={loading}
-                    />
-
-                    {errors.cardNumber && (
-                      <small>
-                        {errors.cardNumber}
-                      </small>
-                    )}
-
-                  </div>
-
-                  <div className="form-group">
-
-                    <label>
-                      Card Holder Name
-                    </label>
-
-                    <input
-                      type="text"
-                      name="cardName"
-                      placeholder="Name on card"
-                      value={
-                        cardData.cardName
-                      }
-                      onChange={
-                        handleCardChange
-                      }
-                      disabled={loading}
-                    />
-
-                    {errors.cardName && (
-                      <small>
-                        {errors.cardName}
-                      </small>
-                    )}
-
-                  </div>
-
-                  <div className="form-row">
-
-                    <div className="form-group">
-
-                      <label>
-                        Expiry Date
-                      </label>
-
-                      <input
-                        type="text"
-                        name="expiry"
-                        placeholder="MM/YY"
-                        value={
-                          cardData.expiry
-                        }
-                        onChange={
-                          handleCardChange
-                        }
-                        maxLength="5"
-                        disabled={loading}
-                      />
-
-                      {errors.expiry && (
-                        <small>
-                          {errors.expiry}
-                        </small>
-                      )}
-
-                    </div>
-
-                    <div className="form-group">
-
-                      <label>
-                        CVV
-                      </label>
-
-                      <input
-                        type="password"
-                        name="cvv"
-                        placeholder="•••"
-                        value={
-                          cardData.cvv
-                        }
-                        onChange={
-                          handleCardChange
-                        }
-                        maxLength="4"
-                        disabled={loading}
-                      />
-
-                      {errors.cvv && (
-                        <small>
-                          {errors.cvv}
-                        </small>
-                      )}
-
-                    </div>
-
+                  <div
+                    style={{
+                      padding: "14px",
+                      borderRadius: "10px",
+                      background:
+                        "#f7f5ff",
+                      color:
+                        "#5b21b6",
+                      fontSize: "14px",
+                      lineHeight: "1.5",
+                    }}
+                  >
+                    Click{" "}
+                    <strong>
+                      Place Order
+                    </strong>{" "}
+                    to open the secure
+                    Razorpay test checkout.
+                    You can test UPI, card
+                    and other supported
+                    payment methods there.
                   </div>
 
                 </div>
-
               )}
 
             </div>
@@ -998,18 +1249,20 @@ function Checkout({
           {/* GENERAL ERROR */}
 
           {errors.general && (
-            <div className="form-group">
-              <small>
-                {errors.general}
-              </small>
+            <div className="checkout-general-error">
+
+              ⚠️{" "}
+
+              {errors.general}
+
             </div>
           )}
 
         </div>
 
-        {/* =========================
+        {/* ===================================
             RIGHT SIDE
-        ========================= */}
+        ==================================== */}
 
         <div className="checkout-right">
 
@@ -1019,49 +1272,65 @@ function Checkout({
               Order Summary
             </h2>
 
+            {/* PRODUCTS */}
+
             <div className="checkout-products">
 
-              {cart.map((item) => (
+              {cart.map((item) => {
 
-                <div
-                  className="checkout-product"
-                  key={item.id}
-                >
+                const itemTotal =
+                  Number(
+                    item.price || 0
+                  ) *
+                  Number(
+                    item.quantity || 0
+                  );
 
-                  <img
-                    src={item.image}
-                    alt={item.name}
-                  />
+                return (
+                  <div
+                    className="checkout-product"
+                    key={item.id}
+                  >
 
-                  <div>
+                    <img
+                      src={item.image}
+                      alt={
+                        item.name ||
+                        "Product"
+                      }
+                    />
 
-                    <h3>
-                      {item.name}
-                    </h3>
+                    <div>
 
-                    <p>
-                      Qty: {item.quantity}
-                    </p>
+                      <h3>
+                        {item.name}
+                      </h3>
+
+                      <p>
+                        Qty:{" "}
+                        {item.quantity}
+                      </p>
+
+                    </div>
+
+                    <strong>
+                      ₹
+                      {itemTotal.toLocaleString(
+                        "en-IN"
+                      )}
+                    </strong>
 
                   </div>
-
-                  <strong>
-                    ₹
-                    {(
-                      Number(item.price) *
-                      Number(item.quantity)
-                    ).toLocaleString(
-                      "en-IN"
-                    )}
-                  </strong>
-
-                </div>
-
-              ))}
+                );
+              })}
 
             </div>
 
+            {/* DIVIDER */}
+
             <div className="checkout-divider"></div>
+
+            {/* SUBTOTAL */}
 
             <div className="checkout-total-row">
 
@@ -1078,19 +1347,29 @@ function Checkout({
 
             </div>
 
+            {/* DELIVERY */}
+
             <div className="checkout-total-row">
 
               <span>
                 Delivery
               </span>
 
-              <strong className="free-text">
+              <strong
+                className={
+                  deliveryFee === 0
+                    ? "free-text"
+                    : ""
+                }
+              >
                 {deliveryFee === 0
                   ? "FREE"
                   : `₹${deliveryFee}`}
               </strong>
 
             </div>
+
+            {/* PLATFORM FEE */}
 
             <div className="checkout-total-row">
 
@@ -1099,12 +1378,35 @@ function Checkout({
               </span>
 
               <strong>
-                ₹{platformFee}
+                ₹
+                {platformFee.toLocaleString(
+                  "en-IN"
+                )}
               </strong>
 
             </div>
 
+            {/* FEE NOTE */}
+
+            <div className="checkout-fee-note">
+
+              <span>
+                ℹ️
+              </span>
+
+              <p>
+                Platform fee helps us maintain
+                secure and reliable shopping
+                services.
+              </p>
+
+            </div>
+
+            {/* DIVIDER */}
+
             <div className="checkout-divider"></div>
+
+            {/* FINAL TOTAL */}
 
             <div className="checkout-final-total">
 
@@ -1121,6 +1423,20 @@ function Checkout({
 
             </div>
 
+            {/* PRICE BREAKDOWN NOTE */}
+
+            <div className="checkout-total-note">
+
+              <span>
+                {deliveryFee === 0
+                  ? "Free delivery applied"
+                  : `Delivery charge ₹${deliveryFee}`}
+              </span>
+
+            </div>
+
+            {/* PLACE ORDER */}
+
             <button
               type="button"
               className="place-order-button"
@@ -1129,10 +1445,34 @@ function Checkout({
               }
               disabled={loading}
             >
+
               {loading
-                ? "Saving Address..."
+                ? paymentMethod ===
+                  "online"
+                  ? "Opening Payment..."
+                  : "Placing Order..."
+                : paymentMethod ===
+                  "online"
+                ? "Pay Securely"
                 : "Place Order"}
+
             </button>
+
+            {/* SECURITY */}
+
+            <div className="checkout-security">
+
+              <span>
+                🔒
+              </span>
+
+              <p>
+                Your payment is securely
+                processed through Razorpay
+                Test Environment.
+              </p>
+
+            </div>
 
           </div>
 

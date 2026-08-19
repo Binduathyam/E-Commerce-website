@@ -3,14 +3,20 @@ import { useEffect, useState } from "react";
 import Navbar from "./components/Navbar";
 import Hero from "./components/Hero";
 import ProductCard from "./components/ProductCard";
+
 import ProductDetails from "./pages/ProductDetails";
 import Cart from "./pages/Cart";
 import Wishlist from "./pages/Wishlist";
 import Checkout from "./pages/Checkout";
 import OrderSuccess from "./pages/OrderSuccess";
 import OrderTracking from "./pages/OrderTracking";
+import OrderDetails from "./pages/OrderDetails";
+
 import Login from "./pages/Login";
 import Registration from "./pages/Registration";
+import Profile from "./pages/Profile";
+import OrderHistory from "./pages/OrderHistory";
+
 import Footer from "./components/Footer";
 
 import "./App.css";
@@ -24,7 +30,7 @@ function App() {
   const [category, setCategory] = useState("All");
 
   /* =========================
-     PRODUCTS FROM BACKEND
+     PRODUCTS
   ========================= */
 
   const [products, setProducts] = useState([]);
@@ -94,7 +100,7 @@ function App() {
     "http://localhost:5000/api/cart";
 
   /* =========================
-     LOAD USER CART
+     LOAD CART
   ========================= */
 
   const loadCart = async (userId) => {
@@ -156,7 +162,7 @@ function App() {
     "http://localhost:5000/api/wishlist";
 
   /* =========================
-     LOAD USER WISHLIST
+     LOAD WISHLIST
   ========================= */
 
   const loadWishlist = async (userId) => {
@@ -254,6 +260,45 @@ function App() {
     useState(null);
 
   /* =========================
+     PROFILE
+  ========================= */
+
+  const [showProfile, setShowProfile] =
+    useState(false);
+
+  /* =========================
+     ORDER HISTORY
+  ========================= */
+
+  const [
+    showOrderHistory,
+    setShowOrderHistory,
+  ] = useState(false);
+
+  /* =========================
+     ORDER DETAILS
+  ========================= */
+
+  const [
+    showOrderDetails,
+    setShowOrderDetails,
+  ] = useState(false);
+
+  const [
+    selectedOrder,
+    setSelectedOrder,
+  ] = useState(null);
+
+  /* =========================
+     TRACKING RETURN
+  ========================= */
+
+  const [
+    trackingFromDetails,
+    setTrackingFromDetails,
+  ] = useState(false);
+
+  /* =========================
      ADD TO CART
   ========================= */
 
@@ -298,11 +343,6 @@ function App() {
       await loadCart(
         loggedInUser.id
       );
-
-      console.log(
-        "Product added to MySQL cart:",
-        product.name
-      );
     } catch (error) {
       console.error(
         "Add to cart error:",
@@ -340,7 +380,8 @@ function App() {
           },
 
           body: JSON.stringify({
-            user_id: loggedInUser.id,
+            user_id:
+              loggedInUser.id,
           }),
         }
       );
@@ -399,6 +440,13 @@ function App() {
       currentItem.quantity +
       change;
 
+    if (newQuantity <= 0) {
+      await removeFromCart(
+        productId
+      );
+      return;
+    }
+
     try {
       const response = await fetch(
         `${CART_API_URL}/${productId}`,
@@ -411,7 +459,8 @@ function App() {
           },
 
           body: JSON.stringify({
-            user_id: loggedInUser.id,
+            user_id:
+              loggedInUser.id,
             quantity: newQuantity,
           }),
         }
@@ -656,8 +705,7 @@ function App() {
   };
 
   /* =========================
-     RESET VISIBLE COUNT
-     WHEN SEARCH/CATEGORY CHANGES
+     SEARCH
   ========================= */
 
   const handleSearchChange = (
@@ -666,6 +714,10 @@ function App() {
     setSearch(value);
     setVisibleCount(20);
   };
+
+  /* =========================
+     CATEGORY
+  ========================= */
 
   const handleCategoryChange = (
     value
@@ -685,12 +737,117 @@ function App() {
   );
 
   /* =================================================
+     PROFILE PAGE
+  ================================================= */
+
+  if (showProfile) {
+    return (
+      <Profile
+        loggedInUser={loggedInUser}
+
+        onBack={() => {
+          setShowProfile(false);
+        }}
+
+        onLogin={() => {
+          setShowProfile(false);
+          setShowLogin(true);
+        }}
+
+        onRegister={() => {
+          setShowProfile(false);
+          setShowRegistration(true);
+        }}
+
+        onOrders={() => {
+          setShowProfile(false);
+          setShowOrderHistory(true);
+        }}
+
+        onAddresses={() => {
+          // Addresses are loaded
+          // directly inside Profile.jsx
+        }}
+
+        onLogout={() => {
+          setLoggedInUser(null);
+          setCart([]);
+          setWishlist([]);
+          setShowProfile(false);
+        }}
+      />
+    );
+  }
+
+  /* =================================================
+     ORDER HISTORY PAGE
+  ================================================= */
+
+  if (showOrderHistory) {
+    return (
+      <OrderHistory
+        loggedInUser={loggedInUser}
+
+        onBack={() => {
+          setShowOrderHistory(false);
+          setShowProfile(true);
+        }}
+
+        onViewDetails={(order) => {
+          setSelectedOrder(order);
+          setShowOrderHistory(false);
+          setShowOrderDetails(true);
+        }}
+
+        onTrackOrder={(order) => {
+          setOrderData(order);
+          setShowOrderHistory(false);
+          setTrackingFromDetails(false);
+          setShowOrderTracking(true);
+        }}
+      />
+    );
+  }
+
+  /* =================================================
+     ORDER DETAILS PAGE
+  ================================================= */
+
+  if (showOrderDetails) {
+    return (
+      <OrderDetails
+        order={selectedOrder}
+
+        onBack={() => {
+          setShowOrderDetails(false);
+          setSelectedOrder(null);
+          setShowOrderHistory(true);
+        }}
+
+        onTrack={(order) => {
+          setOrderData(order);
+          setShowOrderDetails(false);
+          setTrackingFromDetails(true);
+          setShowOrderTracking(true);
+        }}
+
+        onCancel={(order) => {
+          alert(
+            "Cancel Order will be connected to the backend next."
+          );
+        }}
+      />
+    );
+  }
+
+  /* =================================================
      LOGIN PAGE
   ================================================= */
 
   if (showLogin) {
     return (
       <div className="app">
+
         <Login
           onBack={() => {
             setShowLogin(false);
@@ -711,6 +868,7 @@ function App() {
             setShowLogin(false);
           }}
         />
+
       </div>
     );
   }
@@ -722,6 +880,7 @@ function App() {
   if (showRegistration) {
     return (
       <div className="app">
+
         <Registration
           onBack={() => {
             setShowRegistration(false);
@@ -732,6 +891,7 @@ function App() {
             setShowLogin(true);
           }}
         />
+
       </div>
     );
   }
@@ -742,18 +902,22 @@ function App() {
 
   if (showOrderTracking) {
     return (
-      <div className="app">
+      <OrderTracking
+        order={orderData}
 
-        <OrderTracking
-          order={orderData}
+        onBack={() => {
 
-          onBack={() => {
-            setShowOrderTracking(false);
-            setShowOrderSuccess(true);
-          }}
-        />
+          setShowOrderTracking(false);
 
-      </div>
+          if (trackingFromDetails) {
+            setShowOrderDetails(true);
+          } else {
+            setShowOrderHistory(true);
+          }
+
+          setTrackingFromDetails(false);
+        }}
+      />
     );
   }
 
@@ -772,11 +936,6 @@ function App() {
             setShowOrderSuccess(false);
             setOrderData(null);
 
-            /*
-              IMPORTANT:
-              The Orders API clears the database cart
-              after a successful order.
-            */
             setCart([]);
 
             setVisibleCount(20);
@@ -784,6 +943,7 @@ function App() {
 
           onTrackOrder={() => {
             setShowOrderSuccess(false);
+            setTrackingFromDetails(false);
             setShowOrderTracking(true);
           }}
         />
@@ -814,7 +974,7 @@ function App() {
 
           onLoginClick={() => {
             setShowCheckout(false);
-            setShowLogin(true);
+            setShowProfile(true);
           }}
 
           onCartClick={() => {
@@ -831,14 +991,9 @@ function App() {
         <Checkout
           cart={cart}
 
-          /*
-            IMPORTANT:
-            Logged-in user's ID is now
-            passed to Checkout so that
-            the address can be stored
-            in MySQL against that user.
-          */
-          loggedInUser={loggedInUser}
+          loggedInUser={
+            loggedInUser
+          }
 
           onBack={() => {
             setShowCheckout(false);
@@ -847,9 +1002,7 @@ function App() {
 
           onOrderPlaced={(order) => {
             setOrderData(order);
-
             setShowCheckout(false);
-
             setShowOrderSuccess(true);
           }}
         />
@@ -879,7 +1032,7 @@ function App() {
           }
 
           onLoginClick={() => {
-            setShowLogin(true);
+            setShowProfile(true);
           }}
 
           onCartClick={() => {
@@ -938,7 +1091,7 @@ function App() {
           }
 
           onLoginClick={() => {
-            setShowLogin(true);
+            setShowProfile(true);
           }}
 
           onCartClick={() => {
@@ -1002,7 +1155,7 @@ function App() {
           }
 
           onLoginClick={() => {
-            setShowLogin(true);
+            setShowProfile(true);
           }}
 
           onCartClick={() => {
@@ -1052,7 +1205,7 @@ function App() {
         }
 
         onLoginClick={() => {
-          setShowLogin(true);
+          setShowProfile(true);
         }}
 
         onCartClick={() =>
@@ -1064,7 +1217,7 @@ function App() {
         }
       />
 
-      {/* HERO HIDDEN DURING SEARCH */}
+      {/* HERO */}
 
       {!search.trim() && (
         <Hero />
@@ -1155,7 +1308,8 @@ function App() {
 
         </div>
 
-        {/* PRODUCT GRID */}
+
+        {/* LOADING */}
 
         {productsLoading && (
           <div className="no-products">
@@ -1172,8 +1326,12 @@ function App() {
           </div>
         )}
 
+
+        {/* ERROR */}
+
         {!productsLoading &&
           productsError && (
+
             <div className="no-products">
 
               <div className="no-products-icon">
@@ -1189,10 +1347,15 @@ function App() {
               </p>
 
             </div>
+
           )}
+
+
+        {/* PRODUCT GRID */}
 
         {!productsLoading &&
           !productsError && (
+
             <div className="product-grid">
 
               {visibleProducts.map(
@@ -1231,59 +1394,58 @@ function App() {
             </div>
           )}
 
-        {/* =========================
-            LOAD MORE
-        ========================= */}
+
+        {/* LOAD MORE */}
 
         {!productsLoading &&
           !productsError &&
           visibleCount <
             filteredProducts.length && (
 
-          <div className="load-more-container">
+            <div className="load-more-container">
 
-            <button
-              type="button"
-              className="load-more-button"
+              <button
+                type="button"
+                className="load-more-button"
 
-              onClick={
-                loadMoreProducts
-              }
-            >
-              Load More
-            </button>
+                onClick={
+                  loadMoreProducts
+                }
+              >
+                Load More
+              </button>
 
-          </div>
-        )}
+            </div>
+          )}
 
-        {/* =========================
-            NO PRODUCTS
-        ========================= */}
+
+        {/* NO PRODUCTS */}
 
         {!productsLoading &&
           !productsError &&
           filteredProducts.length ===
             0 && (
 
-          <div className="no-products">
+            <div className="no-products">
 
-            <div className="no-products-icon">
-              🔍
+              <div className="no-products-icon">
+                🔍
+              </div>
+
+              <h3>
+                No products found
+              </h3>
+
+              <p>
+                Try searching for another
+                product or category.
+              </p>
+
             </div>
-
-            <h3>
-              No products found
-            </h3>
-
-            <p>
-              Try searching for another
-              product or category.
-            </p>
-
-          </div>
-        )}
+          )}
 
       </section>
+
 
       {/* =========================
           FEATURES
@@ -1307,6 +1469,7 @@ function App() {
 
         </div>
 
+
         <div className="feature">
 
           <span className="feature-icon">
@@ -1323,6 +1486,7 @@ function App() {
 
         </div>
 
+
         <div className="feature">
 
           <span className="feature-icon">
@@ -1338,6 +1502,7 @@ function App() {
           </p>
 
         </div>
+
 
         <div className="feature">
 
