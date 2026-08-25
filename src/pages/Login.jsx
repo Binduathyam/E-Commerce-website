@@ -4,8 +4,12 @@ import { API_BASE_URL } from "../api";
 function Login({
   onBack,
   onRegister,
+  onMerchantRegister,
   onLoginSuccess,
 }) {
+  const [loginRole, setLoginRole] =
+    useState("customer");
+
   const [formData, setFormData] = useState({
     email: "",
     password: "",
@@ -13,8 +17,30 @@ function Login({
 
   const [errors, setErrors] = useState({});
 
+  /* =========================
+     ROLE CHANGE
+  ========================= */
+
+  const handleRoleChange = (role) => {
+    setLoginRole(role);
+
+    setErrors({});
+
+    setFormData({
+      email: "",
+      password: "",
+    });
+  };
+
+  /* =========================
+     INPUT CHANGE
+  ========================= */
+
   const handleChange = (e) => {
-    const { name, value } = e.target;
+    const {
+      name,
+      value,
+    } = e.target;
 
     setFormData((current) => ({
       ...current,
@@ -28,14 +54,20 @@ function Login({
     }));
   };
 
+  /* =========================
+     LOGIN
+  ========================= */
+
   const handleLogin = async (e) => {
     e.preventDefault();
 
     const newErrors = {};
 
-    // Email validation
+    /* EMAIL */
+
     if (!formData.email.trim()) {
-      newErrors.email = "Email is required";
+      newErrors.email =
+        "Email is required";
     } else if (
       !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(
         formData.email
@@ -45,7 +77,8 @@ function Login({
         "Enter a valid email address";
     }
 
-    // Password validation
+    /* PASSWORD */
+
     if (!formData.password) {
       newErrors.password =
         "Password is required";
@@ -53,7 +86,9 @@ function Login({
 
     setErrors(newErrors);
 
-    if (Object.keys(newErrors).length > 0) {
+    if (
+      Object.keys(newErrors).length > 0
+    ) {
       return;
     }
 
@@ -64,23 +99,34 @@ function Login({
           method: "POST",
 
           headers: {
-            "Content-Type": "application/json",
+            "Content-Type":
+              "application/json",
           },
 
           body: JSON.stringify({
-            email: formData.email
-              .trim()
-              .toLowerCase(),
-            password: formData.password,
+            email:
+              formData.email
+                .trim()
+                .toLowerCase(),
+
+            password:
+              formData.password,
+
+            role: loginRole,
           }),
         }
       );
 
-      const data = await response.json();
+      const data =
+        await response.json();
 
-      console.log("Login response:", data);
+      console.log(
+        "Login response:",
+        data
+      );
 
-      // Backend returned error
+      /* BACKEND ERROR */
+
       if (!response.ok) {
         setErrors({
           general:
@@ -91,7 +137,8 @@ function Login({
         return;
       }
 
-      // Make sure backend returned user data
+      /* USER CHECK */
+
       if (!data.user) {
         setErrors({
           general:
@@ -101,7 +148,22 @@ function Login({
         return;
       }
 
-      // Login successful
+      /* ROLE CHECK */
+
+      if (
+        data.user.role !==
+        loginRole
+      ) {
+        setErrors({
+          general:
+            "This account does not belong to the selected login type.",
+        });
+
+        return;
+      }
+
+      /* LOGIN SUCCESS */
+
       console.log(
         "Login successful:",
         data.user
@@ -112,23 +174,15 @@ function Login({
         data.user.id
       );
 
-      /*
-        Send complete logged-in user
-        to App.jsx.
+      console.log(
+        "Logged-in User Role:",
+        data.user.role
+      );
 
-        App.jsx will store it in:
-
-        loggedInUser
-
-        and use:
-
-        loggedInUser.id
-
-        for Cart API.
-      */
       if (onLoginSuccess) {
         onLoginSuccess(data.user);
       }
+
     } catch (error) {
       console.error(
         "Login error:",
@@ -144,9 +198,12 @@ function Login({
 
   return (
     <section className="auth-page">
+
       <div className="auth-card">
 
-        {/* BACK */}
+        {/* =========================
+            BACK
+        ========================= */}
 
         <button
           type="button"
@@ -156,7 +213,10 @@ function Login({
           ←
         </button>
 
-        {/* HEADER */}
+
+        {/* =========================
+            HEADER
+        ========================= */}
 
         <div className="auth-header">
 
@@ -165,16 +225,112 @@ function Login({
           </p>
 
           <h1>
-            Login
-          </h1>
-
+  {loginRole === "admin"
+    ? "Admin Login"
+    : loginRole === "merchant"
+    ? "Merchant Login"
+    : "Login"}
+</h1>
           <span>
-            Login to continue shopping
+            {loginRole === "admin"
+              ? "Login to manage your ShopEase admin panel"
+              : loginRole === "merchant"
+              ? "Login to manage your ShopEase store"
+              : "Login to continue shopping"}
           </span>
 
         </div>
 
-        {/* FORM */}
+
+        {/* =========================
+            LOGIN TYPE
+        ========================= */}
+
+        <div className="login-role-section">
+
+          <label>
+            Login as
+          </label>
+
+          <div className="login-role-buttons">
+
+            {/* CUSTOMER */}
+
+            <button
+              type="button"
+              className={
+                loginRole === "customer"
+                  ? "login-role-button active"
+                  : "login-role-button"
+              }
+              onClick={() =>
+                handleRoleChange(
+                  "customer"
+                )
+              }
+            >
+              <span className="role-icon">
+                👤
+              </span>
+
+              <span>
+                Customer
+              </span>
+            </button>
+
+
+            {/* MERCHANT */}
+
+            <button
+              type="button"
+              className={
+                loginRole === "merchant"
+                  ? "login-role-button active"
+                  : "login-role-button"
+              }
+              onClick={() =>
+                handleRoleChange(
+                  "merchant"
+                )
+              }
+            >
+              <span className="role-icon">
+                🏪
+              </span>
+
+              <span>
+                Merchant
+              </span>
+            </button>
+            <button
+  type="button"
+  className={
+    loginRole === "admin"
+      ? "login-role-button active"
+      : "login-role-button"
+  }
+  onClick={() =>
+    handleRoleChange("admin")
+  }
+>
+  <span className="role-icon">
+    🛡️
+  </span>
+
+  <span>
+    Admin
+  </span>
+</button>
+          </div>
+
+        </div>
+
+
+        {
+        
+        /* =========================
+            FORM
+        ========================= */}
 
         <form
           className="auth-form"
@@ -187,6 +343,7 @@ function Login({
 
             <label>
               Email
+
               <span className="required-star">
                 *
               </span>
@@ -195,7 +352,11 @@ function Login({
             <input
               type="email"
               name="email"
-              placeholder="Enter your email"
+              placeholder={
+                loginRole === "merchant"
+                  ? "Enter merchant email"
+                  : "Enter your email"
+              }
               value={formData.email}
               onChange={handleChange}
               autoComplete="email"
@@ -209,12 +370,14 @@ function Login({
 
           </div>
 
+
           {/* PASSWORD */}
 
           <div className="form-group">
 
             <label>
               Password
+
               <span className="required-star">
                 *
               </span>
@@ -237,13 +400,15 @@ function Login({
 
           </div>
 
+
           {/* BACKEND ERROR */}
 
           {errors.general && (
-            <small>
+            <small className="login-general-error">
               {errors.general}
             </small>
           )}
+
 
           {/* LOGIN BUTTON */}
 
@@ -251,29 +416,54 @@ function Login({
             type="submit"
             className="auth-submit-button"
           >
-            Login
+            {loginRole === "merchant"
+              ? "Login as Merchant"
+              : "Login"}
           </button>
 
         </form>
 
-        {/* REGISTER */}
+
+        {/* =========================
+            REGISTER SECTION
+        ========================= */}
 
         <div className="auth-switch">
 
-          <span>
-            Don't have an account?
-          </span>
+          {loginRole === "merchant" ? (
+            <>
+              <span>
+                Don't have a merchant account?
+              </span>
 
-          <button
-            type="button"
-            onClick={onRegister}
-          >
-            Create Account
-          </button>
+              <button
+                type="button"
+                onClick={
+                  onMerchantRegister
+                }
+              >
+                Register as Merchant
+              </button>
+            </>
+          ) : (
+            <>
+              <span>
+                Don't have an account?
+              </span>
+
+              <button
+                type="button"
+                onClick={onRegister}
+              >
+                Create Account
+              </button>
+            </>
+          )}
 
         </div>
 
       </div>
+
     </section>
   );
 }

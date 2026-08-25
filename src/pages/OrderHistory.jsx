@@ -24,9 +24,9 @@ function OrderHistory({
         setLoading(true);
         setError("");
 
-        const response = await fetch(
-          `${API_BASE_URL}/api/orders/${loggedInUser.id}`
-        );
+       const response = await fetch(
+        `${API_BASE_URL}/api/orders/user/${loggedInUser.id}`
+         );
 
         const data =
           await response.json();
@@ -195,19 +195,36 @@ function OrderHistory({
                   order.total_amount || 0
                 );
 
-              const paymentMethod =
-                String(
-                  order.payment_method ||
-                    "cod"
-                ).toLowerCase();
+              const paymentMethod = String(
+  order.payment_method || "cod"
+).trim().toLowerCase();
 
-              const paymentText =
-                paymentMethod === "cod"
-                  ? "Cash on Delivery"
-                  : paymentMethod === "upi"
-                  ? "UPI"
-                  : "Credit / Debit Card";
+let paymentText = "Payment";
 
+if (
+  paymentMethod === "cod" ||
+  paymentMethod === "cash on delivery"
+) {
+  paymentText = "Cash on Delivery";
+} else if (
+  paymentMethod === "upi"
+) {
+  paymentText = "UPI";
+} else if (
+  paymentMethod === "razorpay"
+) {
+  paymentText = "Razorpay";
+} else if (
+  paymentMethod === "card" ||
+  paymentMethod === "credit" ||
+  paymentMethod === "debit" ||
+  paymentMethod === "credit/debit card"
+) {
+  paymentText = "Credit / Debit Card";
+} else {
+  paymentText =
+    order.payment_method || "Payment";
+}
               return (
                 <div
                   className="order-card"

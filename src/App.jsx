@@ -11,9 +11,26 @@ import Checkout from "./pages/Checkout";
 import OrderSuccess from "./pages/OrderSuccess";
 import OrderTracking from "./pages/OrderTracking";
 import OrderDetails from "./pages/OrderDetails";
+import MyAddresses from "./pages/MyAddresses";
+import AccountSettings from "./pages/AccountSettings";
 
 import Login from "./pages/Login";
 import Registration from "./pages/Registration";
+import MerchantHome from "./merchant/MerchantHome";
+import AddProduct from "./merchant/AddProduct";
+import MerchantProducts from "./merchant/MerchantProducts";
+import MerchantInventory from "./merchant/MerchantInventory";
+import MerchantOrders from "./merchant/MerchantOrders";
+import MerchantProfile from "./merchant/MerchantProfile";
+import MerchantRegister from "./merchant/MerchantRegister";
+import MerchantSales from "./merchant/MerchantSales";
+import AdminHome from "./admin/AdminHome";
+import AdminCustomers from "./admin/AdminCustomers";
+import AdminMerchants from "./admin/AdminMerchants";
+import AdminProducts from "./admin/AdminProducts";
+import AdminOrders from "./admin/AdminOrders";
+import AdminPayments from "./admin/AdminPayments";
+import AdminReports from "./admin/AdminReports";
 import Profile from "./pages/Profile";
 import OrderHistory from "./pages/OrderHistory";
 
@@ -95,6 +112,44 @@ function App() {
 
   const [loggedInUser, setLoggedInUser] =
     useState(null);
+  const [showMerchantHome, setShowMerchantHome] =
+    useState(false);
+    const [showAddProduct, setShowAddProduct] =
+  useState(false);
+  const [showMerchantProducts, setShowMerchantProducts] =
+  useState(false);
+  const [showMerchantInventory, setShowMerchantInventory] =
+  useState(false);
+  const [showMerchantOrders, setShowMerchantOrders] =
+  useState(false);
+  const [showMerchantProfile, setShowMerchantProfile] =
+  useState(false);
+  const [showMerchantRegister, setShowMerchantRegister] =
+  useState(false);
+  const [showMerchantSales, setShowMerchantSales] =
+  useState(false);
+  const [showAdminHome, setShowAdminHome] =
+  useState(false);
+  const [showAdminCustomers, setShowAdminCustomers] =
+  useState(false);
+const [showAdminMerchants, setShowAdminMerchants] =
+  useState(false);
+const [showAdminProducts, setShowAdminProducts] =
+  useState(false);
+  const [showAdminOrders, setShowAdminOrders] =
+  useState(false);
+
+const [showAdminPayments, setShowAdminPayments] =
+  useState(false);
+
+const [showAdminReports, setShowAdminReports] =
+  useState(false);
+  const [showMyAddresses, setShowMyAddresses] =
+  useState(false);
+
+  const [showAccountSettings, setShowAccountSettings] =
+  useState(false);
+
 
   const CART_API_URL =
     "http://localhost:5000/api/cart";
@@ -736,6 +791,33 @@ function App() {
     0
   );
 
+if (showMyAddresses) {
+  return (
+    <MyAddresses
+      loggedInUser={loggedInUser}
+      onBack={() => {
+        setShowMyAddresses(false);
+        setShowProfile(true);
+      }}
+    />
+  );
+}
+
+if (showAccountSettings) {
+  return (
+    <AccountSettings
+      loggedInUser={loggedInUser}
+      onBack={() => {
+        setShowAccountSettings(false);
+        setShowProfile(true);
+      }}
+      onUpdated={(updatedUser) => {
+        setLoggedInUser(updatedUser);
+      }}
+    />
+  );
+}
+
   /* =================================================
      PROFILE PAGE
   ================================================= */
@@ -765,8 +847,14 @@ function App() {
         }}
 
         onAddresses={() => {
-          // Addresses are loaded
-          // directly inside Profile.jsx
+  setShowProfile(false);
+  setShowMyAddresses(true);
+  
+}}
+
+        onAccountSettings={() => {
+          setShowProfile(false);
+          setShowAccountSettings(true);
         }}
 
         onLogout={() => {
@@ -841,6 +929,342 @@ function App() {
   }
 
   /* =================================================
+   MERCHANT HOME
+================================================= */
+
+/* =========================
+   MERCHANT ADD PRODUCT
+========================= */
+
+if (
+  showMerchantHome &&
+  showAddProduct
+) {
+  return (
+    <AddProduct
+      merchant={loggedInUser}
+
+      onBack={() => {
+        setShowAddProduct(false);
+      }}
+
+      onProductAdded={(product) => {
+        console.log(
+          "New product added:",
+          product
+        );
+
+        setShowAddProduct(false);
+      }}
+    />
+  );
+}
+
+
+/* =========================
+   MERCHANT PRODUCTS
+========================= */
+
+if (
+  showMerchantHome &&
+  showMerchantProducts
+) {
+  return (
+    <MerchantProducts
+      merchant={loggedInUser}
+
+      onBack={() => {
+        setShowMerchantProducts(false);
+      }}
+
+      onAddProduct={() => {
+        setShowMerchantProducts(false);
+        setShowAddProduct(true);
+      }}
+    />
+  );
+}
+
+
+/* =========================
+   MERCHANT ORDERS
+========================= */
+
+if (
+  showMerchantHome &&
+  showMerchantOrders
+) {
+  return (
+    <MerchantOrders
+      merchant={loggedInUser}
+
+      onBack={() => {
+        setShowMerchantOrders(false);
+      }}
+    />
+  );
+}
+
+
+/* =========================
+   MERCHANT INVENTORY
+========================= */
+
+if (
+  showMerchantHome &&
+  showMerchantInventory
+) {
+  return (
+    <MerchantInventory
+      merchant={loggedInUser}
+
+      onBack={() => {
+        setShowMerchantInventory(false);
+      }}
+    />
+  );
+}
+
+
+/* =========================
+   MERCHANT PROFILE
+========================= */
+
+if (
+  showMerchantHome &&
+  showMerchantProfile
+) {
+  return (
+    <MerchantProfile
+      merchant={loggedInUser}
+
+      onBack={() => {
+        setShowMerchantProfile(false);
+      }}
+
+      onLogout={() => {
+        setLoggedInUser(null);
+        setShowMerchantHome(false);
+        setShowMerchantProfile(false);
+        setShowLogin(true);
+      }}
+
+      onProfileUpdated={(updatedUser) => {
+        setLoggedInUser(updatedUser);
+      }}
+    />
+  );
+}
+
+/* =========================
+   MERCHANT REGISTER
+========================= */
+
+if (showMerchantRegister) {
+  return (
+    <MerchantRegister
+      onBack={() => {
+        setShowMerchantRegister(false);
+        setShowLogin(true);
+      }}
+
+      onLogin={() => {
+        setShowMerchantRegister(false);
+        setShowLogin(true);
+      }}
+
+      onRegistered={(merchant) => {
+        console.log(
+          "Registered merchant:",
+          merchant
+        );
+
+        setShowMerchantRegister(false);
+        setShowLogin(true);
+      }}
+    />
+  );
+}
+
+/* =========================
+   MERCHANT HOME
+========================= */
+if (
+  showMerchantHome &&
+  showMerchantSales
+) {
+  return (
+    <MerchantSales
+      merchant={loggedInUser}
+      onBack={() => {
+        setShowMerchantSales(false);
+      }}
+    />
+  );
+}
+/* =========================
+   ADMIN HOME
+========================= */
+if (showAdminMerchants) {
+  return (
+    <AdminMerchants
+      onBack={() => {
+        setShowAdminMerchants(false);
+        setShowAdminHome(true);
+      }}
+    />
+  );
+}
+
+if (showAdminCustomers) {
+  return (
+    <AdminCustomers
+      onBack={() => {
+        setShowAdminCustomers(false);
+        setShowAdminHome(true);
+      }}
+
+    />
+  );
+}
+
+if (showAdminProducts) {
+  return (
+    <AdminProducts
+      onBack={() => {
+        setShowAdminProducts(false);
+        setShowAdminHome(true);
+      }}
+    />
+  );
+}
+/* =========================
+   ADMIN ORDERS
+========================= */
+
+if (showAdminOrders) {
+  return (
+    <AdminOrders
+      onBack={() => {
+        setShowAdminOrders(false);
+        setShowAdminHome(true);
+      }}
+    />
+  );
+}
+
+
+/* =========================
+   ADMIN PAYMENTS
+========================= */
+
+if (showAdminPayments) {
+  return (
+    <AdminPayments
+      onBack={() => {
+        setShowAdminPayments(false);
+        setShowAdminHome(true);
+      }}
+    />
+  );
+}
+
+
+/* =========================
+   ADMIN REPORTS
+========================= */
+
+if (showAdminReports) {
+  return (
+    <AdminReports
+      onBack={() => {
+        setShowAdminReports(false);
+        setShowAdminHome(true);
+      }}
+    />
+  );
+}
+if (showAdminHome) {
+  return (
+    <AdminHome
+      admin={loggedInUser}
+
+      onLogout={() => {
+        setLoggedInUser(null);
+        setShowAdminHome(false);
+        setShowLogin(true);
+      }}
+      onCustomers={() => {
+    setShowAdminHome(false);
+    setShowAdminCustomers(true);
+  }}
+
+  onMerchants={() => {
+    setShowAdminHome(false);
+    setShowAdminMerchants(true);
+  }}
+
+  onProducts={() => {
+  setShowAdminHome(false);
+  setShowAdminProducts(true);
+}}
+onOrders={() => {
+  setShowAdminHome(false);
+  setShowAdminOrders(true);
+}}
+
+onPayments={() => {
+  setShowAdminHome(false);
+  setShowAdminPayments(true);
+}}
+
+onReports={() => {
+  setShowAdminHome(false);
+  setShowAdminReports(true);
+}}
+
+    />
+  );
+}
+
+if (showMerchantHome) {
+  return (
+    <MerchantHome
+      merchant={loggedInUser}
+
+      onLogout={() => {
+        setLoggedInUser(null);
+        setShowMerchantHome(false);
+        setShowLogin(true);
+      }}
+
+      onAddProduct={() => {
+        setShowAddProduct(true);
+      }}
+
+      onProducts={() => {
+        setShowMerchantProducts(true);
+      }}
+
+      onOrders={() => {
+        setShowMerchantOrders(true);
+      }}
+
+      onInventory={() => {
+        setShowMerchantInventory(true);
+      }}
+      onSales={() => {
+  setShowMerchantSales(true);
+}}
+
+      onProfile={() => {
+        setShowMerchantProfile(true);
+      }}
+    />
+  );
+}
+
+/* =================================================
      LOGIN PAGE
   ================================================= */
 
@@ -857,16 +1281,37 @@ function App() {
             setShowLogin(false);
             setShowRegistration(true);
           }}
+           onMerchantRegister={() => {
+    setShowLogin(false);
+    setShowMerchantRegister(true);
+  }}
 
-          onLoginSuccess={(user) => {
-            console.log(
-              "Logged in user:",
-              user
-            );
+         onLoginSuccess={(user) => {
+  console.log(
+    "Logged in user:",
+    user
+  );
 
-            setLoggedInUser(user);
-            setShowLogin(false);
-          }}
+  setLoggedInUser(user);
+  setShowLogin(false);
+
+  if (user.role === "admin") {
+
+  setShowAdminHome(true);
+  setShowMerchantHome(false);
+
+} else if (user.role === "merchant") {
+
+  setShowAdminHome(false);
+  setShowMerchantHome(true);
+
+} else {
+
+  setShowAdminHome(false);
+  setShowMerchantHome(false);
+
+}
+}}
         />
 
       </div>

@@ -1,0 +1,559 @@
+/* =====================================================
+   MERCHANT REGISTER PAGE
+===================================================== */
+
+.merchant-register-page {
+  min-height: 100vh;
+  padding: 32px 20px 50px;
+
+  background: #f7f8fc;
+  color: #111827;
+
+  box-sizing: border-box;
+}
+
+
+/* =====================================================
+   HEADER
+===================================================== */
+
+.merchant-register-header {
+  width: 100%;
+  max-width: 760px;
+
+  margin: 0 auto 28px;
+
+  display: flex;
+  align-items: center;
+
+  gap: 16px;
+}
+
+
+.merchant-register-back {
+  width: 44px;
+  height: 44px;
+
+  flex-shrink: 0;
+
+  border: 1px solid #e5e7eb;
+  border-radius: 12px;
+
+  background: #ffffff;
+  color: #111827;
+
+  font-size: 22px;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  cursor: pointer;
+
+  transition:
+    background 0.2s ease,
+    transform 0.2s ease,
+    border-color 0.2s ease;
+}
+
+
+.merchant-register-back:hover {
+  background: #f3f4f6;
+
+  border-color: #d1d5db;
+
+  transform: translateX(-2px);
+}
+
+
+.merchant-register-header p {
+  margin: 0 0 5px;
+
+  font-size: 11px;
+  font-weight: 800;
+
+  letter-spacing: 1.5px;
+
+  color: #6b7280;
+}
+
+
+.merchant-register-header h1 {
+  margin: 0;
+
+  font-size: 30px;
+  line-height: 1.2;
+
+  font-weight: 800;
+
+  letter-spacing: -0.6px;
+
+  color: #111827;
+}
+
+
+.merchant-register-header span {
+  display: block;
+
+  margin-top: 6px;
+
+  font-size: 14px;
+
+  color: #6b7280;
+}
+
+
+/* =====================================================
+   MAIN CARD
+===================================================== */
+
+.merchant-register-card {
+  width: 100%;
+  max-width: 760px;
+
+  margin: 0 auto;
+
+  padding: 34px;
+
+  box-sizing: border-box;
+
+  background: #ffffff;
+
+  border: 1px solid #e8ebf0;
+
+  border-radius: 22px;
+
+  box-shadow:
+    0 12px 35px rgba(15, 23, 42, 0.07);
+}
+
+
+/* =====================================================
+   ICON
+===================================================== */
+
+.merchant-register-icon {
+  width: 72px;
+  height: 72px;
+
+  margin: 0 auto 18px;
+
+  border-radius: 20px;
+
+  background: #111827;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  font-size: 31px;
+
+  box-shadow:
+    0 8px 20px rgba(17, 24, 39, 0.16);
+}
+
+
+/* =====================================================
+   TITLE
+===================================================== */
+
+.merchant-register-title {
+  text-align: center;
+
+  margin-bottom: 28px;
+}
+
+
+.merchant-register-title h2 {
+  margin: 0;
+
+  font-size: 24px;
+  font-weight: 800;
+
+  color: #111827;
+}
+
+
+.merchant-register-title p {
+  margin: 7px 0 0;
+
+  font-size: 14px;
+
+  color: #6b7280;
+}
+
+
+/* =====================================================
+   ERROR
+===================================================== */
+
+.merchant-register-error {
+  margin-bottom: 20px;
+
+  padding: 13px 15px;
+
+  border-radius: 11px;
+
+  border: 1px solid #fecdd3;
+
+  background: #fff1f2;
+
+  color: #be123c;
+
+  font-size: 13px;
+
+  font-weight: 600;
+
+  line-height: 1.5;
+}
+
+
+/* =====================================================
+   SUCCESS
+===================================================== */
+
+.merchant-register-success {
+  margin-bottom: 20px;
+
+  padding: 13px 15px;
+
+  border-radius: 11px;
+
+  border: 1px solid #bbf7d0;
+
+  background: #f0fdf4;
+
+  color: #15803d;
+
+  font-size: 13px;
+
+  font-weight: 600;
+
+  line-height: 1.5;
+}
+
+
+/* =====================================================
+   FORM
+===================================================== */
+
+.merchant-register-form {
+  display: flex;
+
+  flex-direction: column;
+
+  gap: 18px;
+}
+
+
+/* =====================================================
+   FIELD
+===================================================== */
+
+.merchant-register-field {
+  width: 100%;
+}
+
+
+.merchant-register-field label {
+  display: block;
+
+  margin-bottom: 8px;
+
+  font-size: 13px;
+
+  font-weight: 700;
+
+  color: #374151;
+}
+
+
+.merchant-register-field input {
+  width: 100%;
+  height: 50px;
+
+  padding: 0 15px;
+
+  box-sizing: border-box;
+
+  border: 1px solid #dfe3e8;
+
+  border-radius: 11px;
+
+  background: #ffffff;
+
+  color: #111827;
+
+  font-size: 14px;
+
+  outline: none;
+
+  transition:
+    border-color 0.2s ease,
+    box-shadow 0.2s ease,
+    background 0.2s ease;
+}
+
+
+.merchant-register-field input::placeholder {
+  color: #9ca3af;
+}
+
+
+.merchant-register-field input:focus {
+  border-color: #111827;
+
+  box-shadow:
+    0 0 0 3px rgba(17, 24, 39, 0.08);
+}
+
+
+.merchant-register-field input:disabled {
+  background: #f3f4f6;
+
+  color: #6b7280;
+
+  cursor: not-allowed;
+}
+
+
+/* =====================================================
+   SUBMIT BUTTON
+===================================================== */
+
+.merchant-register-submit {
+  width: 100%;
+
+  height: 50px;
+
+  margin-top: 7px;
+
+  border: none;
+
+  border-radius: 11px;
+
+  background: #111827;
+
+  color: #ffffff;
+
+  font-size: 14px;
+
+  font-weight: 750;
+
+  cursor: pointer;
+
+  transition:
+    background 0.2s ease,
+    transform 0.2s ease,
+    box-shadow 0.2s ease;
+}
+
+
+.merchant-register-submit:hover {
+  background: #1f2937;
+
+  transform: translateY(-1px);
+
+  box-shadow:
+    0 7px 18px rgba(17, 24, 39, 0.15);
+}
+
+
+.merchant-register-submit:active {
+  transform: translateY(0);
+}
+
+
+.merchant-register-submit:disabled {
+  opacity: 0.55;
+
+  cursor: not-allowed;
+
+  transform: none;
+
+  box-shadow: none;
+}
+
+
+/* =====================================================
+   LOGIN SECTION
+===================================================== */
+
+.merchant-register-login {
+  margin-top: 25px;
+
+  padding-top: 22px;
+
+  border-top: 1px solid #edf0f3;
+
+  display: flex;
+
+  align-items: center;
+
+  justify-content: center;
+
+  gap: 7px;
+
+  font-size: 13px;
+}
+
+
+.merchant-register-login span {
+  color: #6b7280;
+}
+
+
+.merchant-register-login button {
+  padding: 0;
+
+  border: none;
+
+  background: transparent;
+
+  color: #111827;
+
+  font-size: 13px;
+
+  font-weight: 800;
+
+  cursor: pointer;
+}
+
+
+.merchant-register-login button:hover {
+  text-decoration: underline;
+}
+
+
+.merchant-register-login button:disabled {
+  opacity: 0.5;
+
+  cursor: not-allowed;
+}
+
+
+/* =====================================================
+   TABLET
+===================================================== */
+
+@media (max-width: 768px) {
+
+  .merchant-register-page {
+    padding: 25px 18px 40px;
+  }
+
+
+  .merchant-register-header h1 {
+    font-size: 26px;
+  }
+
+
+  .merchant-register-card {
+    padding: 28px;
+  }
+
+}
+
+
+/* =====================================================
+   MOBILE
+===================================================== */
+
+@media (max-width: 520px) {
+
+  .merchant-register-page {
+    padding: 18px 14px 35px;
+  }
+
+
+  .merchant-register-header {
+    margin-bottom: 20px;
+
+    gap: 11px;
+  }
+
+
+  .merchant-register-back {
+    width: 40px;
+    height: 40px;
+
+    border-radius: 10px;
+
+    font-size: 20px;
+  }
+
+
+  .merchant-register-header h1 {
+    font-size: 22px;
+
+    letter-spacing: -0.3px;
+  }
+
+
+  .merchant-register-header span {
+    font-size: 12px;
+  }
+
+
+  .merchant-register-card {
+    padding: 24px 18px;
+
+    border-radius: 17px;
+  }
+
+
+  .merchant-register-icon {
+    width: 62px;
+    height: 62px;
+
+    border-radius: 17px;
+
+    font-size: 27px;
+  }
+
+
+  .merchant-register-title h2 {
+    font-size: 21px;
+  }
+
+
+  .merchant-register-title p {
+    font-size: 13px;
+  }
+
+
+  .merchant-register-field input {
+    height: 48px;
+  }
+
+
+  .merchant-register-login {
+    flex-direction: column;
+
+    gap: 5px;
+  }
+
+}
+
+
+/* =====================================================
+   SMALL MOBILE
+===================================================== */
+
+@media (max-width: 360px) {
+
+  .merchant-register-card {
+    padding: 21px 15px;
+  }
+
+
+  .merchant-register-header h1 {
+    font-size: 20px;
+  }
+
+
+  .merchant-register-field input {
+    font-size: 13px;
+  }
+
+}

@@ -1,0 +1,158 @@
+.merchant-add-product-page {
+  min-height: 100vh;
+  background: #f7f7fb;
+  padding: 35px;
+}
+
+.add-product-header {
+  display: flex;
+  align-items: flex-start;
+  gap: 25px;
+  margin-bottom: 30px;
+}
+
+.add-product-back {
+  border: none;
+  background: white;
+  padding: 12px 18px;
+  border-radius: 10px;
+  cursor: pointer;
+  font-weight: 700;
+}
+
+.add-product-header p {
+  margin: 0 0 5px;
+  color: #7c3aed;
+  font-size: 12px;
+  font-weight: 800;
+}
+
+.add-product-header h1 {
+  margin: 0;
+  font-size: 30px;
+}
+
+.add-product-header span {
+  display: block;
+  margin-top: 6px;
+  color: #777;
+}
+
+.add-product-card {
+  max-width: 1000px;
+  background: white;
+  border-radius: 18px;
+  padding: 30px;
+  box-shadow: 0 8px 30px rgba(0, 0, 0, 0.06);
+}
+
+.form-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 22px;
+}
+
+.merchant-form-group {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.merchant-form-group label {
+  font-size: 14px;
+  font-weight: 700;
+  color: #333;
+}
+
+.merchant-form-group input,
+.merchant-form-group textarea {
+  width: 100%;
+  box-sizing: border-box;
+  border: 1px solid #ddd;
+  border-radius: 10px;
+  padding: 13px 14px;
+  font-size: 14px;
+  outline: none;
+  font-family: inherit;
+}
+
+.merchant-form-group input:focus,
+.merchant-form-group textarea:focus {
+  border-color: #7c3aed;
+}
+
+.full-width {
+  margin-top: 22px;
+}
+
+.merchant-form-group textarea {
+  resize: vertical;
+}
+
+.add-product-error {
+  margin-top: 20px;
+  padding: 13px;
+  border-radius: 10px;
+  background: #fff1f1;
+  color: #c62828;
+  font-size: 14px;
+}
+
+.add-product-success {
+  margin-top: 20px;
+  padding: 13px;
+  border-radius: 10px;
+  background: #effaf1;
+  color: #188038;
+  font-size: 14px;
+  font-weight: 700;
+}
+
+.add-product-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 12px;
+  margin-top: 28px;
+}
+
+.cancel-product-button,
+.save-product-button {
+  border: none;
+  border-radius: 10px;
+  padding: 13px 22px;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.cancel-product-button {
+  background: #eeeeee;
+}
+
+.save-product-button {
+  background: #7c3aed;
+  color: white;
+}
+
+.cancel-product-button:disabled,
+.save-product-button:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+@media (max-width: 700px) {
+  .merchant-add-product-page {
+    padding: 20px;
+  }
+
+  .form-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .add-product-header {
+    flex-direction: column;
+  }
+
+  .add-product-actions {
+    flex-direction: column;
+  }
+}

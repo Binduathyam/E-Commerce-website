@@ -25,11 +25,11 @@ function OrderDetails({
     useState("");
 
   // =========================================
-  // FETCH ORDER ITEMS
+  // FETCH COMPLETE ORDER DETAILS
   // =========================================
 
   useEffect(() => {
-    const fetchOrderItems = async () => {
+    const fetchOrderDetails = async () => {
       if (!currentOrder?.id) {
         setLoading(false);
         return;
@@ -40,19 +40,32 @@ function OrderDetails({
         setError("");
 
         const response = await fetch(
-          `${API_BASE_URL}/api/orders/${currentOrder.id}/items`
+          `${API_BASE_URL}/api/orders/${currentOrder.id}`
         );
 
         const data = await response.json();
 
-        if (!response.ok) {
+        if (!response.ok || !data.success) {
           throw new Error(
             data.message ||
-              "Failed to fetch order items"
+              "Failed to fetch order details"
           );
         }
 
-        setItems(data.items || []);
+        const fetchedOrder =
+          data.order;
+
+        // Update complete order
+        setCurrentOrder((previous) => ({
+          ...previous,
+          ...fetchedOrder,
+        }));
+
+        // Backend returns items inside order
+        setItems(
+          fetchedOrder?.items || []
+        );
+
       } catch (err) {
         console.error(
           "Order details error:",
@@ -67,8 +80,9 @@ function OrderDetails({
       }
     };
 
-    fetchOrderItems();
-  }, [currentOrder]);
+    fetchOrderDetails();
+
+  }, [currentOrder?.id]);
 
   // =========================================
   // UPDATE WHEN ORDER PROP CHANGES
@@ -121,22 +135,40 @@ function OrderDetails({
     currentOrder.payment_method ||
       currentOrder.paymentMethod ||
       "cod"
-  ).toLowerCase();
+  )
+    .trim()
+    .toLowerCase();
 
-  let paymentText =
-    "Cash on Delivery";
-
-  if (paymentMethod === "upi") {
-    paymentText = "UPI";
-  }
+  let paymentText = "Payment";
 
   if (
+    paymentMethod === "cod" ||
+    paymentMethod === "cash on delivery"
+  ) {
+    paymentText =
+      "Cash on Delivery";
+  } else if (
+    paymentMethod === "upi"
+  ) {
+    paymentText = "UPI";
+  } else if (
+    paymentMethod === "razorpay"
+  ) {
+    paymentText = "Razorpay";
+  } else if (
     paymentMethod === "card" ||
     paymentMethod === "credit" ||
-    paymentMethod === "debit"
+    paymentMethod === "debit" ||
+    paymentMethod ===
+      "credit/debit card"
   ) {
     paymentText =
       "Credit / Debit Card";
+  } else {
+    paymentText =
+      currentOrder.payment_method ||
+      currentOrder.paymentMethod ||
+      "Payment";
   }
 
   // =========================================
@@ -169,96 +201,163 @@ function OrderDetails({
     normalizedStatus === "confirmed";
 
   // =========================================
+  // SHIPPING ADDRESS
+  // =========================================
+
+  let shippingAddress =
+    currentOrder.shipping_address ||
+    {};
+
+  if (
+    typeof shippingAddress ===
+    "string"
+  ) {
+    try {
+      shippingAddress =
+        JSON.parse(
+          shippingAddress
+        );
+    } catch {
+      shippingAddress = {};
+    }
+  }
+
+  const addressName =
+    shippingAddress.full_name ||
+    shippingAddress.name ||
+    currentOrder.full_name ||
+    "";
+
+  const addressPhone =
+    shippingAddress.phone ||
+    shippingAddress.mobile ||
+    currentOrder.phone ||
+    "";
+
+  const addressLine =
+    shippingAddress.address_line ||
+    shippingAddress.address ||
+    currentOrder.address_line ||
+    "";
+
+  const addressCity =
+    shippingAddress.city ||
+    currentOrder.city ||
+    "";
+
+  const addressState =
+    shippingAddress.state ||
+    currentOrder.state ||
+    "";
+
+  const addressPincode =
+    shippingAddress.pincode ||
+    shippingAddress.zipcode ||
+    currentOrder.pincode ||
+    "";
+
+  // =========================================
   // CANCEL ORDER
   // =========================================
 
-  const handleCancelOrder = async () => {
-    if (!currentOrder?.id) {
-      return;
-    }
+  const handleCancelOrder =
+    async () => {
 
-    if (!currentOrder?.user_id) {
-      alert(
-        "User information is missing."
-      );
-      return;
-    }
+      if (!currentOrder?.id) {
+        return;
+      }
 
-    const confirmed = window.confirm(
-      "Are you sure you want to cancel this order?"
-    );
-
-    if (!confirmed) {
-      return;
-    }
-
-    try {
-      setCancelling(true);
-      setCancelMessage("");
-
-      const response = await fetch(
-        `${API_BASE_URL}/api/orders/${currentOrder.id}/cancel`,
-        {
-          method: "PUT",
-
-          headers: {
-            "Content-Type":
-              "application/json",
-          },
-
-          body: JSON.stringify({
-            user_id:
-              currentOrder.user_id,
-          }),
-        }
-      );
-
-      const data =
-        await response.json();
-
-      if (!response.ok) {
-        throw new Error(
-          data.message ||
-            "Failed to cancel order"
+      if (!currentOrder?.user_id) {
+        alert(
+          "User information is missing."
         );
+        return;
       }
 
-      // Update current page immediately
-      setCurrentOrder((previous) => ({
-        ...previous,
+      const confirmed =
+        window.confirm(
+          "Are you sure you want to cancel this order?"
+        );
 
-        order_status:
-          data.order_status ||
-          "Cancelled",
-      }));
-
-      setCancelMessage(
-        "Order cancelled successfully."
-      );
-
-      // Notify App.jsx if callback exists
-      if (onCancel) {
-        onCancel({
-          ...currentOrder,
-          order_status:
-            data.order_status ||
-            "Cancelled",
-        });
+      if (!confirmed) {
+        return;
       }
-    } catch (error) {
-      console.error(
-        "Cancel order error:",
-        error
-      );
 
-      setCancelMessage(
-        error.message ||
-          "Failed to cancel order."
-      );
-    } finally {
-      setCancelling(false);
-    }
-  };
+      try {
+        setCancelling(true);
+        setCancelMessage("");
+
+        const response =
+          await fetch(
+            `${API_BASE_URL}/api/orders/${currentOrder.id}/cancel`,
+            {
+              method: "PUT",
+
+              headers: {
+                "Content-Type":
+                  "application/json",
+              },
+
+              body: JSON.stringify({
+                user_id:
+                  currentOrder.user_id,
+              }),
+            }
+          );
+
+        const data =
+          await response.json();
+
+        if (
+          !response.ok ||
+          !data.success
+        ) {
+          throw new Error(
+            data.message ||
+              "Failed to cancel order"
+          );
+        }
+
+        setCurrentOrder(
+          (previous) => ({
+            ...previous,
+
+            order_status:
+              data.order_status ||
+              "Cancelled",
+          })
+        );
+
+        setCancelMessage(
+          "Order cancelled successfully."
+        );
+
+        if (onCancel) {
+          onCancel({
+            ...currentOrder,
+
+            order_status:
+              data.order_status ||
+              "Cancelled",
+          });
+        }
+
+      } catch (error) {
+
+        console.error(
+          "Cancel order error:",
+          error
+        );
+
+        setCancelMessage(
+          error.message ||
+            "Failed to cancel order."
+        );
+
+      } finally {
+        setCancelling(false);
+      }
+    };
 
   // =========================================
   // STATUS CLASS
@@ -289,6 +388,14 @@ function OrderDetails({
   ) {
     statusClass +=
       " shipped";
+  }
+
+  if (
+    normalizedStatus ===
+    "confirmed"
+  ) {
+    statusClass +=
+      " confirmed";
   }
 
   return (
@@ -322,7 +429,9 @@ function OrderDetails({
 
         <div className="order-details-topbar-right">
 
-          <span className={statusClass}>
+          <span
+            className={statusClass}
+          >
             {orderStatus}
           </span>
 
@@ -350,12 +459,14 @@ function OrderDetails({
                 : "order-cancel-error"
             }
           >
+
             {normalizedStatus ===
             "cancelled"
               ? "✓ "
               : "⚠️ "}
 
             {cancelMessage}
+
           </div>
         )}
 
@@ -522,110 +633,123 @@ function OrderDetails({
 
               <div className="order-details-items">
 
-                {items.map((item) => {
+                {items.map(
+                  (item) => {
 
-                  const price =
-                    Number(
-                      item.price || 0
-                    );
+                    const price =
+                      Number(
+                        item.price ||
+                          0
+                      );
 
-                  const quantity =
-                    Number(
-                      item.quantity || 0
-                    );
+                    const quantity =
+                      Number(
+                        item.quantity ||
+                          0
+                      );
 
-                  const itemTotal =
-                    price * quantity;
+                    const itemTotal =
+                      price *
+                      quantity;
 
-                  return (
-                    <div
-                      className="order-details-product-row"
-                      key={item.id}
-                    >
+                    return (
+                      <div
+                        className="order-details-product-row"
+                        key={
+                          item.id
+                        }
+                      >
 
-                      {/* PRODUCT IMAGE */}
+                        {/* PRODUCT IMAGE */}
 
-                      <div className="order-details-product-image">
+                        <div className="order-details-product-image">
 
-                        {item.image ? (
-                          <img
-                            src={item.image}
-                            alt={
-                              item.name ||
-                              "Product"
-                            }
-                          />
-                        ) : (
+                          {item.image ||
+                          item.product_image ? (
+                            <img
+                              src={
+                                item.image ||
+                                item.product_image
+                              }
+                              alt={
+                                item.name ||
+                                item.product_name ||
+                                "Product"
+                              }
+                            />
+                          ) : (
+                            <span>
+                              🛍️
+                            </span>
+                          )}
+
+                        </div>
+
+
+                        {/* PRODUCT INFO */}
+
+                        <div className="order-details-product-info">
+
+                          <p>
+                            {item.category ||
+                              "PRODUCT"}
+                          </p>
+
+                          <h3>
+                            {item.name ||
+                              item.product_name ||
+                              "Product"}
+                          </h3>
+
                           <span>
-                            🛍️
+                            Quantity{" "}
+                            <strong>
+                              {quantity}
+                            </strong>
                           </span>
-                        )}
 
-                      </div>
+                        </div>
 
 
-                      {/* PRODUCT INFO */}
+                        {/* UNIT PRICE */}
 
-                      <div className="order-details-product-info">
+                        <div className="order-details-unit-price">
 
-                        <p>
-                          {item.category ||
-                            "PRODUCT"}
-                        </p>
+                          <span>
+                            Price
+                          </span>
 
-                        <h3>
-                          {item.name ||
-                            "Product"}
-                        </h3>
-
-                        <span>
-                          Quantity{" "}
                           <strong>
-                            {quantity}
+                            ₹
+                            {price.toLocaleString(
+                              "en-IN"
+                            )}
                           </strong>
-                        </span>
+
+                        </div>
+
+
+                        {/* TOTAL */}
+
+                        <div className="order-details-product-total">
+
+                          <span>
+                            Total
+                          </span>
+
+                          <strong>
+                            ₹
+                            {itemTotal.toLocaleString(
+                              "en-IN"
+                            )}
+                          </strong>
+
+                        </div>
 
                       </div>
-
-
-                      {/* UNIT PRICE */}
-
-                      <div className="order-details-unit-price">
-
-                        <span>
-                          Price
-                        </span>
-
-                        <strong>
-                          ₹
-                          {price.toLocaleString(
-                            "en-IN"
-                          )}
-                        </strong>
-
-                      </div>
-
-
-                      {/* TOTAL */}
-
-                      <div className="order-details-product-total">
-
-                        <span>
-                          Total
-                        </span>
-
-                        <strong>
-                          ₹
-                          {itemTotal.toLocaleString(
-                            "en-IN"
-                          )}
-                        </strong>
-
-                      </div>
-
-                    </div>
-                  );
-                })}
+                    );
+                  }
+                )}
 
               </div>
             )}
@@ -667,42 +791,53 @@ function OrderDetails({
 
             <div className="order-details-address">
 
-              {currentOrder.full_name && (
+              {addressName && (
                 <strong>
-                  {currentOrder.full_name}
+                  {addressName}
                 </strong>
               )}
 
-              {currentOrder.phone && (
+              {addressPhone && (
                 <p>
-                  {currentOrder.phone}
+                  {addressPhone}
                 </p>
               )}
 
-              {currentOrder.address_line && (
+              {addressLine && (
                 <p>
-                  {currentOrder.address_line}
+                  {addressLine}
                 </p>
               )}
 
-              {(currentOrder.city ||
-                currentOrder.state ||
-                currentOrder.pincode) && (
+              {(addressCity ||
+                addressState ||
+                addressPincode) && (
                 <p>
 
-                  {currentOrder.city ||
-                    ""}
+                  {addressCity}
 
-                  {currentOrder.state
-                    ? `, ${currentOrder.state}`
+                  {addressState
+                    ? `, ${addressState}`
                     : ""}
 
-                  {currentOrder.pincode
-                    ? ` - ${currentOrder.pincode}`
+                  {addressPincode
+                    ? ` - ${addressPincode}`
                     : ""}
 
                 </p>
               )}
+
+              {!addressName &&
+                !addressPhone &&
+                !addressLine &&
+                !addressCity &&
+                !addressState &&
+                !addressPincode && (
+                  <p>
+                    Delivery address
+                    not available.
+                  </p>
+                )}
 
             </div>
 
