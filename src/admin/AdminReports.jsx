@@ -2,7 +2,7 @@ import React, { useEffect, useState } from "react";
 import { API_BASE_URL } from "../api";
 import "./AdminReports.css";
 
-function AdminReports({ onBack }) {
+function AdminReports({ onBack, admin }) {
   const [report, setReport] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
@@ -16,9 +16,31 @@ function AdminReports({ onBack }) {
       setLoading(true);
       setError("");
 
-      const response = await fetch(
-        `${API_BASE_URL}/api/admin/reports`
-      );
+    const token =
+  admin?.token ||
+  localStorage.getItem("adminToken");
+
+console.log(
+  "ADMIN REPORTS TOKEN:",
+  token ? "Token found" : "Token missing"
+);
+
+if (!token) {
+  throw new Error(
+    "Authentication required. Please login again."
+  );
+}
+
+const response = await fetch(
+  `${API_BASE_URL}/api/admin/reports`,
+  {
+    method: "GET",
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${token}`,
+    },
+  }
+);
 
       const data = await response.json();
 

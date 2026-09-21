@@ -1,6 +1,14 @@
-import React, { useEffect, useState } from "react";
-import { API_BASE_URL } from "../api";
+import React, {
+  useEffect,
+  useState,
+} from "react";
+
+import {
+  API_BASE_URL,
+} from "../api";
+
 import "./AdminHome.css";
+
 
 function AdminHome({
   admin,
@@ -11,7 +19,14 @@ function AdminHome({
   onOrders,
   onPayments,
   onReports,
+  onDeliveryPartners,
+  onProfit,
 }) {
+
+
+  /* ===============================
+     STATE
+  =============================== */
 
   const [dashboard, setDashboard] =
     useState(null);
@@ -22,479 +37,1298 @@ function AdminHome({
   const [error, setError] =
     useState("");
 
-  useEffect(() => {
-    fetchDashboard();
-  }, []);
+  const [activeSection, setActiveSection] =
+    useState("Dashboard");
 
-  const fetchDashboard = async () => {
-    try {
 
-      setLoading(true);
-      setError("");
+  /* ===============================
+     LOAD ADMIN DASHBOARD
+  =============================== */
 
-      const response = await fetch(
-        `${API_BASE_URL}/api/admin/dashboard`
-      );
+  const fetchDashboard =
+    async () => {
 
-      const data =
-        await response.json();
+      try {
 
-      if (
-        !response.ok ||
-        !data.success
-      ) {
-        throw new Error(
-          data.message ||
-          "Failed to load dashboard"
+        setLoading(true);
+
+        setError("");
+
+
+        /* ===============================
+           GET ADMIN TOKEN ONLY
+
+           IMPORTANT:
+           Do NOT use:
+
+           localStorage.getItem("token")
+
+           Because that may contain
+           merchant/customer token.
+        =============================== */
+
+        const token =
+          localStorage.getItem(
+            "adminToken"
+          );
+
+
+        console.log(
+          "Admin token exists:",
+          !!token
         );
+
+
+        /* ===============================
+           TOKEN CHECK
+        =============================== */
+
+        if (!token) {
+
+          throw new Error(
+            "Admin authentication token not found. Please login again."
+          );
+
+        }
+
+
+        /* ===============================
+           CALL ADMIN DASHBOARD API
+        =============================== */
+
+        const response =
+          await fetch(
+            `${API_BASE_URL}/api/admin/dashboard`,
+            {
+
+              method: "GET",
+
+              headers: {
+
+                "Content-Type":
+                  "application/json",
+
+                "Authorization":
+                  `Bearer ${token}`,
+
+              },
+
+            }
+          );
+
+
+        let data;
+
+
+        try {
+
+          data =
+            await response.json();
+
+        } catch {
+
+          throw new Error(
+            "Server returned an invalid response."
+          );
+
+        }
+
+
+        console.log(
+          "Admin dashboard response:",
+          data
+        );
+
+
+        /* ===============================
+           HANDLE API ERROR
+        =============================== */
+
+        if (
+          !response.ok ||
+          !data.success
+        ) {
+
+          throw new Error(
+            data.message ||
+            "Failed to load dashboard"
+          );
+
+        }
+
+
+        /* ===============================
+           SAVE DASHBOARD DATA
+        =============================== */
+
+        setDashboard(
+          data.dashboard
+        );
+
+
+      } catch (error) {
+
+        console.error(
+          "Admin dashboard error:",
+          error
+        );
+
+
+        /* ===============================
+           TOKEN ERROR
+
+           Optional:
+           If unauthorized, remove invalid
+           admin login data.
+        =============================== */
+
+        if (
+          error.message ===
+          "Authentication token has expired"
+        ) {
+
+          localStorage.removeItem(
+            "adminToken"
+          );
+
+          localStorage.removeItem(
+            "adminUser"
+          );
+
+        }
+
+
+        setError(
+          error.message ||
+          "Unable to load dashboard"
+        );
+
+
+      } finally {
+
+        setLoading(false);
+
       }
 
-      setDashboard(
-        data.dashboard
-      );
+    };
 
-    } catch (error) {
 
-      console.error(
-        "Admin dashboard error:",
-        error
-      );
+  /* ===============================
+     LOAD DASHBOARD ON START
+  =============================== */
 
-      setError(
-        error.message ||
-        "Unable to load dashboard"
-      );
+  useEffect(() => {
 
-    } finally {
+    fetchDashboard();
 
-      setLoading(false);
+  }, []);
+
+
+
+  /* ===============================
+     NAVIGATION
+  =============================== */
+
+  const handleNavigation = (
+    section,
+    callback
+  ) => {
+
+    setActiveSection(
+      section
+    );
+
+
+    if (callback) {
+
+      callback();
 
     }
+
   };
 
 
-  /* =========================
-     LOADING
-  ========================= */
+
+  /* ===============================
+     LOGOUT
+  =============================== */
+
+  const handleLogout =
+    () => {
+
+      /* Remove only admin data */
+
+      localStorage.removeItem(
+        "adminToken"
+      );
+
+      localStorage.removeItem(
+        "adminUser"
+      );
+
+
+      /* Call parent logout */
+
+      if (onLogout) {
+
+        onLogout();
+
+      }
+
+    };
+
+
+
+  /* ===============================
+     LOADING SCREEN
+  =============================== */
 
   if (loading) {
+
     return (
+
       <section className="admin-page">
 
         <div className="admin-loading">
+
           Loading Admin Dashboard...
+
         </div>
 
       </section>
+
     );
+
   }
 
 
-  /* =========================
-     ERROR
-  ========================= */
+
+  /* ===============================
+     ERROR SCREEN
+  =============================== */
 
   if (error) {
+
     return (
+
       <section className="admin-page">
 
         <div className="admin-error">
 
+
+          <div className="admin-error-icon">
+
+            ⚠️
+
+          </div>
+
+
           <h2>
+
             Unable to load dashboard
+
           </h2>
 
+
           <p>
+
             {error}
+
           </p>
+
 
           <button
             type="button"
             onClick={fetchDashboard}
           >
+
             Try Again
+
           </button>
+
 
         </div>
 
       </section>
+
     );
+
   }
 
 
+
+  /* ===============================
+     MAIN ADMIN PAGE
+  =============================== */
+
   return (
+
     <section className="admin-page">
 
-      {/* =========================
-          HEADER
-      ========================= */}
 
-      <header className="admin-header">
+      {/* =============================
+          TOP HEADER
+      ============================== */}
 
-        <div>
+      <header className="admin-topbar">
 
-          <p>
-            ADMIN
-          </p>
 
-          <h1>
-            Admin Dashboard
-          </h1>
+        {/* BRAND */}
 
-          <span>
-            Welcome,{" "}
-            {admin?.name ||
-              "ShopEase Admin"}
-          </span>
+        <div className="admin-brand">
+
+
+          <div className="admin-brand-mark">
+
+            S
+
+          </div>
+
+
+          <div>
+
+            <strong>
+
+              Shop<span>Ease</span>
+
+            </strong>
+
+
+            <small>
+
+              Admin Panel
+
+            </small>
+
+          </div>
+
 
         </div>
 
 
-        <button
-          type="button"
-          onClick={onLogout}
-        >
-          Logout
-        </button>
+
+        {/* USER INFO */}
+
+        <div className="admin-topbar-right">
+
+
+          <div className="admin-user-info">
+
+
+            <div className="admin-user-avatar">
+
+              {
+                (
+                  admin?.name ||
+                  "A"
+                )
+                  .charAt(0)
+                  .toUpperCase()
+              }
+
+            </div>
+
+
+
+            <div>
+
+
+              <strong>
+
+                {
+                  admin?.name ||
+                  "ShopEase Admin"
+                }
+
+              </strong>
+
+
+              <span>
+
+                Administrator
+
+              </span>
+
+
+            </div>
+
+
+          </div>
+
+
+
+          {/* LOGOUT */}
+
+          <button
+            type="button"
+            className="admin-logout-button"
+            onClick={handleLogout}
+          >
+
+            Logout
+
+          </button>
+
+
+        </div>
+
 
       </header>
 
 
-      {/* =========================
-          CONTENT
-      ========================= */}
 
-      <main className="admin-content">
+      {/* =============================
+          DASHBOARD BODY
+      ============================== */}
 
-
-        {/* =========================
-            STATISTICS
-        ========================= */}
-
-        <div className="admin-stat-grid">
+      <div className="admin-layout">
 
 
-          {/* CUSTOMERS */}
+        {/* ===========================
+            SIDEBAR
+        ============================ */}
 
-          <div className="admin-stat-card">
-
-            <span>
-              👤
-            </span>
-
-            <p>
-              Total Customers
-            </p>
-
-            <h2>
-              {dashboard?.total_customers ?? 0}
-            </h2>
-
-          </div>
+        <aside className="admin-sidebar">
 
 
-          {/* MERCHANTS */}
+          <div className="admin-sidebar-title">
 
-          <div className="admin-stat-card">
-
-            <span>
-              🏪
-            </span>
-
-            <p>
-              Total Merchants
-            </p>
-
-            <h2>
-              {dashboard?.total_merchants ?? 0}
-            </h2>
-
-          </div>
-
-
-          {/* PRODUCTS */}
-
-          <div className="admin-stat-card">
-
-            <span>
-              📦
-            </span>
-
-            <p>
-              Total Products
-            </p>
-
-            <h2>
-              {dashboard?.total_products ?? 0}
-            </h2>
-
-          </div>
-
-
-          {/* ORDERS */}
-
-          <div className="admin-stat-card">
-
-            <span>
-              🛒
-            </span>
-
-            <p>
-              Total Orders
-            </p>
-
-            <h2>
-              {dashboard?.total_orders ?? 0}
-            </h2>
-
-          </div>
-
-
-          {/* REVENUE */}
-
-          <div className="admin-stat-card">
-
-            <span>
-              ₹
-            </span>
-
-            <p>
-              Total Revenue
-            </p>
-
-            <h2>
-              ₹
-              {Number(
-                dashboard?.total_revenue || 0
-              ).toLocaleString("en-IN")}
-            </h2>
-
-          </div>
-
-
-          {/* PENDING ORDERS */}
-
-          <div className="admin-stat-card">
-
-            <span>
-              ⏳
-            </span>
-
-            <p>
-              Pending Orders
-            </p>
-
-            <h2>
-              {dashboard?.pending_orders ?? 0}
-            </h2>
-
-          </div>
-
-
-          {/* LOW STOCK */}
-
-          <div className="admin-stat-card">
-
-            <span>
-              ⚠️
-            </span>
-
-            <p>
-              Low Stock
-            </p>
-
-            <h2>
-              {dashboard?.low_stock ?? 0}
-            </h2>
-
-          </div>
-
-
-          {/* OUT OF STOCK */}
-
-          <div className="admin-stat-card">
-
-            <span>
-              ❌
-            </span>
-
-            <p>
-              Out of Stock
-            </p>
-
-            <h2>
-              {dashboard?.out_of_stock ?? 0}
-            </h2>
-
-          </div>
-
-        </div>
-
-
-        {/* =========================
             MANAGEMENT
-        ========================= */}
 
-        <div className="admin-sections">
-
-
-           <button
-    type="button"
-    onClick={onCustomers}
-  >
-    👤
-
-    <span>
-      Customers
-    </span>
-  </button>
+          </div>
 
 
-         <button
-  type="button"
-  onClick={onMerchants}
->
-  🏪
 
-  <span>
-    Merchants
-  </span>
-</button>
+          <nav className="admin-sidebar-nav">
 
 
-          <button
-  type="button"
-  onClick={onProducts}
->
-  📦
+            {/* DASHBOARD */}
 
-  <span>
-    Products
-  </span>
-</button>
+            <button
+              type="button"
+              className={
+                activeSection === "Dashboard"
+                  ? "admin-nav-item active"
+                  : "admin-nav-item"
+              }
+              onClick={() =>
+                handleNavigation(
+                  "Dashboard",
+                  null
+                )
+              }
+            >
+
+              <span className="admin-nav-icon">
+
+                ◈
+
+              </span>
+
+
+              <span>
+
+                Dashboard
+
+              </span>
+
+            </button>
+
+
+
+            {/* CUSTOMERS */}
+
+            <button
+              type="button"
+              className={
+                activeSection === "Customers"
+                  ? "admin-nav-item active"
+                  : "admin-nav-item"
+              }
+              onClick={() =>
+                handleNavigation(
+                  "Customers",
+                  onCustomers
+                )
+              }
+            >
+
+              <span className="admin-nav-icon">
+
+                👤
+
+              </span>
+
+
+              <span>
+
+                Customers
+
+              </span>
+
+            </button>
+
+
+
+            {/* MERCHANTS */}
+
+            <button
+              type="button"
+              className={
+                activeSection === "Merchants"
+                  ? "admin-nav-item active"
+                  : "admin-nav-item"
+              }
+              onClick={() =>
+                handleNavigation(
+                  "Merchants",
+                  onMerchants
+                )
+              }
+            >
+
+              <span className="admin-nav-icon">
+
+                🏪
+
+              </span>
+
+
+              <span>
+
+                Merchants
+
+              </span>
+
+            </button>
+            
+{/* DELIVERY PARTNERS */}
 
 <button
   type="button"
-  onClick={onOrders}
+  className={
+    activeSection === "Delivery Partners"
+      ? "admin-nav-item active"
+      : "admin-nav-item"
+  }
+  onClick={() =>
+    handleNavigation(
+      "Delivery Partners",
+      onDeliveryPartners
+    )
+  }
 >
-  🛒
+  <span className="admin-nav-icon">
+    🚚
+  </span>
+
   <span>
-    Orders
+    Delivery Partners
   </span>
 </button>
 
-          <button
+{/* PROFIT */}
+
+<button
   type="button"
-  onClick={onPayments}
+  className={
+    activeSection === "Profit"
+      ? "admin-nav-item active"
+      : "admin-nav-item"
+  }
+  onClick={() =>
+    handleNavigation(
+      "Profit",
+      onProfit
+    )
+  }
 >
-  💳
+  <span className="admin-nav-icon">
+    📈
+  </span>
+
   <span>
-    Payments
+    Profit
   </span>
 </button>
 
+            {/* PRODUCTS */}
 
-          <button
-  type="button"
-  onClick={onReports}
->
-  📊
-  <span>
-    Reports
-  </span>
-</button>
+            <button
+              type="button"
+              className={
+                activeSection === "Products"
+                  ? "admin-nav-item active"
+                  : "admin-nav-item"
+              }
+              onClick={() =>
+                handleNavigation(
+                  "Products",
+                  onProducts
+                )
+              }
+            >
 
-        </div>
+              <span className="admin-nav-icon">
+
+                📦
+
+              </span>
 
 
-        {/* =========================
-            RECENT ORDERS
-        ========================= */}
+              <span>
 
-        <section className="admin-recent-section">
+                Products
 
-          <div className="admin-section-title">
+              </span>
+
+            </button>
+
+
+
+            {/* ORDERS */}
+
+            <button
+              type="button"
+              className={
+                activeSection === "Orders"
+                  ? "admin-nav-item active"
+                  : "admin-nav-item"
+              }
+              onClick={() =>
+                handleNavigation(
+                  "Orders",
+                  onOrders
+                )
+              }
+            >
+
+              <span className="admin-nav-icon">
+
+                🛒
+
+              </span>
+
+
+              <span>
+
+                Orders
+
+              </span>
+
+            </button>
+
+
+
+            {/* PAYMENTS */}
+
+            <button
+              type="button"
+              className={
+                activeSection === "Payments"
+                  ? "admin-nav-item active"
+                  : "admin-nav-item"
+              }
+              onClick={() =>
+                handleNavigation(
+                  "Payments",
+                  onPayments
+                )
+              }
+            >
+
+              <span className="admin-nav-icon">
+
+                💳
+
+              </span>
+
+
+              <span>
+
+                Payments
+
+              </span>
+
+            </button>
+
+
+
+            {/* REPORTS */}
+
+            <button
+              type="button"
+              className={
+                activeSection === "Reports"
+                  ? "admin-nav-item active"
+                  : "admin-nav-item"
+              }
+              onClick={() =>
+                handleNavigation(
+                  "Reports",
+                  onReports
+                )
+              }
+            >
+
+              <span className="admin-nav-icon">
+
+                📊
+
+              </span>
+
+
+              <span>
+
+                Reports
+
+              </span>
+
+            </button>
+
+
+          </nav>
+
+
+        </aside>
+
+
+        {/* ===========================
+            MAIN CONTENT
+        ============================ */}
+
+        <main className="admin-main">
+
+
+          {/* PAGE HEADING */}
+
+          <div className="admin-page-heading">
+
 
             <div>
 
+
               <p>
-                ACTIVITY
+
+                OVERVIEW
+
               </p>
 
-              <h2>
-                Recent Orders
-              </h2>
+
+              <h1>
+
+                Dashboard
+
+              </h1>
+
+
+              <span>
+
+                Welcome back,{" "}
+
+                {
+                  admin?.name ||
+                  "ShopEase Admin"
+                }
+
+              </span>
+
 
             </div>
+
+
+
+            <div className="admin-heading-status">
+
+              <span className="admin-status-dot" />
+
+              System Active
+
+            </div>
+
 
           </div>
 
 
-          <div className="admin-order-list">
 
-            {dashboard?.recent_orders?.length > 0 ? (
+          {/* =========================
+              STATISTICS
+          ========================== */}
 
-              dashboard.recent_orders.map(
-                (order) => (
-
-                  <div
-                    className="admin-order-row"
-                    key={order.id}
-                  >
-
-                    <div>
-
-                      <strong>
-                        #{order.id}
-                      </strong>
-
-                      <span>
-                        {order.customer_name ||
-                          "Customer"}
-                      </span>
-
-                    </div>
+          <section className="admin-stat-grid">
 
 
-                    <div>
+            {/* TOTAL CUSTOMERS */}
 
-                      <strong>
-                        ₹
-                        {Number(
-                          order.total_amount || 0
-                        ).toLocaleString(
-                          "en-IN"
-                        )}
-                      </strong>
+            <div className="admin-stat-card">
 
-                      <span>
-                        {order.order_status ||
-                          "Pending"}
-                      </span>
+              <div className="admin-stat-top">
 
-                    </div>
+                <div className="admin-stat-icon">
+
+                  👤
+
+                </div>
+
+              </div>
+
+
+              <span>
+
+                Total Customers
+
+              </span>
+
+
+              <strong>
+
+                {
+                  dashboard?.total_customers ??
+                  0
+                }
+
+              </strong>
+
+            </div>
+
+
+
+            {/* TOTAL MERCHANTS */}
+
+            <div className="admin-stat-card">
+
+              <div className="admin-stat-top">
+
+                <div className="admin-stat-icon">
+
+                  🏪
+
+                </div>
+
+              </div>
+
+
+              <span>
+
+                Total Merchants
+
+              </span>
+
+
+              <strong>
+
+                {
+                  dashboard?.total_merchants ??
+                  0
+                }
+
+              </strong>
+
+            </div>
+
+
+
+            {/* TOTAL PRODUCTS */}
+
+            <div className="admin-stat-card">
+
+              <div className="admin-stat-top">
+
+                <div className="admin-stat-icon">
+
+                  📦
+
+                </div>
+
+              </div>
+
+
+              <span>
+
+                Total Products
+
+              </span>
+
+
+              <strong>
+
+                {
+                  dashboard?.total_products ??
+                  0
+                }
+
+              </strong>
+
+            </div>
+
+
+
+            {/* TOTAL ORDERS */}
+
+            <div className="admin-stat-card">
+
+              <div className="admin-stat-top">
+
+                <div className="admin-stat-icon">
+
+                  🛒
+
+                </div>
+
+              </div>
+
+
+              <span>
+
+                Total Orders
+
+              </span>
+
+
+              <strong>
+
+                {
+                  dashboard?.total_orders ??
+                  0
+                }
+
+              </strong>
+
+            </div>
+
+
+
+            {/* TOTAL REVENUE */}
+
+            <div className="admin-stat-card">
+
+              <div className="admin-stat-top">
+
+                <div className="admin-stat-icon">
+
+                  ₹
+
+                </div>
+
+              </div>
+
+
+              <span>
+
+                Total Revenue
+
+              </span>
+
+
+              <strong>
+
+                ₹
+
+                {
+                  Number(
+                    dashboard?.total_revenue ||
+                    0
+                  ).toLocaleString(
+                    "en-IN"
+                  )
+                }
+
+              </strong>
+
+            </div>
+
+
+
+            {/* PENDING ORDERS */}
+
+            <div className="admin-stat-card">
+
+              <div className="admin-stat-top">
+
+                <div className="admin-stat-icon">
+
+                  ⏳
+
+                </div>
+
+              </div>
+
+
+              <span>
+
+                Pending Orders
+
+              </span>
+
+
+              <strong>
+
+                {
+                  dashboard?.pending_orders ??
+                  0
+                }
+
+              </strong>
+
+            </div>
+
+
+
+            {/* LOW STOCK */}
+
+            <div className="admin-stat-card">
+
+              <div className="admin-stat-top">
+
+                <div className="admin-stat-icon">
+
+                  ⚠️
+
+                </div>
+
+              </div>
+
+
+              <span>
+
+                Low Stock
+
+              </span>
+
+
+              <strong>
+
+                {
+                  dashboard?.low_stock ??
+                  0
+                }
+
+              </strong>
+
+            </div>
+
+
+
+            {/* OUT OF STOCK */}
+
+            <div className="admin-stat-card">
+
+              <div className="admin-stat-top">
+
+                <div className="admin-stat-icon">
+
+                  ❌
+
+                </div>
+
+              </div>
+
+
+              <span>
+
+                Out of Stock
+
+              </span>
+
+
+              <strong>
+
+                {
+                  dashboard?.out_of_stock ??
+                  0
+                }
+
+              </strong>
+
+            </div>
+
+
+          </section>
+
+
+
+          {/* =========================
+              RECENT ORDERS
+          ========================== */}
+
+          <section className="admin-recent-section">
+
+
+            <div className="admin-section-heading">
+
+
+              <div>
+
+
+                <p>
+
+                  ACTIVITY
+
+                </p>
+
+
+                <h2>
+
+                  Recent Orders
+
+                </h2>
+
+
+              </div>
+
+
+
+              <span>
+
+                {
+                  dashboard?.recent_orders
+                    ?.length || 0
+                }{" "}
+
+                recent
+
+              </span>
+
+
+            </div>
+
+
+
+            <div className="admin-order-list">
+
+
+              {
+                dashboard?.recent_orders
+                  ?.length > 0 ? (
+
+                  dashboard.recent_orders.map(
+                    (order) => (
+
+                      <div
+                        className="admin-order-row"
+                        key={order.id}
+                      >
+
+
+                        <div className="admin-order-left">
+
+
+                          <div className="admin-order-number">
+
+                            #{order.id}
+
+                          </div>
+
+
+
+                          <div>
+
+
+                            <strong>
+
+                              {
+                                order.customer_name ||
+                                "Customer"
+                              }
+
+                            </strong>
+
+
+                            <span>
+
+                              Order placed
+
+                            </span>
+
+
+                          </div>
+
+
+                        </div>
+
+
+
+                        <div className="admin-order-right">
+
+
+                          <strong>
+
+                            ₹
+
+                            {
+                              Number(
+                                order.total_amount ||
+                                0
+                              ).toLocaleString(
+                                "en-IN"
+                              )
+                            }
+
+                          </strong>
+
+
+
+                          <span
+                            className={
+                              `admin-order-status ${
+                                String(
+                                  order.order_status ||
+                                  "Pending"
+                                )
+                                  .toLowerCase()
+                                  .replace(
+                                    /\s+/g,
+                                    "-"
+                                  )
+                              }`
+                            }
+                          >
+
+                            {
+                              order.order_status ||
+                              "Pending"
+                            }
+
+                          </span>
+
+
+                        </div>
+
+
+                      </div>
+
+                    )
+                  )
+
+                ) : (
+
+                  <div className="admin-empty">
+
+                    No orders found.
 
                   </div>
 
                 )
-              )
-
-            ) : (
-
-              <div className="admin-empty">
-                No orders found.
-              </div>
-
-            )}
-
-          </div>
-        </section>
+              }
 
 
-      </main>
+            </div>
+
+
+          </section>
+
+
+        </main>
+
+
+      </div>
+
 
     </section>
+
   );
+
 }
+
 
 export default AdminHome;

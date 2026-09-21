@@ -1,14 +1,16 @@
 import { useState } from "react";
 import { API_BASE_URL } from "../api";
+import "./Login.css";
 
 function Login({
   onBack,
   onRegister,
   onMerchantRegister,
+  onDeliveryLogin,
+  onAdminLogin,
   onLoginSuccess,
 }) {
-  const [loginRole, setLoginRole] =
-    useState("customer");
+  const [loginRole, setLoginRole] = useState("customer");
 
   const [formData, setFormData] = useState({
     email: "",
@@ -17,170 +19,196 @@ function Login({
 
   const [errors, setErrors] = useState({});
 
-  /* =========================
-     ROLE CHANGE
-  ========================= */
-
   const handleRoleChange = (role) => {
     setLoginRole(role);
-
     setErrors({});
-
     setFormData({
       email: "",
       password: "",
     });
   };
 
-  /* =========================
-     INPUT CHANGE
-  ========================= */
-
   const handleChange = (e) => {
-    const {
-      name,
-      value,
-    } = e.target;
+    const { name, value } = e.target;
 
-    setFormData((current) => ({
-      ...current,
+    setFormData((previous) => ({
+      ...previous,
       [name]: value,
     }));
 
-    setErrors((current) => ({
-      ...current,
+    setErrors((previous) => ({
+      ...previous,
       [name]: "",
       general: "",
     }));
   };
 
-  /* =========================
-     LOGIN
-  ========================= */
-
-  const handleLogin = async (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
 
     const newErrors = {};
 
-    /* EMAIL */
-
     if (!formData.email.trim()) {
-      newErrors.email =
-        "Email is required";
-    } else if (
-      !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(
-        formData.email
-      )
-    ) {
-      newErrors.email =
-        "Enter a valid email address";
+      newErrors.email = "Email is required";
     }
-
-    /* PASSWORD */
 
     if (!formData.password) {
-      newErrors.password =
-        "Password is required";
+      newErrors.password = "Password is required";
     }
 
-    setErrors(newErrors);
-
-    if (
-      Object.keys(newErrors).length > 0
-    ) {
+    if (Object.keys(newErrors).length > 0) {
+      setErrors(newErrors);
       return;
     }
 
     try {
-      const response = await fetch(
-        `${API_BASE_URL}/api/auth/login`,
-        {
-          method: "POST",
+      let loginURL = `${API_BASE_URL}/api/auth/login`;
 
-          headers: {
-            "Content-Type":
-              "application/json",
-          },
+      if (loginRole === "delivery_partner") {
+        loginURL = `${API_BASE_URL}/api/delivery/login`;
+      }
 
-          body: JSON.stringify({
-            email:
-              formData.email
-                .trim()
-                .toLowerCase(),
+      if (loginRole === "merchant") {
+        loginURL = `${API_BASE_URL}/api/auth/login`;
+      }
 
-            password:
-              formData.password,
+      const response = await fetch(loginURL, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          email: formData.email.trim().toLowerCase(),
+          password: formData.password,
+          role: loginRole,
+        }),
+      });
 
-            role: loginRole,
-          }),
-        }
-      );
-
-      const data =
-        await response.json();
-
-      console.log(
-        "Login response:",
-        data
-      );
-
-      /* BACKEND ERROR */
+      const data = await response.json();
 
       if (!response.ok) {
-        setErrors({
-          general:
-            data.message ||
-            "Invalid email or password",
-        });
-
-        return;
+        throw new Error(data.message || "Login failed");
       }
 
-      /* USER CHECK */
-
-      if (!data.user) {
-        setErrors({
-          general:
-            "Login successful, but user details were not received.",
-        });
-
-        return;
+      if (!data.token) {
+        throw new Error("Login token not received");
       }
 
-      /* ROLE CHECK */
+      /* ================================
+         ROLE VALIDATION
+      ================================= */
 
       if (
-        data.user.role !==
-        loginRole
+        loginRole === "delivery_partner" &&
+        data.user.role !== "delivery"
       ) {
-        setErrors({
-          general:
-            "This account does not belong to the selected login type.",
-        });
-
-        return;
+        throw new Error(
+          "Invalid delivery partner account"
+        );
       }
 
-      /* LOGIN SUCCESS */
+      if (
+        loginRole !== "delivery_partner" &&
+        data.user.role !== loginRole
+      ) {
+        throw new Error(
+          `Please login using a ${loginRole} account`
+        );
+      }
+
+      /* ================================
+         LOGGED IN USER
+      ================================= */
+
+      const loggedInUser = {
+        ...data.user,
+        token: data.token,
+        role:
+          loginRole === "delivery_partner"
+            ? "delivery_partner"
+            : data.user.role,
+      };
+
+      /* ================================
+         SAVE ROLE-SPECIFIC LOGIN SESSION
+      ================================= */
+
+      if (loginRole === "customer") {
+        localStorage.setItem(
+          "customer_token",
+          data.token
+        );
+
+        localStorage.setItem(
+          "customer_user",
+          JSON.stringify(loggedInUser)
+        );
+      }
+
+      if (loginRole === "merchant") {
+        localStorage.setItem(
+          "merchant_token",
+          data.token
+        );
+
+        localStorage.setItem(
+          "merchant_user",
+          JSON.stringify(loggedInUser)
+        );
+      }
+
+      /* =================================
+         DELIVERY PARTNER LOGIN
+      ================================= */
+
+      if (loginRole === "delivery_partner") {
+        localStorage.setItem(
+          "delivery_token",
+          data.token
+        );
+
+        localStorage.setItem(
+          "delivery_user",
+          JSON.stringify(loggedInUser)
+        );
+
+        /*
+          IMPORTANT:
+          Profile.jsx reads "deliveryPartner",
+          so we also save the same logged-in
+          delivery partner using this key.
+        */
+
+        localStorage.setItem(
+          "deliveryPartner",
+          JSON.stringify(loggedInUser)
+        );
+      }
+
+      /* ================================
+         DEBUG
+      ================================= */
 
       console.log(
-        "Login successful:",
-        data.user
+        "Logged in user:",
+        loggedInUser
       );
 
-      console.log(
-        "Logged-in User ID:",
-        data.user.id
-      );
+      if (loginRole === "delivery_partner") {
+        console.log(
+          "Delivery partner saved:",
+          localStorage.getItem(
+            "deliveryPartner"
+          )
+        );
+      }
 
-      console.log(
-        "Logged-in User Role:",
-        data.user.role
-      );
+      /* ================================
+         LOGIN SUCCESS
+      ================================= */
 
       if (onLoginSuccess) {
-        onLoginSuccess(data.user);
+        onLoginSuccess(loggedInUser);
       }
 
     } catch (error) {
@@ -191,280 +219,364 @@ function Login({
 
       setErrors({
         general:
-          "Unable to connect to the server.",
+          error.message ||
+          "Login failed",
       });
     }
   };
 
+  /* ================================
+     LOGIN TITLE
+  ================================= */
+
+  const getLoginTitle = () => {
+    if (loginRole === "merchant") {
+      return "Merchant Login";
+    }
+
+    if (loginRole === "delivery_partner") {
+      return "Delivery Partner Login";
+    }
+
+    return "Welcome Back";
+  };
+
+  /* ================================
+     LOGIN DESCRIPTION
+  ================================= */
+
+  const getLoginDescription = () => {
+    if (loginRole === "merchant") {
+      return "Login to manage your store";
+    }
+
+    if (loginRole === "delivery_partner") {
+      return "Login to manage your deliveries";
+    }
+
+    return "Login to continue shopping with ShopEase";
+  };
+
+  /* ================================
+     EMAIL PLACEHOLDER
+  ================================= */
+
+  const getEmailPlaceholder = () => {
+    if (loginRole === "merchant") {
+      return "Merchant email";
+    }
+
+    if (loginRole === "delivery_partner") {
+      return "Delivery partner email";
+    }
+
+    return "Enter your email";
+  };
+
+  /* ================================
+     BUTTON TEXT
+  ================================= */
+
+  const getButtonText = () => {
+    if (loginRole === "merchant") {
+      return "Login as Merchant";
+    }
+
+    if (loginRole === "delivery_partner") {
+      return "Login as Delivery Partner";
+    }
+
+    return "Login";
+  };
+
   return (
-    <section className="auth-page">
+    <div className="login-page">
 
-      <div className="auth-card">
+      {/* ================= LEFT BANNER ================= */}
 
-        {/* =========================
-            BACK
-        ========================= */}
+      <div className="login-banner">
 
         <button
           type="button"
-          className="auth-back-button"
+          className="login-back-button"
           onClick={onBack}
         >
-          ←
+          ← Back
         </button>
 
+        <div className="login-banner-content">
 
-        {/* =========================
-            HEADER
-        ========================= */}
-
-        <div className="auth-header">
-
-          <p>
-            WELCOME BACK
-          </p>
+          <div className="login-brand">
+            ShopEase
+          </div>
 
           <h1>
-  {loginRole === "admin"
-    ? "Admin Login"
-    : loginRole === "merchant"
-    ? "Merchant Login"
-    : "Login"}
-</h1>
-          <span>
-            {loginRole === "admin"
-              ? "Login to manage your ShopEase admin panel"
-              : loginRole === "merchant"
-              ? "Login to manage your ShopEase store"
-              : "Login to continue shopping"}
-          </span>
+            Everything you need,
+            <br />
+            all in one place.
+          </h1>
 
-        </div>
+          <p>
+            Discover products you love, manage your
+            business, and enjoy a seamless shopping
+            experience with ShopEase.
+          </p>
 
+          <div className="login-banner-features">
 
-        {/* =========================
-            LOGIN TYPE
-        ========================= */}
-
-        <div className="login-role-section">
-
-          <label>
-            Login as
-          </label>
-
-          <div className="login-role-buttons">
-
-            {/* CUSTOMER */}
-
-            <button
-              type="button"
-              className={
-                loginRole === "customer"
-                  ? "login-role-button active"
-                  : "login-role-button"
-              }
-              onClick={() =>
-                handleRoleChange(
-                  "customer"
-                )
-              }
-            >
-              <span className="role-icon">
-                👤
-              </span>
-
+            <div className="banner-feature">
+              <span>✓</span>
               <span>
-                Customer
+                Easy & Secure Shopping
               </span>
-            </button>
+            </div>
 
-
-            {/* MERCHANT */}
-
-            <button
-              type="button"
-              className={
-                loginRole === "merchant"
-                  ? "login-role-button active"
-                  : "login-role-button"
-              }
-              onClick={() =>
-                handleRoleChange(
-                  "merchant"
-                )
-              }
-            >
-              <span className="role-icon">
-                🏪
-              </span>
-
+            <div className="banner-feature">
+              <span>✓</span>
               <span>
-                Merchant
+                Fast & Reliable Delivery
               </span>
-            </button>
-            <button
-  type="button"
-  className={
-    loginRole === "admin"
-      ? "login-role-button active"
-      : "login-role-button"
-  }
-  onClick={() =>
-    handleRoleChange("admin")
-  }
->
-  <span className="role-icon">
-    🛡️
-  </span>
+            </div>
 
-  <span>
-    Admin
-  </span>
-</button>
-          </div>
-
-        </div>
-
-
-        {
-        
-        /* =========================
-            FORM
-        ========================= */}
-
-        <form
-          className="auth-form"
-          onSubmit={handleLogin}
-        >
-
-          {/* EMAIL */}
-
-          <div className="form-group">
-
-            <label>
-              Email
-
-              <span className="required-star">
-                *
+            <div className="banner-feature">
+              <span>✓</span>
+              <span>
+                Trusted Marketplace
               </span>
-            </label>
-
-            <input
-              type="email"
-              name="email"
-              placeholder={
-                loginRole === "merchant"
-                  ? "Enter merchant email"
-                  : "Enter your email"
-              }
-              value={formData.email}
-              onChange={handleChange}
-              autoComplete="email"
-            />
-
-            {errors.email && (
-              <small>
-                {errors.email}
-              </small>
-            )}
+            </div>
 
           </div>
-
-
-          {/* PASSWORD */}
-
-          <div className="form-group">
-
-            <label>
-              Password
-
-              <span className="required-star">
-                *
-              </span>
-            </label>
-
-            <input
-              type="password"
-              name="password"
-              placeholder="Enter your password"
-              value={formData.password}
-              onChange={handleChange}
-              autoComplete="current-password"
-            />
-
-            {errors.password && (
-              <small>
-                {errors.password}
-              </small>
-            )}
-
-          </div>
-
-
-          {/* BACKEND ERROR */}
-
-          {errors.general && (
-            <small className="login-general-error">
-              {errors.general}
-            </small>
-          )}
-
-
-          {/* LOGIN BUTTON */}
-
-          <button
-            type="submit"
-            className="auth-submit-button"
-          >
-            {loginRole === "merchant"
-              ? "Login as Merchant"
-              : "Login"}
-          </button>
-
-        </form>
-
-
-        {/* =========================
-            REGISTER SECTION
-        ========================= */}
-
-        <div className="auth-switch">
-
-          {loginRole === "merchant" ? (
-            <>
-              <span>
-                Don't have a merchant account?
-              </span>
-
-              <button
-                type="button"
-                onClick={
-                  onMerchantRegister
-                }
-              >
-                Register as Merchant
-              </button>
-            </>
-          ) : (
-            <>
-              <span>
-                Don't have an account?
-              </span>
-
-              <button
-                type="button"
-                onClick={onRegister}
-              >
-                Create Account
-              </button>
-            </>
-          )}
 
         </div>
 
       </div>
 
-    </section>
+      {/* ================= RIGHT LOGIN ================= */}
+
+      <div className="login-section">
+
+        <div className="login-card">
+
+          <div className="login-header">
+
+            <div className="login-mobile-brand">
+              ShopEase
+            </div>
+
+            <h2>
+              {getLoginTitle()}
+            </h2>
+
+            <p>
+              {getLoginDescription()}
+            </p>
+
+          </div>
+
+          {/* ================= ROLE SELECT ================= */}
+
+          <div className="login-role-section">
+
+            <label className="login-label">
+              Login as
+            </label>
+
+            <div className="login-role-buttons">
+
+              <button
+                type="button"
+                className={`login-role-button ${
+                  loginRole === "customer"
+                    ? "active"
+                    : ""
+                }`}
+                onClick={() =>
+                  handleRoleChange("customer")
+                }
+              >
+                <span className="role-icon">
+                  🛍️
+                </span>
+
+                <span>
+                  Customer
+                </span>
+              </button>
+
+              <button
+                type="button"
+                className={`login-role-button ${
+                  loginRole === "merchant"
+                    ? "active"
+                    : ""
+                }`}
+                onClick={() =>
+                  handleRoleChange("merchant")
+                }
+              >
+                <span className="role-icon">
+                  🏪
+                </span>
+
+                <span>
+                  Merchant
+                </span>
+              </button>
+
+              <button
+                type="button"
+                className={`login-role-button ${
+                  loginRole === "delivery_partner"
+                    ? "active"
+                    : ""
+                }`}
+                onClick={() =>
+                  handleRoleChange(
+                    "delivery_partner"
+                  )
+                }
+              >
+                <span className="role-icon">
+                  🚚
+                </span>
+
+                <span>
+                  Delivery
+                </span>
+              </button>
+
+            </div>
+
+          </div>
+
+          {/* ================= LOGIN FORM ================= */}
+
+          <form
+            className="login-form"
+            onSubmit={handleSubmit}
+          >
+
+            <div className="form-group">
+
+              <label htmlFor="email">
+                Email Address
+              </label>
+
+              <input
+                id="email"
+                type="email"
+                name="email"
+                value={formData.email}
+                onChange={handleChange}
+                placeholder={
+                  getEmailPlaceholder()
+                }
+                autoComplete="email"
+              />
+
+              {errors.email && (
+                <span className="field-error">
+                  {errors.email}
+                </span>
+              )}
+
+            </div>
+
+            <div className="form-group">
+
+              <label htmlFor="password">
+                Password
+              </label>
+
+              <input
+                id="password"
+                type="password"
+                name="password"
+                value={formData.password}
+                onChange={handleChange}
+                placeholder="Enter your password"
+                autoComplete="current-password"
+              />
+
+              {errors.password && (
+                <span className="field-error">
+                  {errors.password}
+                </span>
+              )}
+
+            </div>
+
+            {errors.general && (
+              <div className="login-error">
+                {errors.general}
+              </div>
+            )}
+
+            <button
+              type="submit"
+              className="login-submit-button"
+            >
+              {getButtonText()}
+            </button>
+
+          </form>
+
+          {/* ================= REGISTER ================= */}
+
+          <div className="login-register">
+
+            {loginRole === "customer" && (
+              <>
+                <span>
+                  Don't have an account?
+                </span>
+
+                <button
+                  type="button"
+                  onClick={onRegister}
+                >
+                  Create Account
+                </button>
+              </>
+            )}
+
+            {loginRole === "merchant" && (
+              <>
+                <span>
+                  Want to sell on ShopEase?
+                </span>
+
+                <button
+                  type="button"
+                  onClick={onMerchantRegister}
+                >
+                  Register as Merchant
+                </button>
+              </>
+            )}
+
+            {loginRole === "delivery_partner" && (
+              <>
+                <span>
+                  Are you a delivery partner?
+                </span>
+
+                <button
+                  type="button"
+                  onClick={onDeliveryLogin}
+                >
+                  Continue
+                </button>
+              </>
+            )}
+
+          </div>
+
+        </div>
+
+      </div>
+
+    </div>
   );
 }
 

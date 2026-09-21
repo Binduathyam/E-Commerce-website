@@ -557,3 +557,24 @@
   }
 
 }
+.merchant-password-rules {
+  margin: -4px 0 14px;
+  padding: 10px 12px;
+  background: #f7f7f7;
+  border-radius: 8px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.merchant-password-rules p {
+  margin: 0 0 3px;
+  font-size: 12px;
+  font-weight: 600;
+  color: #333;
+}
+
+.merchant-password-rules span {
+  font-size: 11px;
+  color: #666;
+}

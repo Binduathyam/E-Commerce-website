@@ -1,0 +1,303 @@
+.invoice-page {
+  min-height: 100vh;
+  background: #f5f6fa;
+  padding: 30px;
+  box-sizing: border-box;
+  font-family:
+    Inter,
+    -apple-system,
+    BlinkMacSystemFont,
+    "Segoe UI",
+    sans-serif;
+}
+
+
+/* =========================
+   TOP BAR
+========================= */
+
+.invoice-topbar {
+  max-width: 900px;
+  margin: 0 auto 20px;
+
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.invoice-back-button,
+.invoice-download-button {
+  border: none;
+  border-radius: 8px;
+
+  padding: 11px 18px;
+
+  font-size: 14px;
+  font-weight: 600;
+
+  cursor: pointer;
+}
+
+.invoice-back-button {
+  background: #ffffff;
+  border: 1px solid #dddddd;
+}
+
+.invoice-download-button {
+  background: #17181c;
+  color: #ffffff;
+}
+
+
+/* =========================
+   INVOICE CONTAINER
+========================= */
+
+.invoice-container {
+  max-width: 900px;
+  margin: auto;
+
+  background: #ffffff;
+
+  padding: 45px;
+
+  border-radius: 14px;
+
+  box-shadow:
+    0 10px 30px
+    rgba(0, 0, 0, 0.08);
+}
+
+
+/* =========================
+   HEADER
+========================= */
+
+.invoice-header {
+  display: flex;
+  justify-content: space-between;
+
+  padding-bottom: 30px;
+
+  border-bottom:
+    1px solid #e5e5e5;
+}
+
+.invoice-header h1 {
+  margin: 0;
+
+  font-size: 32px;
+
+  color: #17181c;
+}
+
+.invoice-header p {
+  margin-top: 6px;
+
+  color: #777;
+}
+
+.invoice-title {
+  text-align: right;
+}
+
+.invoice-title h2 {
+  margin: 0;
+
+  font-size: 28px;
+
+  letter-spacing: 2px;
+}
+
+.invoice-title p {
+  margin-top: 6px;
+
+  font-weight: 600;
+}
+
+
+/* =========================
+   INFO GRID
+========================= */
+
+.invoice-info-grid {
+  display: grid;
+
+  grid-template-columns:
+    repeat(2, 1fr);
+
+  gap: 25px;
+
+  padding: 30px 0;
+}
+
+.invoice-label {
+  margin: 0 0 6px;
+
+  font-size: 11px;
+
+  font-weight: 700;
+
+  letter-spacing: 1px;
+
+  color: #888;
+}
+
+
+/* =========================
+   SECTIONS
+========================= */
+
+.invoice-section {
+  padding: 25px 0;
+
+  border-top:
+    1px solid #eeeeee;
+}
+
+.invoice-section h3 {
+  margin: 0 0 15px;
+
+  font-size: 13px;
+
+  letter-spacing: 1px;
+
+  color: #777;
+}
+
+.invoice-address strong {
+  font-size: 16px;
+}
+
+.invoice-address p {
+  margin: 6px 0;
+
+  color: #555;
+}
+
+
+/* =========================
+   TOTAL
+========================= */
+
+.invoice-total-section {
+  margin-top: 25px;
+
+  padding: 22px;
+
+  background: #f7f7f8;
+
+  border-radius: 10px;
+
+  display: flex;
+
+  justify-content: space-between;
+
+  align-items: center;
+}
+
+.invoice-total-section span {
+  font-size: 16px;
+
+  color: #555;
+}
+
+.invoice-total-section strong {
+  font-size: 25px;
+
+  color: #17181c;
+}
+
+
+/* =========================
+   FOOTER
+========================= */
+
+.invoice-footer {
+  margin-top: 45px;
+
+  padding-top: 25px;
+
+  border-top:
+    1px solid #eeeeee;
+
+  text-align: center;
+}
+
+.invoice-footer p {
+  margin: 0 0 6px;
+
+  font-weight: 600;
+}
+
+.invoice-footer span {
+  font-size: 12px;
+
+  color: #888;
+}
+
+
+/* =========================
+   MOBILE
+========================= */
+
+@media (max-width: 650px) {
+
+  .invoice-page {
+    padding: 15px;
+  }
+
+  .invoice-topbar {
+    gap: 10px;
+  }
+
+  .invoice-container {
+    padding: 25px;
+  }
+
+  .invoice-header {
+    flex-direction: column;
+
+    gap: 25px;
+  }
+
+  .invoice-title {
+    text-align: left;
+  }
+
+  .invoice-info-grid {
+    grid-template-columns: 1fr;
+  }
+
+}
+
+
+/* =========================
+   PRINT / SAVE AS PDF
+========================= */
+
+@media print {
+
+  body {
+    background: #ffffff;
+  }
+
+  .invoice-topbar {
+    display: none;
+  }
+
+  .invoice-page {
+    padding: 0;
+    background: #ffffff;
+  }
+
+  .invoice-container {
+    box-shadow: none;
+    border-radius: 0;
+
+    max-width: 100%;
+
+    padding: 30px;
+  }
+
+}

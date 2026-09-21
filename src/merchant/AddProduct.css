@@ -1,158 +1,593 @@
+/* =====================================================
+   ADD PRODUCT PAGE
+===================================================== */
+
 .merchant-add-product-page {
   min-height: 100vh;
-  background: #f7f7fb;
-  padding: 35px;
+  background:
+    radial-gradient(
+      circle at top right,
+      rgba(124, 58, 237, 0.07),
+      transparent 28%
+    ),
+    #f7f7fb;
+  padding: 32px 42px 50px;
+  box-sizing: border-box;
 }
 
-.add-product-header {
+
+/* =====================================================
+   HEADER
+===================================================== */
+
+.merchant-add-header {
+  max-width: 1120px;
+  margin: 0 auto 28px;
   display: flex;
-  align-items: flex-start;
-  gap: 25px;
-  margin-bottom: 30px;
+  align-items: center;
+  gap: 18px;
 }
 
-.add-product-back {
-  border: none;
-  background: white;
-  padding: 12px 18px;
-  border-radius: 10px;
+.merchant-back-button {
+  width: 44px;
+  height: 44px;
+  border: 1px solid #e7e3ef;
+  border-radius: 12px;
+  background: #ffffff;
+  color: #27212f;
+  font-size: 21px;
+  font-weight: 600;
   cursor: pointer;
-  font-weight: 700;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  box-shadow:
+    0 3px 12px rgba(0, 0, 0, 0.04);
+
+  transition:
+    transform 0.2s ease,
+    box-shadow 0.2s ease,
+    background 0.2s ease;
 }
 
-.add-product-header p {
+.merchant-back-button:hover {
+  background: #faf8ff;
+  transform: translateX(-2px);
+  box-shadow:
+    0 6px 18px rgba(0, 0, 0, 0.07);
+}
+
+.merchant-add-header > div {
+  min-width: 0;
+}
+
+.merchant-add-header p {
   margin: 0 0 5px;
   color: #7c3aed;
-  font-size: 12px;
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 1.6px;
+}
+
+.merchant-add-header h1 {
+  margin: 0;
+  color: #18141d;
+  font-size: 32px;
+  line-height: 1.15;
+  font-weight: 800;
+  letter-spacing: -0.7px;
+}
+
+.merchant-add-header span {
+  display: block;
+  margin-top: 7px;
+  color: #77717f;
+  font-size: 14px;
+}
+
+
+/* =====================================================
+   FORM
+===================================================== */
+
+.merchant-product-form {
+  max-width: 1120px;
+  margin: 0 auto;
+}
+
+
+/* =====================================================
+   FORM CARD
+===================================================== */
+
+.merchant-form-card {
+  background: #ffffff;
+  border: 1px solid #ebe7f0;
+  border-radius: 18px;
+  padding: 28px;
+  margin-bottom: 20px;
+
+  box-shadow:
+    0 8px 30px rgba(25, 15, 40, 0.045);
+}
+
+
+/* =====================================================
+   CARD HEADER
+===================================================== */
+
+.merchant-form-card-header {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding-bottom: 22px;
+  margin-bottom: 24px;
+  border-bottom: 1px solid #f0edf3;
+}
+
+.merchant-form-icon {
+  width: 38px;
+  height: 38px;
+  flex-shrink: 0;
+
+  border-radius: 11px;
+  background: #f1eaff;
+  color: #7c3aed;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  font-size: 14px;
   font-weight: 800;
 }
 
-.add-product-header h1 {
+.merchant-form-card-header h2 {
   margin: 0;
-  font-size: 30px;
+  color: #211c27;
+  font-size: 18px;
+  font-weight: 750;
 }
 
-.add-product-header span {
-  display: block;
-  margin-top: 6px;
-  color: #777;
+.merchant-form-card-header p {
+  margin: 4px 0 0;
+  color: #85808b;
+  font-size: 13px;
 }
 
-.add-product-card {
-  max-width: 1000px;
-  background: white;
-  border-radius: 18px;
-  padding: 30px;
-  box-shadow: 0 8px 30px rgba(0, 0, 0, 0.06);
-}
 
-.form-grid {
+/* =====================================================
+   FORM GRID
+===================================================== */
+
+.merchant-form-grid {
   display: grid;
   grid-template-columns: 1fr 1fr;
-  gap: 22px;
+  gap: 20px 22px;
 }
+
+
+/* =====================================================
+   FORM GROUP
+===================================================== */
 
 .merchant-form-group {
   display: flex;
   flex-direction: column;
   gap: 8px;
+  min-width: 0;
+}
+
+.merchant-form-group.full {
+  grid-column: 1 / -1;
 }
 
 .merchant-form-group label {
-  font-size: 14px;
+  color: #37313e;
+  font-size: 13px;
   font-weight: 700;
-  color: #333;
 }
 
+.merchant-form-group label span {
+  margin-left: 3px;
+  color: #dc2626;
+}
+
+
+/* =====================================================
+   INPUTS
+===================================================== */
+
 .merchant-form-group input,
-.merchant-form-group textarea {
+.merchant-form-group textarea,
+.merchant-form-group select {
   width: 100%;
   box-sizing: border-box;
-  border: 1px solid #ddd;
-  border-radius: 10px;
+
+  border: 1px solid #ddd8e5;
+  border-radius: 11px;
+
+  background: #fff;
+  color: #211c27;
+
   padding: 13px 14px;
-  font-size: 14px;
-  outline: none;
+
   font-family: inherit;
+  font-size: 14px;
+
+  outline: none;
+
+  transition:
+    border-color 0.2s ease,
+    box-shadow 0.2s ease,
+    background 0.2s ease;
+}
+
+.merchant-form-group input::placeholder,
+.merchant-form-group textarea::placeholder {
+  color: #aaa4b0;
+}
+
+.merchant-form-group input:hover,
+.merchant-form-group textarea:hover,
+.merchant-form-group select:hover {
+  border-color: #c9c2d2;
 }
 
 .merchant-form-group input:focus,
-.merchant-form-group textarea:focus {
-  border-color: #7c3aed;
-}
+.merchant-form-group textarea:focus,
+.merchant-form-group select:focus {
+  border-color: #8b5cf6;
 
-.full-width {
-  margin-top: 22px;
+  box-shadow:
+    0 0 0 3px rgba(124, 58, 237, 0.10);
 }
 
 .merchant-form-group textarea {
+  min-height: 120px;
   resize: vertical;
+  line-height: 1.6;
 }
 
-.add-product-error {
-  margin-top: 20px;
-  padding: 13px;
-  border-radius: 10px;
-  background: #fff1f1;
-  color: #c62828;
-  font-size: 14px;
+
+/* =====================================================
+   PRICE INPUT
+===================================================== */
+
+.price-input {
+  position: relative;
+  display: flex;
+  align-items: center;
 }
 
-.add-product-success {
-  margin-top: 20px;
-  padding: 13px;
-  border-radius: 10px;
-  background: #effaf1;
-  color: #188038;
+.price-input > span {
+  position: absolute;
+  left: 14px;
+  color: #625a68;
   font-size: 14px;
   font-weight: 700;
+  pointer-events: none;
 }
 
-.add-product-actions {
+.price-input > input {
+  padding-left: 34px;
+}
+
+
+/* Percentage field */
+
+.price-input input[name="discount"] {
+  padding-left: 14px;
+  padding-right: 38px;
+}
+
+.price-input input[name="discount"] + span {
+  left: auto;
+  right: 14px;
+}
+
+
+/* =====================================================
+   IMAGE SECTION
+===================================================== */
+
+.merchant-image-section {
+  display: grid;
+  grid-template-columns: 1fr 300px;
+  gap: 30px;
+  align-items: stretch;
+}
+
+.merchant-image-input {
   display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+
+.merchant-image-input label {
+  color: #37313e;
+  font-size: 13px;
+  font-weight: 700;
+  margin-bottom: 8px;
+}
+
+.merchant-image-input label span {
+  margin-left: 3px;
+  color: #dc2626;
+}
+
+.merchant-image-input input {
+  width: 100%;
+  box-sizing: border-box;
+
+  border: 1px solid #ddd8e5;
+  border-radius: 11px;
+
+  padding: 13px 14px;
+
+  font-size: 14px;
+  outline: none;
+
+  transition: 0.2s ease;
+}
+
+.merchant-image-input input:focus {
+  border-color: #8b5cf6;
+  box-shadow:
+    0 0 0 3px rgba(124, 58, 237, 0.10);
+}
+
+.merchant-image-input small {
+  margin-top: 8px;
+  color: #928c98;
+  font-size: 11px;
+  line-height: 1.5;
+}
+
+
+/* =====================================================
+   IMAGE PREVIEW
+===================================================== */
+
+.merchant-image-preview {
+  min-height: 230px;
+
+  border: 1px dashed #cfc6dc;
+  border-radius: 15px;
+
+  background:
+    linear-gradient(
+      135deg,
+      #faf9fc,
+      #f4f0fa
+    );
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  overflow: hidden;
+}
+
+.merchant-image-preview img {
+  width: 100%;
+  height: 230px;
+
+  display: block;
+
+  object-fit: contain;
+  background: #fff;
+}
+
+.merchant-image-preview > div {
+  text-align: center;
+  color: #958d9f;
+}
+
+.merchant-image-preview span {
+  display: block;
+  font-size: 38px;
+  margin-bottom: 8px;
+}
+
+.merchant-image-preview p {
+  margin: 0;
+  font-size: 13px;
+  font-weight: 600;
+}
+
+
+/* =====================================================
+   ERROR
+===================================================== */
+
+.merchant-form-error {
+  margin-bottom: 20px;
+
+  padding: 13px 16px;
+
+  border: 1px solid #fecaca;
+  border-radius: 11px;
+
+  background: #fff5f5;
+  color: #b42318;
+
+  font-size: 13px;
+  font-weight: 600;
+}
+
+
+/* =====================================================
+   ACTIONS
+===================================================== */
+
+.merchant-form-actions {
+  display: flex;
+  align-items: center;
   justify-content: flex-end;
   gap: 12px;
-  margin-top: 28px;
+
+  max-width: 1120px;
+  margin: 8px auto 0;
+  padding: 4px 0;
 }
 
-.cancel-product-button,
-.save-product-button {
+.merchant-cancel-button,
+.merchant-save-button {
+  min-width: 130px;
+
   border: none;
-  border-radius: 10px;
-  padding: 13px 22px;
-  font-weight: 700;
+  border-radius: 11px;
+
+  padding: 13px 20px;
+
+  font-family: inherit;
+  font-size: 13px;
+  font-weight: 750;
+
   cursor: pointer;
+
+  transition:
+    transform 0.2s ease,
+    box-shadow 0.2s ease,
+    opacity 0.2s ease;
 }
 
-.cancel-product-button {
-  background: #eeeeee;
+.merchant-cancel-button {
+  background: #ffffff;
+  color: #3c3544;
+  border: 1px solid #ddd8e5;
 }
 
-.save-product-button {
+.merchant-cancel-button:hover {
+  background: #faf9fb;
+}
+
+.merchant-save-button {
   background: #7c3aed;
-  color: white;
+  color: #ffffff;
+
+  box-shadow:
+    0 6px 16px rgba(124, 58, 237, 0.20);
 }
 
-.cancel-product-button:disabled,
-.save-product-button:disabled {
-  opacity: 0.6;
+.merchant-save-button:hover {
+  background: #6d28d9;
+  transform: translateY(-1px);
+
+  box-shadow:
+    0 9px 22px rgba(124, 58, 237, 0.25);
+}
+
+.merchant-cancel-button:disabled,
+.merchant-save-button:disabled {
+  opacity: 0.55;
   cursor: not-allowed;
+  transform: none;
 }
 
-@media (max-width: 700px) {
+
+/* =====================================================
+   MOBILE
+===================================================== */
+
+@media (max-width: 800px) {
+
   .merchant-add-product-page {
+    padding: 22px 16px 35px;
+  }
+
+  .merchant-add-header {
+    margin-bottom: 22px;
+  }
+
+  .merchant-add-header h1 {
+    font-size: 26px;
+  }
+
+  .merchant-add-header span {
+    font-size: 12px;
+  }
+
+  .merchant-form-card {
     padding: 20px;
+    border-radius: 15px;
   }
 
-  .form-grid {
+  .merchant-form-grid {
     grid-template-columns: 1fr;
+    gap: 18px;
   }
 
-  .add-product-header {
-    flex-direction: column;
+  .merchant-form-group.full {
+    grid-column: auto;
   }
 
-  .add-product-actions {
-    flex-direction: column;
+  .merchant-image-section {
+    grid-template-columns: 1fr;
+    gap: 20px;
+  }
+
+  .merchant-image-preview {
+    min-height: 240px;
+  }
+
+  .merchant-image-preview img {
+    height: 240px;
+  }
+
+  .merchant-form-actions {
+    flex-direction: column-reverse;
+    width: 100%;
+  }
+
+  .merchant-cancel-button,
+  .merchant-save-button {
+    width: 100%;
+  }
+}
+
+
+/* =====================================================
+   SMALL MOBILE
+===================================================== */
+
+@media (max-width: 480px) {
+
+  .merchant-add-product-page {
+    padding: 16px 12px 28px;
+  }
+
+  .merchant-add-header {
+    gap: 12px;
+  }
+
+  .merchant-back-button {
+    width: 40px;
+    height: 40px;
+    font-size: 19px;
+  }
+
+  .merchant-add-header h1 {
+    font-size: 23px;
+  }
+
+  .merchant-form-card {
+    padding: 17px;
+  }
+
+  .merchant-form-card-header {
+    padding-bottom: 17px;
+    margin-bottom: 19px;
+  }
+
+  .merchant-form-card-header h2 {
+    font-size: 16px;
+  }
+
+  .merchant-form-card-header p {
+    font-size: 12px;
   }
 }

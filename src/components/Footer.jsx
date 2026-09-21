@@ -1,4 +1,8 @@
-function Footer() {
+function Footer({
+  onPrivacy,
+  onTerms,
+  onContact,
+}) {
   return (
     <footer className="footer">
       <div className="footer-logo">
@@ -8,9 +12,26 @@ function Footer() {
       <p>© 2026 ShopEase. All rights reserved.</p>
 
       <div className="footer-links">
-        <span>Privacy</span>
-        <span>Terms</span>
-        <span>Contact</span>
+        <button
+          type="button"
+          onClick={onPrivacy}
+        >
+          Privacy Policy
+        </button>
+
+        <button
+          type="button"
+          onClick={onTerms}
+        >
+          Terms & Conditions
+        </button>
+
+        <button
+          type="button"
+          onClick={onContact}
+        >
+          Contact
+        </button>
       </div>
     </footer>
   );

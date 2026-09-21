@@ -1,42 +1,103 @@
-import React, { useEffect, useState } from "react";
-import { API_BASE_URL } from "../api";
+import React, {
+  useEffect,
+  useState,
+} from "react";
+
+import {
+  API_BASE_URL,
+} from "../api";
+
 import "./MerchantOrders.css";
 
 function MerchantOrders({
   merchant,
   onBack,
 }) {
-  const [orders, setOrders] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState("");
+  const [orders, setOrders] =
+    useState([]);
+
+  const [loading, setLoading] =
+    useState(true);
+
+  const [error, setError] =
+    useState("");
 
   const [updatingOrder, setUpdatingOrder] =
     useState(null);
+
+  // =====================================================
+  // GET AUTH TOKEN
+  // =====================================================
+
+  const getToken = () => {
+    return localStorage.getItem("merchant_token");
+  };
 
   // =====================================================
   // FETCH MERCHANT ORDERS
   // =====================================================
 
   const fetchOrders = async () => {
+    if (!merchant?.id) {
+      setError("Merchant information is missing.");
+      setLoading(false);
+      return;
+    }
+
     try {
       setLoading(true);
       setError("");
 
+      const token = getToken();
+
+      if (!token) {
+        throw new Error(
+          "Authentication required. Please login again."
+        );
+      }
+
       const response = await fetch(
-        `${API_BASE_URL}/api/orders/merchant/${merchant.id}`
+        `${API_BASE_URL}/api/orders/merchant/${merchant.id}`,
+        {
+          method: "GET",
+
+          headers: {
+            "Content-Type":
+              "application/json",
+
+            Authorization:
+              `Bearer ${token}`,
+
+            "x-user-id":
+              merchant.id,
+          },
+        }
       );
 
-      const data = await response.json();
+      const data =
+        await response.json();
 
-      if (!response.ok || !data.success) {
+      console.log(
+        "Merchant orders response:",
+        data
+      );
+
+      if (
+        !response.ok ||
+        !data.success
+      ) {
         throw new Error(
           data.message ||
             "Failed to fetch merchant orders"
         );
       }
 
-      setOrders(data.orders || []);
+      setOrders(
+        data.orders || []
+      );
+
     } catch (error) {
+
       console.error(
         "Merchant orders error:",
         error
@@ -46,8 +107,11 @@ function MerchantOrders({
         error.message ||
           "Unable to load orders"
       );
+
     } finally {
+
       setLoading(false);
+
     }
   };
 
@@ -56,9 +120,13 @@ function MerchantOrders({
   // =====================================================
 
   useEffect(() => {
+
     if (merchant?.id) {
       fetchOrders();
+    } else {
+      setLoading(false);
     }
+
   }, [merchant?.id]);
 
   // =====================================================
@@ -69,53 +137,88 @@ function MerchantOrders({
     orderId,
     newStatus
   ) => {
+
     try {
-      setUpdatingOrder(orderId);
 
-      const response = await fetch(
-        `${API_BASE_URL}/api/orders/${orderId}/status`,
-        {
-          method: "PUT",
-
-          headers: {
-            "Content-Type":
-              "application/json",
-          },
-
-          body: JSON.stringify({
-            merchant_id:
-              merchant.id,
-
-            order_status:
-              newStatus,
-          }),
-        }
+      setUpdatingOrder(
+        orderId
       );
+
+      const token =
+        getToken();
+
+      if (!token) {
+        throw new Error(
+          "Authentication required. Please login again."
+        );
+      }
+
+      const response =
+        await fetch(
+          `${API_BASE_URL}/api/orders/${orderId}/status`,
+          {
+            method: "PUT",
+
+            headers: {
+              "Content-Type":
+                "application/json",
+
+              Authorization:
+                `Bearer ${token}`,
+
+              "x-user-id":
+                merchant?.id,
+            },
+
+            body: JSON.stringify({
+              merchant_id:
+                merchant.id,
+
+              order_status:
+                newStatus,
+            }),
+          }
+        );
 
       const data =
         await response.json();
 
-      if (!response.ok || !data.success) {
+      console.log(
+        "Order status update response:",
+        data
+      );
+
+      if (
+        !response.ok ||
+        !data.success
+      ) {
         throw new Error(
           data.message ||
             "Failed to update order status"
         );
       }
 
-      // Update immediately on screen
-      setOrders((currentOrders) =>
-        currentOrders.map(
-          (order) =>
-            order.id === orderId
-              ? {
-                  ...order,
-                  order_status:
-                    newStatus,
-                }
-              : order
-        )
+      // ===============================================
+      // UPDATE ORDER IMMEDIATELY
+      // ===============================================
+
+      setOrders(
+        (currentOrders) =>
+          currentOrders.map(
+            (order) =>
+              order.id === orderId
+                ? {
+                    ...order,
+
+                    order_status:
+                      newStatus,
+                  }
+                : order
+          )
       );
+
     } catch (error) {
+
       console.error(
         "Order status update error:",
         error
@@ -125,8 +228,13 @@ function MerchantOrders({
         error.message ||
           "Failed to update order status"
       );
+
     } finally {
-      setUpdatingOrder(null);
+
+      setUpdatingOrder(
+        null
+      );
+
     }
   };
 
@@ -134,10 +242,16 @@ function MerchantOrders({
   // STATUS CLASS
   // =====================================================
 
-  const getStatusClass = (status) => {
+  const getStatusClass = (
+    status
+  ) => {
+
     switch (
-      String(status || "").toLowerCase()
+      String(
+        status || ""
+      ).toLowerCase()
     ) {
+
       case "placed":
         return "merchant-order-status-placed";
 
@@ -162,16 +276,24 @@ function MerchantOrders({
   // DATE FORMAT
   // =====================================================
 
-  const formatDate = (date) => {
+  const formatDate = (
+    date
+  ) => {
+
     if (!date) {
       return "N/A";
     }
 
-    return new Date(date).toLocaleString(
+    return new Date(
+      date
+    ).toLocaleString(
       "en-IN",
       {
-        dateStyle: "medium",
-        timeStyle: "short",
+        dateStyle:
+          "medium",
+
+        timeStyle:
+          "short",
       }
     );
   };
@@ -188,7 +310,8 @@ function MerchantOrders({
       (order) =>
         String(
           order.order_status
-        ).toLowerCase() === "placed"
+        ).toLowerCase() ===
+        "placed"
     ).length;
 
   const confirmedOrders =
@@ -196,7 +319,8 @@ function MerchantOrders({
       (order) =>
         String(
           order.order_status
-        ).toLowerCase() === "confirmed"
+        ).toLowerCase() ===
+        "confirmed"
     ).length;
 
   const shippedOrders =
@@ -204,7 +328,8 @@ function MerchantOrders({
       (order) =>
         String(
           order.order_status
-        ).toLowerCase() === "shipped"
+        ).toLowerCase() ===
+        "shipped"
     ).length;
 
   const deliveredOrders =
@@ -212,7 +337,8 @@ function MerchantOrders({
       (order) =>
         String(
           order.order_status
-        ).toLowerCase() === "delivered"
+        ).toLowerCase() ===
+        "delivered"
     ).length;
 
   // =====================================================
@@ -220,12 +346,19 @@ function MerchantOrders({
   // =====================================================
 
   if (loading) {
+
     return (
+
       <section className="merchant-orders-page">
+
         <div className="merchant-orders-loading">
+
           Loading orders...
+
         </div>
+
       </section>
+
     );
   }
 
@@ -234,7 +367,9 @@ function MerchantOrders({
   // =====================================================
 
   if (error) {
+
     return (
+
       <section className="merchant-orders-page">
 
         <div className="merchant-orders-error">
@@ -261,10 +396,16 @@ function MerchantOrders({
         </div>
 
       </section>
+
     );
   }
 
+  // =====================================================
+  // MAIN PAGE
+  // =====================================================
+
   return (
+
     <section className="merchant-orders-page">
 
       {/* =================================================
@@ -330,6 +471,7 @@ function MerchantOrders({
 
         </div>
 
+
         <div className="merchant-order-summary-card">
 
           <span>
@@ -341,6 +483,7 @@ function MerchantOrders({
           </strong>
 
         </div>
+
 
         <div className="merchant-order-summary-card">
 
@@ -354,6 +497,7 @@ function MerchantOrders({
 
         </div>
 
+
         <div className="merchant-order-summary-card">
 
           <span>
@@ -365,6 +509,7 @@ function MerchantOrders({
           </strong>
 
         </div>
+
 
         <div className="merchant-order-summary-card">
 
@@ -382,10 +527,11 @@ function MerchantOrders({
 
 
       {/* =================================================
-          EMPTY
+          EMPTY STATE
       ================================================= */}
 
       {orders.length === 0 ? (
+
         <div className="merchant-orders-empty">
 
           <div className="merchant-orders-empty-icon">
@@ -409,388 +555,490 @@ function MerchantOrders({
           </button>
 
         </div>
+
       ) : (
 
-        /* =================================================
+        /* ===============================================
            ORDER LIST
-        ================================================= */
+        =============================================== */
 
         <div className="merchant-orders-list">
 
-          {orders.map((order) => (
+          {orders.map(
+            (order) => (
 
-            <div
-              className="merchant-order-card"
-              key={order.id}
-            >
+              <div
+                className="merchant-order-card"
+                key={order.id}
+              >
 
-              {/* =================================================
-                  ORDER HEADER
-              ================================================= */}
+                {/* ORDER HEADER */}
 
-              <div className="merchant-order-top">
+                <div className="merchant-order-top">
 
-                <div>
+                  <div>
 
-                  <span className="merchant-order-label">
-                    ORDER
-                  </span>
+                    <span className="merchant-order-label">
+                      ORDER
+                    </span>
 
-                  <h2>
-                    #{order.id}
-                  </h2>
+                    <h2>
+                      #{order.id}
+                    </h2>
 
-                </div>
+                  </div>
 
-                <span
-                  className={`merchant-order-status ${getStatusClass(
-                    order.order_status
-                  )}`}
-                >
-                  {order.order_status}
-                </span>
-
-              </div>
-
-
-              {/* =================================================
-                  CUSTOMER
-              ================================================= */}
-
-              <div className="merchant-order-customer">
-
-                <div className="merchant-order-info">
-
-                  <span>
-                    CUSTOMER
-                  </span>
-
-                  <strong>
-                    {order.customer_name ||
-                      order.full_name ||
-                      "Customer"}
-                  </strong>
-
-                </div>
-
-                <div className="merchant-order-info">
-
-                  <span>
-                    EMAIL
-                  </span>
-
-                  <strong>
-                    {order.customer_email ||
-                      "N/A"}
-                  </strong>
-
-                </div>
-
-                <div className="merchant-order-info">
-
-                  <span>
-                    PHONE
-                  </span>
-
-                  <strong>
-                    {order.customer_phone ||
-                      order.address_phone ||
-                      order.phone ||
-                      "N/A"}
-                  </strong>
-
-                </div>
-
-              </div>
-
-
-              {/* =================================================
-                  PRODUCTS
-              ================================================= */}
-
-              <div className="merchant-order-products">
-
-                <h3>
-                  Products
-                </h3>
-
-                {order.items &&
-                order.items.length > 0 ? (
-                  order.items.map(
-                    (item) => (
-
-                      <div
-                        className="merchant-order-product"
-                        key={item.id}
-                      >
-
-                        <div className="merchant-order-product-image">
-
-                          {item.image ? (
-                            <img
-                              src={
-                                item.image
-                              }
-                              alt={
-                                item.name
-                              }
-                              onError={(
-                                e
-                              ) => {
-                                e.currentTarget.style.display =
-                                  "none";
-                              }}
-                            />
-                          ) : (
-                            <span>
-                              📦
-                            </span>
-                          )}
-
-                        </div>
-
-                        <div className="merchant-order-product-details">
-
-                          <strong>
-                            {item.name}
-                          </strong>
-
-                          <span>
-                            {item.brand ||
-                              item.category ||
-                              "Product"}
-                          </span>
-
-                        </div>
-
-                        <div className="merchant-order-product-quantity">
-
-                          <span>
-                            Qty
-                          </span>
-
-                          <strong>
-                            {item.quantity}
-                          </strong>
-
-                        </div>
-
-                        <div className="merchant-order-product-price">
-
-                          <span>
-                            Price
-                          </span>
-
-                          <strong>
-                            ₹
-                            {Number(
-                              item.price
-                            ).toLocaleString(
-                              "en-IN"
-                            )}
-                          </strong>
-
-                        </div>
-
-                      </div>
-
-                    )
-                  )
-                ) : (
-                  <p className="merchant-order-no-items">
-                    Product details unavailable.
-                  </p>
-                )}
-
-              </div>
-
-
-              {/* =================================================
-                  DELIVERY ADDRESS
-              ================================================= */}
-
-              <div className="merchant-order-address">
-
-                <h3>
-                  📍 Delivery Address
-                </h3>
-
-                <p>
-                  <strong>
-                    {order.full_name ||
-                      "Customer"}
-                  </strong>
-                  <br />
-
-                  {order.address_line}
-                  <br />
-
-                  {order.city},{" "}
-                  {order.state} -{" "}
-                  {order.pincode}
-                  <br />
-
-                  Phone:{" "}
-                  {order.address_phone ||
-                    order.phone ||
-                    "N/A"}
-                </p>
-
-              </div>
-
-
-              {/* =================================================
-                  PAYMENT + TOTAL
-              ================================================= */}
-
-              <div className="merchant-order-payment">
-
-                <div>
-
-                  <span>
-                    Payment Method
-                  </span>
-
-                  <strong>
-                    {order.payment_method}
-                  </strong>
-
-                </div>
-
-                <div>
-
-                  <span>
-                    Payment Status
-                  </span>
-
-                  <strong
-                    className={
-                      String(
-                        order.payment_status
-                      ).toLowerCase() ===
-                      "paid"
-                        ? "payment-paid"
-                        : "payment-pending"
-                    }
+                  <span
+                    className={`merchant-order-status ${getStatusClass(
+                      order.order_status
+                    )}`}
                   >
-                    {order.payment_status}
-                  </strong>
-
-                </div>
-
-                <div>
-
-                  <span>
-                    Order Date
+                    {order.order_status}
                   </span>
-
-                  <strong>
-                    {formatDate(
-                      order.created_at
-                    )}
-                  </strong>
-
-                </div>
-
-                <div className="merchant-order-total">
-
-                  <span>
-                    Order Total
-                  </span>
-
-                  <strong>
-                    ₹
-                    {Number(
-                      order.total_amount
-                    ).toLocaleString(
-                      "en-IN"
-                    )}
-                  </strong>
+                  {order.return_status && (
+  <span className="merchant-return-status">
+    ↩ {order.return_status}
+  </span>
+)}
 
                 </div>
 
-              </div>
+
+                {/* CUSTOMER */}
+
+                <div className="merchant-order-customer">
+
+                  <div className="merchant-order-info">
+
+                    <span>
+                      CUSTOMER
+                    </span>
+
+                    <strong>
+                      {order.customer_name ||
+                        order.address_name ||
+                        "Customer"}
+                    </strong>
+
+                  </div>
 
 
-              {/* =================================================
-                  STATUS UPDATE
-              ================================================= */}
+                  <div className="merchant-order-info">
 
-             <div className="merchant-order-actions">
+                    <span>
+                      EMAIL
+                    </span>
 
-  {String(order.order_status).toLowerCase() ===
-    "placed" && (
-    <button
-      type="button"
-      className="merchant-confirm-order-button"
-      onClick={() =>
-        handleStatusChange(
-          order.id,
-          "Confirmed"
-        )
-      }
-      disabled={
-        updatingOrder === order.id
-      }
-    >
-      {updatingOrder === order.id
-        ? "Confirming..."
-        : "✓ Confirm Order"}
-    </button>
-  )}
+                    <strong>
+                      {order.customer_email ||
+                        "N/A"}
+                    </strong>
 
-  {String(order.order_status).toLowerCase() ===
-    "confirmed" && (
-    <button
-      type="button"
-      className="merchant-ship-order-button"
-      onClick={() =>
-        handleStatusChange(
-          order.id,
-          "Shipped"
-        )
-      }
-      disabled={
-        updatingOrder === order.id
-      }
-    >
-      {updatingOrder === order.id
-        ? "Updating..."
-        : "🚚 Mark as Shipped"}
-    </button>
-  )}
+                  </div>
 
-  {String(order.order_status).toLowerCase() ===
-    "shipped" && (
-    <div className="merchant-order-status-message">
-      🚚 Order has been shipped
+
+                  <div className="merchant-order-info">
+
+                    <span>
+                      PHONE
+                    </span>
+
+                    <strong>
+                      {order.customer_phone ||
+                        order.address_phone ||
+                        order.phone ||
+                        "N/A"}
+                    </strong>
+
+                  </div>
+
+                </div>
+
+
+                {/* PRODUCTS */}
+
+                <div className="merchant-order-products">
+
+                  <h3>
+                    Products
+                  </h3>
+
+                  {order.items &&
+                  order.items.length > 0 ? (
+
+                    order.items.map(
+                      (item) => (
+
+                        <div
+                          className="merchant-order-product"
+                          key={item.id}
+                        >
+
+                          <div className="merchant-order-product-image">
+
+                            {item.product_image ? (
+
+                              <img
+                                src={
+                                  item.product_image
+                                }
+                                alt={
+                                  item.product_name
+                                }
+                                onError={(e) => {
+                                  e.currentTarget.style.display =
+                                    "none";
+                                }}
+                              />
+
+                            ) : (
+
+                              <span>
+                                📦
+                              </span>
+
+                            )}
+
+                          </div>
+
+
+                          <div className="merchant-order-product-details">
+
+                            <strong>
+                              {item.product_name}
+                            </strong>
+
+                            <span>
+                              {item.brand ||
+                                item.category ||
+                                "Product"}
+                            </span>
+
+                          </div>
+
+
+                          <div className="merchant-order-product-quantity">
+
+                            <span>
+                              Qty
+                            </span>
+
+                            <strong>
+                              {item.quantity}
+                            </strong>
+
+                          </div>
+
+
+                          <div className="merchant-order-product-price">
+
+                            <span>
+                              Price
+                            </span>
+
+                            <strong>
+                              ₹
+                              {Number(
+                                item.price
+                              ).toLocaleString(
+                                "en-IN"
+                              )}
+                            </strong>
+
+                          </div>
+
+                        </div>
+
+                      )
+                    )
+
+                  ) : (
+
+                    <p className="merchant-order-no-items">
+
+                      Product details unavailable.
+
+                    </p>
+
+                  )}
+
+                </div>
+
+{order.return_status && (
+  <div className="merchant-return-order-box">
+
+    <div className="merchant-return-order-title">
+      ↩ Return Order
     </div>
-  )}
 
-  {String(order.order_status).toLowerCase() ===
-    "delivered" && (
-    <div className="merchant-order-status-message">
-      ✓ Order delivered
-    </div>
-  )}
+    <div className="merchant-return-order-details">
 
-  {String(order.order_status).toLowerCase() ===
-    "cancelled" && (
-    <div className="merchant-order-status-message">
-      ✕ Order cancelled
-    </div>
-  )}
+      <div>
+        <span>Return Status</span>
+        <strong>
+          {order.return_status}
+        </strong>
+      </div>
 
-</div>
+      <div>
+        <span>Return Reason</span>
+        <strong>
+          {order.return_reason || "Not provided"}
+        </strong>
+      </div>
 
-            </div>
-
-          ))}
-
+      {order.return_requested_at && (
+        <div>
+          <span>Requested On</span>
+          <strong>
+            {formatDate(order.return_requested_at)}
+          </strong>
         </div>
       )}
 
+    </div>
+
+  </div>
+)}
+
+                {/* DELIVERY ADDRESS */}
+
+                <div className="merchant-order-address">
+
+                  <h3>
+                    📍 Delivery Address
+                  </h3>
+
+                  <p>
+
+                    <strong>
+                      {order.address_name ||
+                        "Customer"}
+                    </strong>
+
+                    <br />
+
+                    {order.address_line}
+
+                    <br />
+
+                    {order.city},{" "}
+                    {order.state} -{" "}
+                    {order.pincode}
+
+                    <br />
+
+                    Phone:{" "}
+
+                    {order.address_phone ||
+                      order.phone ||
+                      "N/A"}
+
+                  </p>
+
+                </div>
+
+
+                {/* PAYMENT */}
+
+                <div className="merchant-order-payment">
+
+                  <div>
+
+                    <span>
+                      Payment Method
+                    </span>
+
+                    <strong>
+                      {order.payment_method ||
+                        "N/A"}
+                    </strong>
+
+                  </div>
+
+
+                  <div>
+
+                    <span>
+                      Payment Status
+                    </span>
+
+                    <strong
+                      className={
+                        String(
+                          order.payment_status
+                        ).toLowerCase() ===
+                        "paid"
+                          ? "payment-paid"
+                          : "payment-pending"
+                      }
+                    >
+
+                      {order.payment_status ||
+                        "Pending"}
+
+                    </strong>
+
+                  </div>
+
+
+                  <div>
+
+                    <span>
+                      Order Date
+                    </span>
+
+                    <strong>
+
+                      {formatDate(
+                        order.created_at
+                      )}
+
+                    </strong>
+
+                  </div>
+
+
+                  <div className="merchant-order-total">
+
+                    <span>
+                      Order Total
+                    </span>
+
+                    <strong>
+
+                      ₹
+                      {Number(
+                        order.total_amount || 0
+                      ).toLocaleString(
+                        "en-IN"
+                      )}
+
+                    </strong>
+
+                  </div>
+
+                </div>
+
+
+                {/* STATUS UPDATE */}
+
+                <div className="merchant-order-actions">
+
+                  {String(
+                    order.order_status
+                  ).toLowerCase() ===
+                    "placed" && (
+
+                    <button
+                      type="button"
+                      className="merchant-confirm-order-button"
+                      onClick={() =>
+                        handleStatusChange(
+                          order.id,
+                          "Confirmed"
+                        )
+                      }
+                      disabled={
+                        updatingOrder ===
+                        order.id
+                      }
+                    >
+
+                      {updatingOrder ===
+                      order.id
+                        ? "Confirming..."
+                        : "✓ Confirm Order"}
+
+                    </button>
+
+                  )}
+
+
+                  {String(
+                    order.order_status
+                  ).toLowerCase() ===
+                    "confirmed" && (
+
+                    <button
+                      type="button"
+                      className="merchant-ship-order-button"
+                      onClick={() =>
+                        handleStatusChange(
+                          order.id,
+                          "Shipped"
+                        )
+                      }
+                      disabled={
+                        updatingOrder ===
+                        order.id
+                      }
+                    >
+
+                      {updatingOrder ===
+                      order.id
+                        ? "Updating..."
+                        : "🚚 Mark as Shipped"}
+
+                    </button>
+
+                  )}
+
+
+                  {String(
+                    order.order_status
+                  ).toLowerCase() ===
+                    "shipped" && (
+
+                    <div className="merchant-order-status-message">
+
+                      🚚 Order has been shipped
+
+                    </div>
+
+                  )}
+
+
+                  {String(
+                    order.order_status
+                  ).toLowerCase() ===
+                    "delivered" && (
+
+                    <div className="merchant-order-status-message">
+
+                      ✓ Order delivered
+
+                    </div>
+
+                  )}
+
+
+                  {String(
+                    order.order_status
+                  ).toLowerCase() ===
+                    "cancelled" && (
+
+                    <div className="merchant-order-status-message">
+
+                      ✕ Order cancelled
+
+                    </div>
+
+                  )}
+
+                </div>
+
+              </div>
+
+            )
+          )}
+
+        </div>
+
+      )}
+
     </section>
+
   );
 }
 

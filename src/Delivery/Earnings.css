@@ -1,0 +1,468 @@
+/* =====================================================
+   EARNINGS PAGE
+===================================================== */
+
+.earnings-page {
+  width: 100%;
+}
+
+
+/* =====================================================
+   HEADER
+===================================================== */
+
+.earnings-header {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 20px;
+  margin-bottom: 28px;
+}
+
+.earnings-header p {
+  margin: 0 0 5px;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 1.5px;
+  color: #8a8d96;
+}
+
+.earnings-header h1 {
+  margin: 0;
+  font-size: 30px;
+  font-weight: 750;
+  color: #17181c;
+}
+
+.earnings-header > div > span {
+  display: block;
+  margin-top: 7px;
+  font-size: 13px;
+  color: #777b86;
+}
+
+
+/* =====================================================
+   WALLET
+===================================================== */
+
+.earnings-wallet {
+  min-width: 170px;
+  padding: 15px 20px;
+  background: #eaf7ee;
+  border: 1px solid #ccebd5;
+  border-radius: 14px;
+}
+
+.earnings-wallet span {
+  display: block;
+  font-size: 11px;
+  color: #5d8a6b;
+}
+
+.earnings-wallet strong {
+  display: block;
+  margin-top: 4px;
+  font-size: 25px;
+  color: #287544;
+}
+
+
+/* =====================================================
+   TABS
+===================================================== */
+
+.earnings-tabs {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+  margin-bottom: 22px;
+}
+
+.earnings-tab {
+  border: 1px solid #e1e4e7;
+  background: #ffffff;
+  color: #777b86;
+  padding: 10px 18px;
+  border-radius: 9px;
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.earnings-tab:hover {
+  background: #edf8f0;
+  border-color: #b9dec4;
+  color: #287544;
+}
+
+.earnings-tab.active {
+  background: #287544;
+  border-color: #287544;
+  color: #ffffff;
+}
+
+
+/* =====================================================
+   MAIN EARNINGS CARD
+===================================================== */
+
+.earnings-main-card {
+  min-height: 190px;
+  padding: 30px;
+  margin-bottom: 22px;
+  border-radius: 18px;
+  background: #287544;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  box-sizing: border-box;
+}
+
+.earnings-main-left > span {
+  font-size: 12px;
+  font-weight: 600;
+  color: rgba(255, 255, 255, 0.75);
+}
+
+.earnings-main-left h2 {
+  margin: 8px 0 5px;
+  font-size: 42px;
+  font-weight: 750;
+  color: #ffffff;
+}
+
+.earnings-main-left p {
+  margin: 0;
+  font-size: 12px;
+  color: rgba(255, 255, 255, 0.75);
+}
+
+.earnings-main-icon {
+  width: 85px;
+  height: 85px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.14);
+  color: #ffffff;
+  font-size: 40px;
+  font-weight: 700;
+}
+
+
+/* =====================================================
+   STATISTICS
+===================================================== */
+
+.earnings-stat-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 16px;
+  margin-bottom: 24px;
+}
+
+.earnings-stat-card {
+  min-height: 165px;
+  padding: 20px;
+  background: #ffffff;
+  border: 1px solid #e5e6ea;
+  border-radius: 15px;
+  box-sizing: border-box;
+  transition: all 0.2s ease;
+}
+
+.earnings-stat-card:hover {
+  transform: translateY(-2px);
+  border-color: #c7e1cf;
+  box-shadow: 0 10px 25px rgba(40, 117, 68, 0.08);
+}
+
+.earnings-stat-icon {
+  width: 42px;
+  height: 42px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 16px;
+  border-radius: 11px;
+  background: #eaf7ee;
+  font-size: 19px;
+}
+
+.earnings-stat-card > span {
+  display: block;
+  font-size: 12px;
+  color: #7b7e87;
+}
+
+.earnings-stat-card > strong {
+  display: block;
+  margin-top: 7px;
+  font-size: 26px;
+  color: #17181c;
+}
+
+.earnings-stat-card > small {
+  display: block;
+  margin-top: 7px;
+  font-size: 11px;
+  color: #9a9da6;
+}
+
+
+/* =====================================================
+   PAYMENT SUMMARY
+===================================================== */
+
+.payment-summary {
+  margin-bottom: 25px;
+  padding: 24px;
+  background: #f7faf8;
+  border: 1px solid #dcece1;
+  border-radius: 16px;
+}
+
+.payment-summary-content {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 25px;
+}
+
+.payment-summary p {
+  margin: 0 0 7px;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 1.5px;
+  color: #6d9779;
+}
+
+.payment-summary h2 {
+  margin: 0;
+  font-size: 30px;
+  color: #287544;
+}
+
+.payment-summary-content > div:first-child > span {
+  display: block;
+  margin-top: 7px;
+  font-size: 12px;
+  color: #7d8580;
+}
+
+.payment-date {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  text-align: right;
+}
+
+.payment-date span {
+  font-size: 11px;
+  color: #8b918e;
+}
+
+.payment-date strong {
+  font-size: 13px;
+  color: #343a36;
+}
+
+
+/* =====================================================
+   TRANSACTIONS
+===================================================== */
+
+.earnings-transactions {
+  background: #ffffff;
+  border: 1px solid #e5e6ea;
+  border-radius: 16px;
+  overflow: hidden;
+}
+
+.earnings-section-heading {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 21px 22px;
+  border-bottom: 1px solid #eeeeef;
+}
+
+.earnings-section-heading p {
+  margin: 0 0 4px;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 1.5px;
+  color: #8a8d96;
+}
+
+.earnings-section-heading h2 {
+  margin: 0;
+  font-size: 19px;
+  color: #17181c;
+}
+
+.earnings-section-heading button {
+  border: none;
+  background: transparent;
+  color: #287544;
+  font-size: 12px;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+
+/* =====================================================
+   TRANSACTION LIST
+===================================================== */
+
+.earnings-transaction-list {
+  display: flex;
+  flex-direction: column;
+}
+
+.earnings-transaction {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 20px;
+  padding: 17px 22px;
+  border-bottom: 1px solid #eeeeef;
+}
+
+.earnings-transaction:last-child {
+  border-bottom: none;
+}
+
+.transaction-left {
+  display: flex;
+  align-items: center;
+  gap: 13px;
+}
+
+.transaction-icon {
+  width: 42px;
+  height: 42px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 11px;
+  background: #eaf7ee;
+  color: #287544;
+  font-size: 18px;
+  font-weight: 700;
+}
+
+.transaction-left > div:last-child {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+
+.transaction-left strong {
+  font-size: 13px;
+  color: #282a30;
+}
+
+.transaction-left span {
+  font-size: 11px;
+  color: #777b86;
+}
+
+.transaction-left small {
+  font-size: 10px;
+  color: #a0a3ac;
+}
+
+.transaction-right {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 5px;
+}
+
+.transaction-right strong {
+  font-size: 15px;
+  color: #287544;
+}
+
+.transaction-right span {
+  padding: 5px 9px;
+  border-radius: 7px;
+  background: #eaf7ee;
+  color: #287544;
+  font-size: 9px;
+  font-weight: 700;
+}
+
+
+/* =====================================================
+   TABLET
+===================================================== */
+
+@media (max-width: 850px) {
+
+  .earnings-stat-grid {
+    grid-template-columns: 1fr 1fr;
+  }
+
+}
+
+
+/* =====================================================
+   MOBILE
+===================================================== */
+
+@media (max-width: 650px) {
+
+  .earnings-header {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .earnings-wallet {
+    width: 100%;
+    box-sizing: border-box;
+  }
+
+  .earnings-main-card {
+    padding: 24px;
+  }
+
+  .earnings-main-left h2 {
+    font-size: 34px;
+  }
+
+  .earnings-main-icon {
+    width: 65px;
+    height: 65px;
+    font-size: 30px;
+  }
+
+  .earnings-stat-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .payment-summary-content {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .payment-date {
+    text-align: left;
+    align-items: flex-start;
+  }
+
+  .earnings-transaction {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+
+  .transaction-right {
+    width: 100%;
+    align-items: flex-start;
+  }
+
+}

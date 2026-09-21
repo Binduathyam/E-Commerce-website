@@ -2,7 +2,7 @@ import React, { useEffect, useState } from "react";
 import { API_BASE_URL } from "../api";
 import "./AdminOrders.css";
 
-function AdminOrders({ onBack }) {
+function AdminOrders({ onBack, admin }) {
   const [orders, setOrders] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
@@ -16,8 +16,30 @@ function AdminOrders({ onBack }) {
       setLoading(true);
       setError("");
 
+      const token =
+        admin?.token ||
+        localStorage.getItem("adminToken");
+
+      console.log(
+        "ADMIN ORDERS TOKEN:",
+        token ? "Token found" : "Token missing"
+      );
+
+      if (!token) {
+        throw new Error(
+          "Authentication required. Please login again."
+        );
+      }
+
       const response = await fetch(
-        `${API_BASE_URL}/api/admin/orders`
+        `${API_BASE_URL}/api/admin/orders`,
+        {
+          method: "GET",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+          },
+        }
       );
 
       const data = await response.json();
@@ -40,23 +62,36 @@ function AdminOrders({ onBack }) {
     }
   };
 
+  /* =========================================
+     ORDER STATUS CLASS
+  ========================================= */
+
   const getStatusClass = (status) => {
     const value = String(
       status || ""
     ).toLowerCase();
 
+    /* RETURNED */
+    if (value === "returned") {
+      return "order-status returned";
+    }
+
+    /* DELIVERED */
     if (value === "delivered") {
       return "order-status delivered";
     }
 
+    /* SHIPPED */
     if (value === "shipped") {
       return "order-status shipped";
     }
 
+    /* CONFIRMED */
     if (value === "confirmed") {
       return "order-status confirmed";
     }
 
+    /* CANCELLED */
     if (
       value === "cancelled" ||
       value === "canceled"
@@ -64,8 +99,36 @@ function AdminOrders({ onBack }) {
       return "order-status cancelled";
     }
 
+    /* DEFAULT */
     return "order-status placed";
   };
+
+  /* =========================================
+     DISPLAY ORDER STATUS
+  ========================================= */
+
+  const getDisplayOrderStatus = (order) => {
+    const returnStatus = String(
+      order.return_status || ""
+    )
+      .trim()
+      .toLowerCase();
+
+    /*
+      If customer return is completely finished,
+      show Returned instead of Delivered.
+    */
+
+    if (returnStatus === "return completed") {
+      return "Returned";
+    }
+
+    return order.order_status || "Placed";
+  };
+
+  /* =========================================
+     PAYMENT STATUS CLASS
+  ========================================= */
 
   const getPaymentClass = (status) => {
     const value = String(
@@ -82,7 +145,9 @@ function AdminOrders({ onBack }) {
   return (
     <section className="admin-orders-page">
 
-      {/* HEADER */}
+      {/* =====================================
+          HEADER
+      ====================================== */}
 
       <header className="admin-orders-header">
 
@@ -109,32 +174,47 @@ function AdminOrders({ onBack }) {
       </header>
 
 
-      {/* CONTENT */}
+      {/* =====================================
+          CONTENT
+      ====================================== */}
 
       <main className="admin-orders-content">
 
-        {/* SUMMARY */}
+        {/* ===================================
+            SUMMARY
+        ==================================== */}
 
         <div className="admin-orders-summary">
 
+          {/* TOTAL ORDERS */}
+
           <div className="orders-summary-card">
+
             <div className="orders-summary-icon">
               🛒
             </div>
 
             <div>
               <p>Total Orders</p>
-              <h2>{orders.length}</h2>
+
+              <h2>
+                {orders.length}
+              </h2>
             </div>
+
           </div>
 
 
+          {/* PENDING */}
+
           <div className="orders-summary-card">
+
             <div className="orders-summary-icon">
               ⏳
             </div>
 
             <div>
+
               <p>Pending</p>
 
               <h2>
@@ -143,20 +223,27 @@ function AdminOrders({ onBack }) {
                     (order) =>
                       String(
                         order.order_status || ""
-                      ).toLowerCase() === "placed"
+                      ).toLowerCase() ===
+                      "placed"
                   ).length
                 }
               </h2>
+
             </div>
+
           </div>
 
 
+          {/* SHIPPED */}
+
           <div className="orders-summary-card">
+
             <div className="orders-summary-icon">
               🚚
             </div>
 
             <div>
+
               <p>Shipped</p>
 
               <h2>
@@ -165,20 +252,27 @@ function AdminOrders({ onBack }) {
                     (order) =>
                       String(
                         order.order_status || ""
-                      ).toLowerCase() === "shipped"
+                      ).toLowerCase() ===
+                      "shipped"
                   ).length
                 }
               </h2>
+
             </div>
+
           </div>
 
 
+          {/* DELIVERED */}
+
           <div className="orders-summary-card">
+
             <div className="orders-summary-icon">
               ✓
             </div>
 
             <div>
+
               <p>Delivered</p>
 
               <h2>
@@ -187,17 +281,22 @@ function AdminOrders({ onBack }) {
                     (order) =>
                       String(
                         order.order_status || ""
-                      ).toLowerCase() === "delivered"
+                      ).toLowerCase() ===
+                      "delivered"
                   ).length
                 }
               </h2>
+
             </div>
+
           </div>
 
         </div>
 
 
-        {/* LOADING */}
+        {/* ===================================
+            LOADING
+        ==================================== */}
 
         {loading && (
           <div className="admin-orders-message">
@@ -206,7 +305,9 @@ function AdminOrders({ onBack }) {
         )}
 
 
-        {/* ERROR */}
+        {/* ===================================
+            ERROR
+        ==================================== */}
 
         {error && (
           <div className="admin-orders-error">
@@ -230,18 +331,24 @@ function AdminOrders({ onBack }) {
         )}
 
 
-        {/* EMPTY */}
+        {/* ===================================
+            EMPTY
+        ==================================== */}
 
         {!loading &&
           !error &&
           orders.length === 0 && (
+
             <div className="admin-orders-message">
               No orders found.
             </div>
+
           )}
 
 
-        {/* TABLE */}
+        {/* ===================================
+            TABLE
+        ==================================== */}
 
         {!loading &&
           !error &&
@@ -274,7 +381,9 @@ function AdminOrders({ onBack }) {
 
                     <tr key={order.id}>
 
-                      {/* ORDER */}
+                      {/* =====================
+                          ORDER
+                      ====================== */}
 
                       <td>
                         <strong>
@@ -283,7 +392,9 @@ function AdminOrders({ onBack }) {
                       </td>
 
 
-                      {/* CUSTOMER */}
+                      {/* =====================
+                          CUSTOMER
+                      ====================== */}
 
                       <td>
 
@@ -303,48 +414,70 @@ function AdminOrders({ onBack }) {
                       </td>
 
 
-                      {/* PRODUCTS */}
+                      {/* =====================
+                          PRODUCTS
+                      ====================== */}
 
                       <td>
+
                         <div className="admin-order-products">
+
                           {order.product_names ||
                             "Product"}
+
                         </div>
+
                       </td>
 
 
-                      {/* QUANTITY */}
+                      {/* =====================
+                          QUANTITY
+                      ====================== */}
 
                       <td>
+
                         {Number(
                           order.total_quantity || 0
                         )}
+
                       </td>
 
 
-                      {/* AMOUNT */}
+                      {/* =====================
+                          AMOUNT
+                      ====================== */}
 
                       <td>
+
                         <strong>
+
                           ₹
                           {Number(
                             order.total_amount || 0
                           ).toLocaleString(
                             "en-IN"
                           )}
+
                         </strong>
+
                       </td>
 
 
-                      {/* PAYMENT METHOD */}
+                      {/* =====================
+                          PAYMENT METHOD
+                      ====================== */}
 
                       <td>
+
                         {order.payment_method ||
                           "-"}
+
                       </td>
 
 
-                      {/* PAYMENT STATUS */}
+                      {/* =====================
+                          PAYMENT STATUS
+                      ====================== */}
 
                       <td>
 
@@ -353,32 +486,44 @@ function AdminOrders({ onBack }) {
                             order.payment_status
                           )}
                         >
+
                           {order.payment_status ||
                             "Pending"}
+
                         </span>
 
                       </td>
 
 
-                      {/* ORDER STATUS */}
+                      {/* =====================
+                          ORDER STATUS
+                      ====================== */}
 
                       <td>
 
                         <span
                           className={getStatusClass(
-                            order.order_status
+                            getDisplayOrderStatus(
+                              order
+                            )
                           )}
                         >
-                          {order.order_status ||
-                            "Placed"}
+
+                          {getDisplayOrderStatus(
+                            order
+                          )}
+
                         </span>
 
                       </td>
 
 
-                      {/* DATE */}
+                      {/* =====================
+                          DATE
+                      ====================== */}
 
                       <td>
+
                         {order.created_at
                           ? new Date(
                               order.created_at
@@ -386,6 +531,7 @@ function AdminOrders({ onBack }) {
                               "en-IN"
                             )
                           : "-"}
+
                       </td>
 
                     </tr>
@@ -397,6 +543,7 @@ function AdminOrders({ onBack }) {
               </table>
 
             </div>
+
           )}
 
       </main>

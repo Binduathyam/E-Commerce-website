@@ -1,0 +1,720 @@
+/* =====================================================
+   MY DELIVERIES PAGE
+===================================================== */
+
+.my-deliveries-page {
+  min-height: 100%;
+  color: #1f2937;
+}
+
+
+/* =====================================================
+   PAGE HEADING
+===================================================== */
+
+.my-deliveries-heading {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 20px;
+
+  margin-bottom: 28px;
+}
+
+.my-deliveries-heading p {
+  margin: 0 0 5px;
+
+  font-size: 10px;
+  font-weight: 800;
+  letter-spacing: 1.5px;
+
+  color: #8b5cf6;
+}
+
+.my-deliveries-heading h1 {
+  margin: 0;
+
+  font-size: 30px;
+  font-weight: 800;
+
+  color: #1f2937;
+}
+
+.my-deliveries-heading > div > span {
+  display: block;
+
+  margin-top: 7px;
+
+  font-size: 13px;
+
+  color: #6b7280;
+}
+
+
+.delivery-area-badge {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+
+  padding: 10px 15px;
+
+  border: 1px solid #ddd6fe;
+  border-radius: 12px;
+
+  background: #f5f3ff;
+
+  font-size: 12px;
+  font-weight: 700;
+
+  color: #6d28d9;
+}
+
+
+/* =====================================================
+   SUMMARY CARDS
+===================================================== */
+
+.delivery-summary-grid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+
+  gap: 16px;
+
+  margin-bottom: 28px;
+}
+
+.delivery-summary-card {
+  min-height: 110px;
+
+  padding: 18px;
+
+  display: flex;
+  align-items: center;
+
+  gap: 14px;
+
+  background: #ffffff;
+
+  border: 1px solid #e5e7eb;
+  border-radius: 16px;
+
+  box-shadow: 0 5px 18px rgba(31, 41, 55, 0.04);
+
+  transition:
+    transform 0.2s ease,
+    box-shadow 0.2s ease;
+}
+
+.delivery-summary-card:hover {
+  transform: translateY(-3px);
+
+  box-shadow: 0 12px 25px rgba(31, 41, 55, 0.08);
+}
+
+
+.summary-icon {
+  width: 48px;
+  height: 48px;
+
+  min-width: 48px;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  border-radius: 14px;
+
+  font-size: 21px;
+}
+
+.summary-icon.total {
+  background: #eff6ff;
+}
+
+.summary-icon.assigned {
+  background: #fef3c7;
+}
+
+.summary-icon.progress {
+  background: #ede9fe;
+}
+
+.summary-icon.completed {
+  background: #dcfce7;
+}
+
+
+.delivery-summary-card div:last-child {
+  display: flex;
+  flex-direction: column;
+
+  gap: 4px;
+}
+
+.delivery-summary-card span {
+  font-size: 11px;
+  font-weight: 600;
+
+  color: #6b7280;
+}
+
+.delivery-summary-card strong {
+  font-size: 24px;
+  font-weight: 800;
+
+  color: #1f2937;
+}
+
+
+/* =====================================================
+   DELIVERY LIST SECTION
+===================================================== */
+
+.delivery-list-section {
+  padding: 24px;
+
+  background: #ffffff;
+
+  border: 1px solid #e5e7eb;
+  border-radius: 18px;
+
+  box-shadow: 0 5px 20px rgba(31, 41, 55, 0.04);
+}
+
+
+.delivery-list-top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+
+  gap: 20px;
+
+  margin-bottom: 20px;
+}
+
+.delivery-list-top p {
+  margin: 0 0 5px;
+
+  font-size: 10px;
+  font-weight: 800;
+  letter-spacing: 1.5px;
+
+  color: #8b5cf6;
+}
+
+.delivery-list-top h2 {
+  margin: 0;
+
+  font-size: 20px;
+  font-weight: 800;
+
+  color: #1f2937;
+}
+
+
+/* =====================================================
+   SEARCH
+===================================================== */
+
+.delivery-search {
+  width: 280px;
+
+  display: flex;
+  align-items: center;
+
+  gap: 8px;
+
+  padding: 10px 13px;
+
+  background: #f9fafb;
+
+  border: 1px solid #e5e7eb;
+  border-radius: 10px;
+}
+
+.delivery-search span {
+  font-size: 18px;
+
+  color: #9ca3af;
+}
+
+.delivery-search input {
+  width: 100%;
+
+  border: none;
+  outline: none;
+
+  background: transparent;
+
+  font-size: 12px;
+
+  color: #374151;
+}
+
+
+/* =====================================================
+   FILTERS
+===================================================== */
+
+.delivery-filters {
+  display: flex;
+  align-items: center;
+
+  gap: 9px;
+
+  margin-bottom: 22px;
+
+  padding-bottom: 18px;
+
+  border-bottom: 1px solid #f0f0f2;
+}
+
+.delivery-filter {
+  border: 1px solid #e5e7eb;
+
+  padding: 8px 14px;
+
+  border-radius: 9px;
+
+  background: #ffffff;
+
+  color: #6b7280;
+
+  font-size: 11px;
+  font-weight: 700;
+
+  cursor: pointer;
+
+  transition:
+    background 0.2s ease,
+    color 0.2s ease,
+    border-color 0.2s ease;
+}
+
+.delivery-filter:hover {
+  border-color: #c4b5fd;
+
+  background: #f5f3ff;
+
+  color: #6d28d9;
+}
+
+.delivery-filter.active {
+  border-color: #7c3aed;
+
+  background: #7c3aed;
+
+  color: #ffffff;
+}
+
+
+/* =====================================================
+   DELIVERY CARDS
+===================================================== */
+
+.delivery-cards {
+  display: flex;
+  flex-direction: column;
+
+  gap: 16px;
+}
+
+
+.delivery-task-card {
+  padding: 20px;
+
+  border: 1px solid #e5e7eb;
+  border-radius: 16px;
+
+  background: #ffffff;
+
+  transition:
+    transform 0.2s ease,
+    box-shadow 0.2s ease,
+    border-color 0.2s ease;
+}
+
+.delivery-task-card:hover {
+  transform: translateY(-2px);
+
+  border-color: #c4b5fd;
+
+  box-shadow: 0 10px 25px rgba(124, 58, 237, 0.08);
+}
+
+
+/* =====================================================
+   CARD TOP
+===================================================== */
+
+.delivery-task-top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+
+  gap: 15px;
+
+  padding-bottom: 17px;
+
+  border-bottom: 1px solid #f0f0f2;
+}
+
+
+.delivery-order-id {
+  display: flex;
+  align-items: center;
+
+  gap: 12px;
+}
+
+.delivery-order-id > span {
+  width: 42px;
+  height: 42px;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  border-radius: 12px;
+
+  background: #f5f3ff;
+
+  font-size: 19px;
+}
+
+.delivery-order-id div {
+  display: flex;
+  flex-direction: column;
+
+  gap: 4px;
+}
+
+.delivery-order-id strong {
+  font-size: 14px;
+
+  color: #1f2937;
+}
+
+.delivery-order-id small {
+  font-size: 11px;
+
+  color: #9ca3af;
+}
+
+
+/* =====================================================
+   PRIORITY
+===================================================== */
+
+.priority {
+  padding: 7px 11px;
+
+  border-radius: 8px;
+
+  font-size: 10px;
+  font-weight: 800;
+}
+
+.priority.high {
+  background: #fee2e2;
+  color: #dc2626;
+}
+
+.priority.medium {
+  background: #fef3c7;
+  color: #b45309;
+}
+
+.priority.low {
+  background: #dcfce7;
+  color: #15803d;
+}
+
+
+/* =====================================================
+   CUSTOMER INFORMATION
+===================================================== */
+
+.delivery-customer-info {
+  display: grid;
+
+  grid-template-columns:
+    1fr
+    1.5fr
+    1fr;
+
+  gap: 20px;
+
+  padding: 20px 0;
+}
+
+
+.delivery-info-item {
+  display: flex;
+  flex-direction: column;
+
+  gap: 6px;
+}
+
+.info-label {
+  font-size: 9px;
+  font-weight: 800;
+
+  letter-spacing: 1px;
+
+  color: #9ca3af;
+}
+
+.delivery-info-item strong {
+  font-size: 13px;
+
+  color: #374151;
+}
+
+.delivery-info-item small {
+  font-size: 11px;
+  line-height: 1.5;
+
+  color: #6b7280;
+}
+
+
+/* =====================================================
+   CARD BOTTOM
+===================================================== */
+
+.delivery-task-bottom {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+
+  gap: 15px;
+
+  padding-top: 17px;
+
+  border-top: 1px solid #f0f0f2;
+}
+
+
+/* =====================================================
+   DELIVERY STATUS
+===================================================== */
+
+.delivery-task-status {
+  padding: 8px 12px;
+
+  border-radius: 8px;
+
+  font-size: 10px;
+  font-weight: 800;
+}
+
+
+.delivery-task-status.assigned {
+  background: #e0e7ff;
+  color: #4338ca;
+}
+
+.delivery-task-status.picked-up {
+  background: #fef3c7;
+  color: #b45309;
+}
+
+.delivery-task-status.out-for-delivery {
+  background: #ede9fe;
+  color: #6d28d9;
+}
+
+
+/* =====================================================
+   BUTTONS
+===================================================== */
+
+.delivery-task-actions {
+  display: flex;
+  align-items: center;
+
+  gap: 10px;
+}
+
+.view-order-button {
+  padding: 9px 14px;
+
+  border: 1px solid #ddd6fe;
+  border-radius: 9px;
+
+  background: #ffffff;
+
+  color: #6d28d9;
+
+  font-size: 11px;
+  font-weight: 700;
+
+  cursor: pointer;
+
+  transition: 0.2s ease;
+}
+
+.view-order-button:hover {
+  background: #f5f3ff;
+}
+
+
+.primary-delivery-button {
+  border: none;
+
+  padding: 10px 16px;
+
+  border-radius: 9px;
+
+  background: #7c3aed;
+
+  color: #ffffff;
+
+  font-size: 11px;
+  font-weight: 700;
+
+  cursor: pointer;
+
+  transition:
+    transform 0.2s ease,
+    background 0.2s ease;
+}
+
+.primary-delivery-button:hover {
+  transform: translateY(-1px);
+
+  background: #6d28d9;
+}
+
+
+/* =====================================================
+   NO DELIVERIES
+===================================================== */
+
+.no-deliveries {
+  padding: 50px 20px;
+
+  text-align: center;
+}
+
+.no-deliveries > div {
+  margin-bottom: 12px;
+
+  font-size: 35px;
+}
+
+.no-deliveries h3 {
+  margin: 0 0 7px;
+
+  font-size: 17px;
+
+  color: #374151;
+}
+
+.no-deliveries p {
+  margin: 0;
+
+  font-size: 12px;
+
+  color: #9ca3af;
+}
+
+
+/* =====================================================
+   TABLET
+===================================================== */
+
+@media (max-width: 1100px) {
+
+  .delivery-summary-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  .delivery-customer-info {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+}
+
+
+/* =====================================================
+   MOBILE
+===================================================== */
+
+@media (max-width: 700px) {
+
+  .my-deliveries-heading {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+
+  .delivery-list-top {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+
+  .delivery-search {
+    width: 100%;
+
+    box-sizing: border-box;
+  }
+
+  .delivery-summary-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .delivery-customer-info {
+    grid-template-columns: 1fr;
+  }
+
+  .delivery-task-top {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+
+  .delivery-task-bottom {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+
+  .delivery-task-actions {
+    width: 100%;
+
+    justify-content: flex-end;
+  }
+
+  .delivery-filters {
+    overflow-x: auto;
+
+    padding-bottom: 12px;
+  }
+
+  .delivery-filter {
+    white-space: nowrap;
+  }
+
+}
+
+
+@media (max-width: 450px) {
+
+  .delivery-list-section {
+    padding: 16px;
+  }
+
+  .delivery-task-card {
+    padding: 15px;
+  }
+
+  .delivery-task-actions {
+    flex-direction: column;
+
+    align-items: stretch;
+  }
+
+  .delivery-task-actions button {
+    width: 100%;
+  }
+
+}

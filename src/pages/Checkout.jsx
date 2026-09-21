@@ -17,6 +17,7 @@ function Checkout({
     email: "",
     address: "",
     city: "",
+    state: "",
     pincode: "",
   });
 
@@ -58,6 +59,69 @@ function Checkout({
     0,
     subtotal + deliveryFee + platformFee
   );
+
+  // =========================================
+  // AVAILABLE STATES
+  // =========================================
+
+  const states = [
+    "Andhra Pradesh",
+    "Arunachal Pradesh",
+    "Assam",
+    "Bihar",
+    "Chhattisgarh",
+    "Goa",
+    "Gujarat",
+    "Haryana",
+    "Himachal Pradesh",
+    "Jharkhand",
+    "Karnataka",
+    "Kerala",
+    "Madhya Pradesh",
+    "Maharashtra",
+    "Manipur",
+    "Meghalaya",
+    "Mizoram",
+    "Nagaland",
+    "Odisha",
+    "Punjab",
+    "Rajasthan",
+    "Sikkim",
+    "Tamil Nadu",
+    "Telangana",
+    "Tripura",
+    "Uttar Pradesh",
+    "Uttarakhand",
+    "West Bengal",
+    "Delhi",
+  ];
+
+  // =========================================
+  // CITY OPTIONS
+  // =========================================
+
+  const cities = [
+    "Chennai",
+    "Hyderabad",
+    "Vijayawada",
+    "Visakhapatnam",
+    "Jangareddygudem",
+    "Bengaluru",
+    "Mumbai",
+    "Pune",
+    "Delhi",
+    "Kolkata",
+    "Kochi",
+    "Coimbatore",
+    "Madurai",
+    "Tirupati",
+    "Guntur",
+    "Nellore",
+    "Warangal",
+    "Rajahmundry",
+    "Kakinada",
+    "Other",
+  ];
 
   // =========================================
   // ADDRESS INPUT
@@ -118,9 +182,20 @@ function Checkout({
         "Address is required";
     }
 
-    if (!formData.city.trim()) {
+    if (
+      !formData.city.trim() ||
+      formData.city === "Please Select"
+    ) {
       newErrors.city =
-        "City is required";
+        "Please select a city";
+    }
+
+    if (
+      !formData.state.trim() ||
+      formData.state === "Please Select"
+    ) {
+      newErrors.state =
+        "Please select a state";
     }
 
     if (!formData.pincode.trim()) {
@@ -202,6 +277,9 @@ function Checkout({
   // =========================================
 
   const saveAddress = async () => {
+    const token =
+  localStorage.getItem("customer_token");
+
     const addressResponse =
       await fetch(
         `${API_BASE_URL}/api/addresses`,
@@ -211,6 +289,10 @@ function Checkout({
           headers: {
             "Content-Type":
               "application/json",
+            Authorization:
+              `Bearer ${token}`,
+            "x-user-id":
+              loggedInUser?.id,
           },
 
           body: JSON.stringify({
@@ -230,7 +312,7 @@ function Checkout({
               formData.city.trim(),
 
             state:
-              "Tamil Nadu",
+              formData.state.trim(),
 
             pincode:
               formData.pincode.trim(),
@@ -240,6 +322,11 @@ function Checkout({
 
     const addressData =
       await addressResponse.json();
+
+    console.log(
+      "Saved address:",
+      addressData
+    );
 
     if (!addressResponse.ok) {
       throw new Error(
@@ -268,6 +355,8 @@ function Checkout({
     addressId,
     orderItems
   ) => {
+      const token =
+  localStorage.getItem("customer_token");
     const orderResponse =
       await fetch(
         `${API_BASE_URL}/api/orders`,
@@ -277,6 +366,9 @@ function Checkout({
           headers: {
             "Content-Type":
               "application/json",
+
+            Authorization:
+              `Bearer ${token}`,
           },
 
           body: JSON.stringify({
@@ -317,6 +409,9 @@ function Checkout({
 
   const createRazorpayOrder =
     async () => {
+    const token =
+  localStorage.getItem("customer_token");
+
       const response =
         await fetch(
           `${API_BASE_URL}/api/payment/create-order`,
@@ -326,6 +421,12 @@ function Checkout({
             headers: {
               "Content-Type":
                 "application/json",
+
+              Authorization:
+                `Bearer ${token}`,
+
+              "x-user-id":
+                loggedInUser?.id,
             },
 
             body: JSON.stringify({
@@ -363,6 +464,9 @@ function Checkout({
       addressId,
       orderItems,
     }) => {
+     const token =
+  localStorage.getItem("customer_token");
+
       const response =
         await fetch(
           `${API_BASE_URL}/api/payment/verify`,
@@ -372,6 +476,12 @@ function Checkout({
             headers: {
               "Content-Type":
                 "application/json",
+
+              Authorization:
+                `Bearer ${token}`,
+
+              "x-user-id":
+                loggedInUser?.id,
             },
 
             body: JSON.stringify({
@@ -499,10 +609,6 @@ function Checkout({
       addressId,
       orderItems,
     }) => {
-      // ---------------------------------------
-      // LOAD RAZORPAY
-      // ---------------------------------------
-
       const razorpayLoaded =
         await loadRazorpay();
 
@@ -512,16 +618,8 @@ function Checkout({
         );
       }
 
-      // ---------------------------------------
-      // CREATE RAZORPAY SERVER ORDER
-      // ---------------------------------------
-
       const paymentOrder =
         await createRazorpayOrder();
-
-      // ---------------------------------------
-      // RAZORPAY CHECKOUT OPTIONS
-      // ---------------------------------------
 
       const options = {
         key:
@@ -531,7 +629,8 @@ function Checkout({
           paymentOrder.amount,
 
         currency:
-          paymentOrder.currency || "INR",
+          paymentOrder.currency ||
+          "INR",
 
         name:
           "ShopEase",
@@ -567,16 +666,12 @@ function Checkout({
         },
 
         handler:
-          async function (paymentResponse) {
+          async function (
+            paymentResponse
+          ) {
             try {
-              // Keep loading while verification
               setLoading(true);
-
               setErrors({});
-
-              // --------------------------------
-              // VERIFY PAYMENT ON BACKEND
-              // --------------------------------
 
               const verified =
                 await verifyRazorpayPayment({
@@ -593,10 +688,6 @@ function Checkout({
 
                   orderItems,
                 });
-
-              // --------------------------------
-              // BUILD ORDER
-              // --------------------------------
 
               const order =
                 buildOrderObject({
@@ -616,6 +707,7 @@ function Checkout({
                 });
 
               finishOrder(order);
+
             } catch (error) {
               console.error(
                 "Payment verification error:",
@@ -627,6 +719,7 @@ function Checkout({
                   error.message ||
                   "Payment verification failed. Please contact support if money was deducted.",
               });
+
             } finally {
               setLoading(false);
             }
@@ -643,10 +736,6 @@ function Checkout({
           },
         },
       };
-
-      // ---------------------------------------
-      // OPEN RAZORPAY
-      // ---------------------------------------
 
       const razorpay =
         new window.Razorpay(
@@ -709,24 +798,15 @@ function Checkout({
         setLoading(true);
         setErrors({});
 
-        // -------------------------------------
         // SAVE ADDRESS
-        // -------------------------------------
-
         const addressId =
           await saveAddress();
 
-        // -------------------------------------
         // PREPARE ITEMS
-        // -------------------------------------
-
         const orderItems =
           prepareOrderItems();
 
-        // -------------------------------------
         // COD
-        // -------------------------------------
-
         if (
           paymentMethod === "cod"
         ) {
@@ -757,30 +837,12 @@ function Checkout({
           return;
         }
 
-        // -------------------------------------
         // ONLINE PAYMENT
-        // -------------------------------------
-
-        /*
-          UPI + Card both go through
-          Razorpay Sandbox.
-
-          We DO NOT create our MySQL order
-          before payment succeeds.
-        */
-
         await startRazorpayPayment({
           addressId,
-
           orderItems,
         });
 
-        /*
-          Do not set loading false here.
-
-          Razorpay handler will do it after:
-          success / failure / dismiss.
-        */
       } catch (error) {
         console.error(
           "Checkout error:",
@@ -807,7 +869,9 @@ function Checkout({
   ) {
     return (
       <section className="checkout-page">
+
         <div className="checkout-header">
+
           <button
             type="button"
             className="checkout-back-button"
@@ -821,9 +885,11 @@ function Checkout({
           </h1>
 
           <div></div>
+
         </div>
 
         <div className="checkout-empty">
+
           <div>
             🛒
           </div>
@@ -843,7 +909,9 @@ function Checkout({
           >
             Continue Shopping
           </button>
+
         </div>
+
       </section>
     );
   }
@@ -1025,7 +1093,7 @@ function Checkout({
 
               </div>
 
-              {/* CITY + PIN */}
+              {/* CITY + STATE */}
 
               <div className="form-row">
 
@@ -1038,10 +1106,8 @@ function Checkout({
                     </span>
                   </label>
 
-                  <input
-                    type="text"
+                  <select
                     name="city"
-                    placeholder="Enter city"
                     value={
                       formData.city
                     }
@@ -1049,7 +1115,24 @@ function Checkout({
                       handleChange
                     }
                     disabled={loading}
-                  />
+                  >
+
+                    <option value="">
+                      Select City
+                    </option>
+
+                    {cities.map(
+                      (city) => (
+                        <option
+                          key={city}
+                          value={city}
+                        >
+                          {city}
+                        </option>
+                      )
+                    )}
+
+                  </select>
 
                   {errors.city && (
                     <small>
@@ -1058,6 +1141,57 @@ function Checkout({
                   )}
 
                 </div>
+
+                <div className="form-group">
+
+                  <label>
+                    State{" "}
+                    <span className="required-star">
+                      *
+                    </span>
+                  </label>
+
+                  <select
+                    name="state"
+                    value={
+                      formData.state
+                    }
+                    onChange={
+                      handleChange
+                    }
+                    disabled={loading}
+                  >
+
+                    <option value="">
+                      Select State
+                    </option>
+
+                    {states.map(
+                      (state) => (
+                        <option
+                          key={state}
+                          value={state}
+                        >
+                          {state}
+                        </option>
+                      )
+                    )}
+
+                  </select>
+
+                  {errors.state && (
+                    <small>
+                      {errors.state}
+                    </small>
+                  )}
+
+                </div>
+
+              </div>
+
+              {/* PIN */}
+
+              <div className="form-row">
 
                 <div className="form-group">
 
@@ -1201,6 +1335,7 @@ function Checkout({
 
               {paymentMethod ===
                 "online" && (
+
                 <div className="upi-options">
 
                   <div className="upi-heading">

@@ -413,3 +413,8 @@
     grid-template-columns: 1fr;
   }
 }
+.order-status.returned {
+  background: #f3e8ff;
+  color: #7e22ce;
+  border: 1px solid #d8b4fe;
+}

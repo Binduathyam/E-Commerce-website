@@ -46,7 +46,6 @@ function MerchantHome({
   const [dashboardError, setDashboardError] =
     useState("");
 
-
   /* =====================================================
      FETCH MERCHANT DASHBOARD
   ===================================================== */
@@ -55,6 +54,9 @@ function MerchantHome({
     const fetchDashboard = async () => {
       if (!merchant?.id) {
         setDashboardLoading(false);
+        setDashboardError(
+          "Merchant information not found."
+        );
         return;
       }
 
@@ -62,30 +64,79 @@ function MerchantHome({
         setDashboardLoading(true);
         setDashboardError("");
 
-        const response = await fetch(
-          `${API_BASE_URL}/api/merchant/dashboard/${merchant.id}`
+        // GET TOKEN FROM LOCAL STORAGE
+        const token =
+          localStorage.getItem("merchant_token");
+
+        console.log(
+          "Merchant ID:",
+          merchant.id
         );
 
-        const data =
-          await response.json();
+        console.log(
+          "Token exists:",
+          !!token
+        );
+
+        // IF TOKEN IS MISSING
+        if (!token) {
+          throw new Error(
+            "Authentication required. Please login again."
+          );
+        }
+
+        const response = await fetch(
+          `${API_BASE_URL}/api/merchant/dashboard/${merchant.id}`,
+          {
+            method: "GET",
+
+            headers: {
+              "Content-Type":
+                "application/json",
+
+              // IMPORTANT JWT TOKEN
+              Authorization:
+                `Bearer ${token}`,
+
+              // KEEP USER ID IF BACKEND USES IT
+              "x-user-id":
+                String(merchant.id),
+            },
+          }
+        );
+
+        let data;
+
+        try {
+          data =
+            await response.json();
+        } catch {
+          throw new Error(
+            "Server returned an invalid response."
+          );
+        }
 
         console.log(
           "Merchant dashboard response:",
           data
         );
 
-        if (
-          !response.ok ||
-          !data.success
-        ) {
+        if (!response.ok) {
           throw new Error(
-            data.message ||
+            data?.message ||
+              `Failed to fetch dashboard. Status: ${response.status}`
+          );
+        }
+
+        if (data?.success === false) {
+          throw new Error(
+            data?.message ||
               "Failed to fetch dashboard"
           );
         }
 
         const apiDashboard =
-          data.dashboard || {};
+          data?.dashboard || {};
 
         setDashboard({
           total_products:
@@ -135,7 +186,7 @@ function MerchantHome({
         );
 
         setDashboardError(
-          error.message ||
+          error?.message ||
             "Unable to load dashboard"
         );
 
@@ -145,8 +196,8 @@ function MerchantHome({
     };
 
     fetchDashboard();
-  }, [merchant?.id]);
 
+  }, [merchant?.id]);
 
   /* =====================================================
      MENU ITEMS
@@ -157,33 +208,27 @@ function MerchantHome({
       name: "Dashboard",
       icon: "▦",
     },
-
     {
       name: "My Products",
       icon: "▣",
     },
-
     {
       name: "Orders",
       icon: "▤",
     },
-
     {
       name: "Inventory",
       icon: "◫",
     },
-
     {
       name: "Sales",
       icon: "↗",
     },
-
     {
       name: "Profile",
       icon: "○",
     },
   ];
-
 
   /* =====================================================
      MENU CLICK
@@ -228,7 +273,6 @@ function MerchantHome({
     }
   };
 
-
   /* =====================================================
      FORMAT SALES
   ===================================================== */
@@ -238,7 +282,6 @@ function MerchantHome({
       dashboard.total_sales || 0
     ).toLocaleString("en-IN");
 
-
   /* =====================================================
      RETURN
   ===================================================== */
@@ -246,13 +289,7 @@ function MerchantHome({
   return (
     <div className="merchant-dashboard">
 
-      {/* =================================================
-          SIDEBAR
-      ================================================= */}
-
       <aside className="merchant-sidebar">
-
-        {/* LOGO */}
 
         <div className="merchant-logo">
 
@@ -272,49 +309,53 @@ function MerchantHome({
 
         </div>
 
-
-        {/* MENU */}
-
         <nav className="merchant-nav">
 
           <p className="merchant-nav-title">
             MAIN MENU
           </p>
 
-          {menuItems.map(
-            (item) => (
+          {menuItems.map((item) => (
 
-              <button
-                key={item.name}
-                type="button"
-                className={
-                  activeMenu ===
-                  item.name
-                    ? "merchant-nav-item active"
-                    : "merchant-nav-item"
-                }
-                onClick={() =>
-                  handleMenuClick(item)
-                }
-              >
+           <button
+  key={item.name}
+  type="button"
+  id={
+    item.name === "My Products"
+      ? "tour-merchant-products"
+      : item.name === "Orders"
+      ? "tour-merchant-orders"
+      : item.name === "Inventory"
+      ? "tour-merchant-inventory"
+      : item.name === "Sales"
+      ? "tour-merchant-sales"
+      : item.name === "Profile"
+      ? "tour-merchant-profile"
+      : undefined
+  }
+  className={
+    activeMenu === item.name
+      ? "merchant-nav-item active"
+      : "merchant-nav-item"
+  }
+              onClick={() =>
+                handleMenuClick(item)
+              }
+            >
 
-                <span className="merchant-nav-icon">
-                  {item.icon}
-                </span>
+              <span className="merchant-nav-icon">
+                {item.icon}
+              </span>
 
-                <span>
-                  {item.name}
-                </span>
+              <span>
+                {item.name}
+              </span>
 
-              </button>
+            </button>
 
-            )
-          )}
+          ))}
 
         </nav>
-
-
-        {/* SIDEBAR BOTTOM */}
 
         <div className="merchant-sidebar-bottom">
 
@@ -338,7 +379,6 @@ function MerchantHome({
 
           </div>
 
-
           <button
             type="button"
             className="merchant-logout-button"
@@ -357,14 +397,7 @@ function MerchantHome({
 
       </aside>
 
-
-      {/* =================================================
-          MAIN CONTENT
-      ================================================= */}
-
       <main className="merchant-main">
-
-        {/* HEADER */}
 
         <header className="merchant-header">
 
@@ -380,10 +413,7 @@ function MerchantHome({
 
           </div>
 
-
           <div className="merchant-header-right">
-
-            {/* NOTIFICATION */}
 
             <button
               type="button"
@@ -397,14 +427,12 @@ function MerchantHome({
 
             </button>
 
-
-            {/* PROFILE */}
-
             <button
-              type="button"
-              className="merchant-profile-button"
-              onClick={onProfile}
-            >
+  type="button"
+  className="merchant-profile-button"
+  id="tour-merchant-profile-top"
+  onClick={onProfile}
+>
 
               <div className="merchant-avatar">
 
@@ -413,7 +441,6 @@ function MerchantHome({
                   ?.toUpperCase() || "M"}
 
               </div>
-
 
               <div className="merchant-profile-info">
 
@@ -428,7 +455,6 @@ function MerchantHome({
 
               </div>
 
-
               <span className="merchant-profile-arrow">
                 ▼
               </span>
@@ -438,11 +464,6 @@ function MerchantHome({
           </div>
 
         </header>
-
-
-        {/* =================================================
-            WELCOME
-        ================================================= */}
 
         <section className="merchant-welcome">
 
@@ -464,12 +485,12 @@ function MerchantHome({
 
           </div>
 
-
           <button
-            type="button"
-            className="merchant-add-product-button"
-            onClick={onAddProduct}
-          >
+  type="button"
+  className="merchant-add-product-button"
+  id="tour-merchant-add-product"
+  onClick={onAddProduct}
+>
 
             <span>
               +
@@ -480,11 +501,6 @@ function MerchantHome({
           </button>
 
         </section>
-
-
-        {/* =================================================
-            ERROR
-        ================================================= */}
 
         {dashboardError && (
 
@@ -503,15 +519,7 @@ function MerchantHome({
 
         )}
 
-
-        {/* =================================================
-            STAT CARDS
-        ================================================= */}
-
         <section className="merchant-stats">
-
-
-          {/* TOTAL PRODUCTS */}
 
           <div className="merchant-stat-card">
 
@@ -532,11 +540,9 @@ function MerchantHome({
             </p>
 
             <h3>
-
               {dashboardLoading
                 ? "..."
                 : dashboard.total_products}
-
             </h3>
 
             <span className="stat-description">
@@ -544,9 +550,6 @@ function MerchantHome({
             </span>
 
           </div>
-
-
-          {/* TOTAL ORDERS */}
 
           <div className="merchant-stat-card">
 
@@ -567,11 +570,9 @@ function MerchantHome({
             </p>
 
             <h3>
-
               {dashboardLoading
                 ? "..."
                 : dashboard.total_orders}
-
             </h3>
 
             <span className="stat-description">
@@ -579,9 +580,6 @@ function MerchantHome({
             </span>
 
           </div>
-
-
-          {/* TOTAL SALES */}
 
           <div className="merchant-stat-card">
 
@@ -602,12 +600,10 @@ function MerchantHome({
             </p>
 
             <h3>
-
               ₹
               {dashboardLoading
                 ? "..."
                 : formattedSales}
-
             </h3>
 
             <span className="stat-description">
@@ -615,9 +611,6 @@ function MerchantHome({
             </span>
 
           </div>
-
-
-          {/* LOW STOCK */}
 
           <div className="merchant-stat-card">
 
@@ -638,11 +631,9 @@ function MerchantHome({
             </p>
 
             <h3>
-
               {dashboardLoading
                 ? "..."
                 : dashboard.low_stock}
-
             </h3>
 
             <span className="stat-description">
@@ -652,11 +643,6 @@ function MerchantHome({
           </div>
 
         </section>
-
-
-        {/* =================================================
-            QUICK ACTIONS
-        ================================================= */}
 
         <section className="merchant-section">
 
@@ -676,11 +662,7 @@ function MerchantHome({
 
           </div>
 
-
           <div className="merchant-quick-actions">
-
-
-            {/* ADD PRODUCT */}
 
             <button
               type="button"
@@ -710,9 +692,6 @@ function MerchantHome({
 
             </button>
 
-
-            {/* PRODUCTS */}
-
             <button
               type="button"
               onClick={onProducts}
@@ -740,9 +719,6 @@ function MerchantHome({
               </span>
 
             </button>
-
-
-            {/* ORDERS */}
 
             <button
               type="button"
@@ -776,17 +752,7 @@ function MerchantHome({
 
         </section>
 
-
-        {/* =================================================
-            RECENT ORDERS + LOW STOCK
-        ================================================= */}
-
         <div className="merchant-dashboard-grid">
-
-
-          {/* =================================================
-              RECENT ORDERS
-          ================================================= */}
 
           <section className="merchant-panel">
 
@@ -804,7 +770,6 @@ function MerchantHome({
 
               </div>
 
-
               <button
                 type="button"
                 onClick={onOrders}
@@ -814,7 +779,6 @@ function MerchantHome({
               </button>
 
             </div>
-
 
             <div className="merchant-orders-list">
 
@@ -855,7 +819,6 @@ function MerchantHome({
 
                         </div>
 
-
                         <div className="order-info">
 
                           <strong>
@@ -872,19 +835,14 @@ function MerchantHome({
 
                         </div>
 
-
                         <strong className="order-amount">
 
                           ₹
                           {Number(
-                            order.total_amount ||
-                              0
-                          ).toLocaleString(
-                            "en-IN"
-                          )}
+                            order.total_amount || 0
+                          ).toLocaleString("en-IN")}
 
                         </strong>
-
 
                         <span
                           className={`order-status ${String(
@@ -911,11 +869,6 @@ function MerchantHome({
 
           </section>
 
-
-          {/* =================================================
-              LOW STOCK
-          ================================================= */}
-
           <section className="merchant-panel">
 
             <div className="merchant-panel-header">
@@ -932,7 +885,6 @@ function MerchantHome({
 
               </div>
 
-
               <button
                 type="button"
                 onClick={onInventory}
@@ -942,7 +894,6 @@ function MerchantHome({
               </button>
 
             </div>
-
 
             <div className="low-stock-list">
 
@@ -977,7 +928,6 @@ function MerchantHome({
 
                       </div>
 
-
                       <div className="stock-product-info">
 
                         <strong>
@@ -991,7 +941,6 @@ function MerchantHome({
                         </span>
 
                       </div>
-
 
                       <span className="stock-warning">
                         Low Stock
@@ -1009,11 +958,6 @@ function MerchantHome({
           </section>
 
         </div>
-
-
-        {/* =================================================
-            STORE SUMMARY
-        ================================================= */}
 
         <section className="merchant-store-summary">
 
@@ -1043,7 +987,6 @@ function MerchantHome({
 
           </div>
 
-
           <button
             type="button"
             onClick={onProfile}
@@ -1053,11 +996,6 @@ function MerchantHome({
           </button>
 
         </section>
-
-
-        {/* =================================================
-            FOOTER
-        ================================================= */}
 
         <footer className="merchant-footer">
 
@@ -1077,4 +1015,4 @@ function MerchantHome({
   );
 }
 
-export default MerchantHome;
+export default MerchantHome; 

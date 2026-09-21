@@ -7,15 +7,21 @@ function MerchantProducts({
   onBack,
   onAddProduct,
 }) {
+  // =====================================================
+  // STATES
+  // =====================================================
+
   const [products, setProducts] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
 
-  // =========================
-  // EDIT STATE
-  // =========================
-
   const [editingProduct, setEditingProduct] =
+    useState(null);
+
+  const [editLoading, setEditLoading] =
+    useState(false);
+
+  const [deleteLoading, setDeleteLoading] =
     useState(null);
 
   const [editForm, setEditForm] = useState({
@@ -30,86 +36,145 @@ function MerchantProducts({
     image: "",
   });
 
-  const [editLoading, setEditLoading] =
-    useState(false);
 
-  // =========================
-  // DELETE STATE
-  // =========================
+  // =====================================================
+  // GET AUTH HEADERS
+  // =====================================================
 
-  const [deleteLoading, setDeleteLoading] =
-    useState(null);
+  const getAuthHeaders = () => {
+    const token = localStorage.getItem("merchant_token");
 
-  // =========================
-  // FETCH PRODUCTS
-  // =========================
+    return {
+      "Content-Type": "application/json",
 
-  const fetchProducts = async () => {
-    try {
-      setLoading(true);
-      setError("");
+      ...(token
+        ? {
+            Authorization: `Bearer ${token}`,
+          }
+        : {}),
 
-      const response = await fetch(
-        `${API_BASE_URL}/api/products/merchant/${merchant.id}`
-      );
-
-      const data = await response.json();
-
-      if (!response.ok || !data.success) {
-        throw new Error(
-          data.message ||
-            "Failed to fetch products"
-        );
-      }
-
-      setProducts(data.products || []);
-    } catch (error) {
-      console.error(
-        "Merchant products error:",
-        error
-      );
-
-      setError(
-        error.message ||
-          "Unable to load products."
-      );
-    } finally {
-      setLoading(false);
-    }
+      ...(merchant?.id
+        ? {
+            "x-user-id": merchant.id,
+          }
+        : {}),
+    };
   };
 
-  useEffect(() => {
-    if (merchant?.id) {
-      fetchProducts();
+
+  // =====================================================
+  // FETCH PRODUCTS
+  // =====================================================
+const fetchProducts = async () => {
+  if (!merchant?.id) {
+    setProducts([]);
+    setLoading(false);
+    setError("Merchant information is missing.");
+    return;
+  }
+
+  try {
+    setLoading(true);
+    setError("");
+
+    const token = localStorage.getItem("merchant_token");
+
+    if (!token) {
+      throw new Error("Merchant authentication token is missing.");
     }
+
+    const response = await fetch(
+      `${API_BASE_URL}/api/products/merchant/${merchant.id}`,
+      {
+        method: "GET",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+      }
+    );
+
+    const data = await response.json();
+
+    console.log("Merchant products response:", data);
+
+    if (!response.ok || !data.success) {
+      throw new Error(
+        data.message || "Failed to fetch products"
+      );
+    }
+
+    setProducts(
+      Array.isArray(data.products)
+        ? data.products
+        : []
+    );
+
+  } catch (error) {
+    console.error(
+      "Merchant products error:",
+      error
+    );
+
+    setError(
+      error.message ||
+        "Unable to load products."
+    );
+
+  } finally {
+    setLoading(false);
+  }
+};
+
+  // =====================================================
+  // LOAD PRODUCTS
+  // =====================================================
+
+  useEffect(() => {
+    fetchProducts();
   }, [merchant?.id]);
 
-  // =========================
+
+  // =====================================================
   // START EDIT
-  // =========================
+  // =====================================================
 
   const handleEditClick = (product) => {
     setEditingProduct(product);
 
     setEditForm({
       name: product.name || "",
-      category: product.category || "",
-      price: product.price || "",
+
+      category:
+        product.category || "",
+
+      price:
+        product.price ?? "",
+
       original_price:
-        product.original_price || "",
+        product.original_price ?? "",
+
       discount:
-        product.discount || "",
-      stock: product.stock ?? "",
-      brand: product.brand || "",
+        product.discount ?? "",
+
+      stock:
+        product.stock ?? "",
+
+      brand:
+        product.brand || "",
+
       description:
         product.description || "",
-      image: product.image || "",
+
+      image:
+        product.image || "",
     });
   };
 
-  // =========================
-  // EDIT INPUT
-  // =========================
+
+  // =====================================================
+  // EDIT INPUT CHANGE
+  // =====================================================
 
   const handleEditChange = (e) => {
     const {
@@ -123,9 +188,10 @@ function MerchantProducts({
     }));
   };
 
-  // =========================
+
+  // =====================================================
   // UPDATE PRODUCT
-  // =========================
+  // =====================================================
 
   const handleUpdateProduct = async (e) => {
     e.preventDefault();
@@ -144,16 +210,19 @@ function MerchantProducts({
       return;
     }
 
-    if (!editForm.price) {
-      alert("Price is required");
+    if (
+      editForm.price === "" ||
+      Number(editForm.price) < 0
+    ) {
+      alert("Enter a valid price");
       return;
     }
 
     if (
       editForm.stock === "" ||
-      editForm.stock === null
+      Number(editForm.stock) < 0
     ) {
-      alert("Stock is required");
+      alert("Enter valid stock");
       return;
     }
 
@@ -165,14 +234,10 @@ function MerchantProducts({
         {
           method: "PUT",
 
-          headers: {
-            "Content-Type":
-              "application/json",
-          },
+          headers: getAuthHeaders(),
 
           body: JSON.stringify({
-            merchant_id:
-              merchant.id,
+            merchant_id: merchant.id,
 
             name:
               editForm.name.trim(),
@@ -184,16 +249,14 @@ function MerchantProducts({
               Number(editForm.price),
 
             original_price:
-              editForm.original_price
+              editForm.original_price !== ""
                 ? Number(
                     editForm.original_price
                   )
-                : Number(
-                    editForm.price
-                  ),
+                : Number(editForm.price),
 
             discount:
-              editForm.discount
+              editForm.discount !== ""
                 ? Number(
                     editForm.discount
                   )
@@ -217,6 +280,11 @@ function MerchantProducts({
       const data =
         await response.json();
 
+      console.log(
+        "Update product response:",
+        data
+      );
+
       if (!response.ok || !data.success) {
         throw new Error(
           data.message ||
@@ -224,15 +292,8 @@ function MerchantProducts({
         );
       }
 
-      // Update product immediately
-      setProducts((current) =>
-        current.map((product) =>
-          product.id ===
-          editingProduct.id
-            ? data.product
-            : product
-        )
-      );
+      // Refresh products from backend
+      await fetchProducts();
 
       setEditingProduct(null);
 
@@ -250,22 +311,23 @@ function MerchantProducts({
         error.message ||
           "Failed to update product"
       );
+
     } finally {
       setEditLoading(false);
     }
   };
 
-  // =========================
+
+  // =====================================================
   // DELETE PRODUCT
-  // =========================
+  // =====================================================
 
   const handleDeleteProduct = async (
     product
   ) => {
-    const confirmed =
-      window.confirm(
-        `Are you sure you want to delete "${product.name}"?`
-      );
+    const confirmed = window.confirm(
+      `Are you sure you want to delete "${product.name}"?`
+    );
 
     if (!confirmed) {
       return;
@@ -279,20 +341,21 @@ function MerchantProducts({
         {
           method: "DELETE",
 
-          headers: {
-            "Content-Type":
-              "application/json",
-          },
+          headers: getAuthHeaders(),
 
           body: JSON.stringify({
-            merchant_id:
-              merchant.id,
+            merchant_id: merchant.id,
           }),
         }
       );
 
       const data =
         await response.json();
+
+      console.log(
+        "Delete product response:",
+        data
+      );
 
       if (!response.ok || !data.success) {
         throw new Error(
@@ -301,12 +364,16 @@ function MerchantProducts({
         );
       }
 
-      // Remove immediately from screen
+      // Remove immediately
       setProducts((current) =>
         current.filter(
           (item) =>
             item.id !== product.id
         )
+      );
+
+      alert(
+        "Product deleted successfully!"
       );
 
     } catch (error) {
@@ -319,14 +386,38 @@ function MerchantProducts({
         error.message ||
           "Failed to delete product"
       );
+
     } finally {
       setDeleteLoading(null);
     }
   };
 
-  // =========================
-  // EDIT MODAL
-  // =========================
+
+  // =====================================================
+  // FIX IMAGE URL
+  // =====================================================
+
+  const getImageUrl = (image) => {
+    if (!image) {
+      return "";
+    }
+
+    // Already complete URL
+    if (
+      image.startsWith("http://") ||
+      image.startsWith("https://")
+    ) {
+      return image;
+    }
+
+    // Backend relative image path
+    return `${API_BASE_URL}${image}`;
+  };
+
+
+  // =====================================================
+  // EDIT PRODUCT PAGE
+  // =====================================================
 
   if (editingProduct) {
     return (
@@ -347,7 +438,10 @@ function MerchantProducts({
             </button>
 
             <div>
-              <p>MERCHANT</p>
+
+              <p>
+                MERCHANT
+              </p>
 
               <h1>
                 Edit Product
@@ -356,11 +450,13 @@ function MerchantProducts({
               <span>
                 Update your product details
               </span>
+
             </div>
 
           </div>
 
         </div>
+
 
         <div className="merchant-edit-card">
 
@@ -372,7 +468,7 @@ function MerchantProducts({
 
             <div className="merchant-edit-grid">
 
-              {/* NAME */}
+              {/* PRODUCT NAME */}
 
               <div className="merchant-edit-group">
 
@@ -392,6 +488,7 @@ function MerchantProducts({
                 />
 
               </div>
+
 
               {/* CATEGORY */}
 
@@ -414,7 +511,8 @@ function MerchantProducts({
 
               </div>
 
-              {/* PRICE */}
+
+              {/* SELLING PRICE */}
 
               <div className="merchant-edit-group">
 
@@ -435,6 +533,7 @@ function MerchantProducts({
                 />
 
               </div>
+
 
               {/* ORIGINAL PRICE */}
 
@@ -457,6 +556,7 @@ function MerchantProducts({
                 />
 
               </div>
+
 
               {/* DISCOUNT */}
 
@@ -481,6 +581,7 @@ function MerchantProducts({
 
               </div>
 
+
               {/* STOCK */}
 
               <div className="merchant-edit-group">
@@ -503,6 +604,7 @@ function MerchantProducts({
 
               </div>
 
+
               {/* BRAND */}
 
               <div className="merchant-edit-group">
@@ -524,6 +626,7 @@ function MerchantProducts({
 
               </div>
 
+
               {/* IMAGE */}
 
               <div className="merchant-edit-group">
@@ -533,7 +636,7 @@ function MerchantProducts({
                 </label>
 
                 <input
-                  type="url"
+                  type="text"
                   name="image"
                   value={
                     editForm.image
@@ -546,6 +649,7 @@ function MerchantProducts({
               </div>
 
             </div>
+
 
             {/* DESCRIPTION */}
 
@@ -568,7 +672,8 @@ function MerchantProducts({
 
             </div>
 
-            {/* ACTIONS */}
+
+            {/* BUTTONS */}
 
             <div className="merchant-edit-actions">
 
@@ -582,6 +687,7 @@ function MerchantProducts({
               >
                 Cancel
               </button>
+
 
               <button
                 type="submit"
@@ -603,9 +709,10 @@ function MerchantProducts({
     );
   }
 
-  // =========================
+
+  // =====================================================
   // MAIN PRODUCTS PAGE
-  // =========================
+  // =====================================================
 
   return (
     <section className="merchant-products-page">
@@ -623,6 +730,7 @@ function MerchantProducts({
           >
             ←
           </button>
+
 
           <div>
 
@@ -642,6 +750,7 @@ function MerchantProducts({
 
         </div>
 
+
         <button
           type="button"
           className="merchant-products-add"
@@ -652,7 +761,8 @@ function MerchantProducts({
 
       </div>
 
-      {/* STORE INFO */}
+
+      {/* STORE SUMMARY */}
 
       <div className="merchant-products-summary">
 
@@ -660,6 +770,7 @@ function MerchantProducts({
 
           <strong>
             {merchant?.businessName ||
+              merchant?.business_name ||
               "My Store"}
           </strong>
 
@@ -673,6 +784,7 @@ function MerchantProducts({
 
         </div>
 
+
         <button
           type="button"
           onClick={fetchProducts}
@@ -682,37 +794,46 @@ function MerchantProducts({
 
       </div>
 
+
       {/* LOADING */}
 
       {loading && (
+
         <div className="merchant-products-message">
           Loading products...
         </div>
+
       )}
+
 
       {/* ERROR */}
 
-      {!loading &&
-        error && (
-          <div className="merchant-products-error">
+      {!loading && error && (
 
+        <div className="merchant-products-error">
+
+          <p>
             {error}
+          </p>
 
-            <button
-              type="button"
-              onClick={fetchProducts}
-            >
-              Try Again
-            </button>
+          <button
+            type="button"
+            onClick={fetchProducts}
+          >
+            Try Again
+          </button>
 
-          </div>
-        )}
+        </div>
+
+      )}
+
 
       {/* EMPTY */}
 
       {!loading &&
         !error &&
         products.length === 0 && (
+
           <div className="merchant-products-empty">
 
             <div className="empty-product-icon">
@@ -736,17 +857,21 @@ function MerchantProducts({
             </button>
 
           </div>
+
         )}
 
-      {/* PRODUCTS */}
+
+      {/* PRODUCTS GRID */}
 
       {!loading &&
         !error &&
         products.length > 0 && (
+
           <div className="merchant-products-grid">
 
             {products.map(
               (product) => (
+
                 <div
                   className="merchant-product-card"
                   key={product.id}
@@ -757,54 +882,74 @@ function MerchantProducts({
                   <div className="merchant-product-image">
 
                     {product.image ? (
+
                       <img
                         src={
-                          product.image
+                          getImageUrl(
+                            product.image
+                          )
                         }
                         alt={
-                          product.name
+                          product.name ||
+                          "Product"
                         }
                         onError={(e) => {
                           e.currentTarget.style.display =
                             "none";
                         }}
                       />
+
                     ) : (
+
                       <span>
                         📦
                       </span>
+
                     )}
 
                   </div>
+
 
                   {/* DETAILS */}
 
                   <div className="merchant-product-details">
 
                     <span className="merchant-product-category">
+
                       {product.category ||
                         "Product"}
+
                     </span>
+
 
                     <h2>
                       {product.name}
                     </h2>
 
+
                     <p className="merchant-product-brand">
+
                       {product.brand ||
                         "No brand"}
+
                     </p>
+
+
+                    {/* PRICE */}
 
                     <div className="merchant-product-price-row">
 
                       <strong>
+
                         ₹
                         {Number(
-                          product.price
+                          product.price || 0
                         ).toLocaleString(
                           "en-IN"
                         )}
+
                       </strong>
+
 
                       {product.original_price &&
                         Number(
@@ -813,43 +958,59 @@ function MerchantProducts({
                           Number(
                             product.price
                           ) && (
+
                           <del>
+
                             ₹
                             {Number(
                               product.original_price
                             ).toLocaleString(
                               "en-IN"
                             )}
+
                           </del>
+
                         )}
 
                     </div>
+
+
+                    {/* STOCK */}
 
                     <div className="merchant-product-bottom">
 
                       <span
                         className={
                           Number(
-                            product.stock
+                            product.stock || 0
                           ) <= 5
                             ? "stock-low"
                             : "stock-good"
                         }
                       >
+
                         Stock:{" "}
-                        {product.stock}
+                        {product.stock ?? 0}
+
                       </span>
 
+
                       {Number(
-                        product.discount
+                        product.discount || 0
                       ) > 0 && (
+
                         <span className="product-discount">
+
                           {product.discount}%
+                          {" "}
                           OFF
+
                         </span>
+
                       )}
 
                     </div>
+
 
                     {/* ACTIONS */}
 
@@ -867,6 +1028,7 @@ function MerchantProducts({
                         ✏️ Edit
                       </button>
 
+
                       <button
                         type="button"
                         className="merchant-delete-button"
@@ -880,10 +1042,12 @@ function MerchantProducts({
                           product.id
                         }
                       >
+
                         {deleteLoading ===
                         product.id
                           ? "Deleting..."
                           : "🗑️ Delete"}
+
                       </button>
 
                     </div>
@@ -891,10 +1055,12 @@ function MerchantProducts({
                   </div>
 
                 </div>
+
               )
             )}
 
           </div>
+
         )}
 
     </section>

@@ -4,9 +4,12 @@ function Wishlist({
   onRemove,
   onAddToCart,
   onCartClick,
+  onAdminLogin,
 }) {
   return (
     <section className="wishlist-page">
+
+      {/* ================= HEADER ================= */}
 
       <div className="wishlist-header">
 
@@ -31,6 +34,9 @@ function Wishlist({
         </button>
 
       </div>
+
+
+      {/* ================= WISHLIST CONTENT ================= */}
 
       {wishlist.length === 0 ? (
 
@@ -67,6 +73,8 @@ function Wishlist({
               key={product.id}
             >
 
+              {/* PRODUCT IMAGE */}
+
               <div className="wishlist-product-image">
 
                 <img
@@ -85,6 +93,9 @@ function Wishlist({
                 </button>
 
               </div>
+
+
+              {/* PRODUCT DETAILS */}
 
               <div className="wishlist-product-info">
 
@@ -119,6 +130,22 @@ function Wishlist({
         </div>
 
       )}
+
+
+      {/* ================= ADMIN LOGIN ================= */}
+
+      <div className="wishlist-admin-section">
+
+        <button
+          type="button"
+          className="wishlist-admin-button"
+          onClick={onAdminLogin}
+        >
+          Admin Login
+        </button>
+
+      </div>
+
 
     </section>
   );

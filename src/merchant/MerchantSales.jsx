@@ -30,9 +30,31 @@ function MerchantSales({
         setLoading(true);
         setError("");
 
-        const response = await fetch(
-          `${API_BASE_URL}/api/merchant/sales/${merchant.id}`
-        );
+      const token =
+  localStorage.getItem("merchant_token") ||
+  localStorage.getItem("authToken") ||
+  localStorage.getItem("accessToken");
+
+if (!token) {
+  throw new Error(
+    "Authentication required. Please login again."
+  );
+}
+
+const response = await fetch(
+  `${API_BASE_URL}/api/merchant/sales/${merchant.id}`,
+  {
+    method: "GET",
+
+    headers: {
+      "Content-Type": "application/json",
+
+      Authorization: `Bearer ${token}`,
+
+      "x-user-id": merchant.id,
+    },
+  }
+);
 
         const data = await response.json();
 

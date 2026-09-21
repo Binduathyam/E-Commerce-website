@@ -6,20 +6,19 @@ function Navbar({
   onCartClick,
   onWishlistClick,
   onLoginClick,
+  loggedInUser,
 }) {
   return (
     <header className="navbar">
 
       {/* LOGO */}
-
       <div className="logo">
         Shop<span>Ease</span>
       </div>
 
 
       {/* SEARCH */}
-
-      <div className="search-box">
+      <div className="search-box" id="tour-search">
 
         <input
           type="text"
@@ -41,14 +40,13 @@ function Navbar({
 
 
       {/* NAVIGATION ACTIONS */}
-
       <div className="nav-actions">
 
-        {/* LOGIN */}
-
+        {/* LOGIN / PROFILE */}
         <button
           type="button"
           className="nav-action-button"
+          id="tour-profile"
           onClick={onLoginClick}
         >
           <span className="nav-icon">
@@ -56,16 +54,16 @@ function Navbar({
           </span>
 
           <span>
-            Login
+            {loggedInUser ? "Profile" : "Login"}
           </span>
         </button>
 
 
         {/* WISHLIST */}
-
         <button
           type="button"
           className="nav-action-button"
+          id="tour-wishlist"
           onClick={onWishlistClick}
         >
           <span className="nav-icon">
@@ -86,10 +84,10 @@ function Navbar({
 
 
         {/* CART */}
-
         <button
           type="button"
           className="nav-action-button"
+          id="tour-cart"
           onClick={onCartClick}
         >
           <span className="nav-icon">

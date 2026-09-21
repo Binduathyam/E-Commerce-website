@@ -1,0 +1,385 @@
+/* =========================================================
+   DELIVERY REGISTER PAGE
+========================================================= */
+
+.delivery-register-page {
+  min-height: 100vh;
+  display: flex;
+  justify-content: center;
+  align-items: flex-start;
+  padding: 45px 24px;
+  background:
+    radial-gradient(
+      circle at top left,
+      #eef4ff 0%,
+      transparent 35%
+    ),
+    #f6f8fc;
+  box-sizing: border-box;
+}
+
+/* =========================================================
+   CARD
+========================================================= */
+
+.delivery-register-card {
+  width: 100%;
+  max-width: 920px;
+  background: #ffffff;
+  padding: 42px 46px;
+  border-radius: 22px;
+  border: 1px solid #e7ebf2;
+  box-shadow:
+    0 20px 55px rgba(15, 23, 42, 0.08),
+    0 4px 15px rgba(15, 23, 42, 0.04);
+  box-sizing: border-box;
+}
+
+/* =========================================================
+   BACK BUTTON
+========================================================= */
+
+.delivery-back-button {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  border: none;
+  background: #f3f6fb;
+  color: #374151;
+  padding: 9px 14px;
+  border-radius: 9px;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  margin-bottom: 25px;
+  transition: all 0.2s ease;
+}
+
+.delivery-back-button:hover {
+  background: #e8edf5;
+  transform: translateX(-2px);
+}
+
+/* =========================================================
+   HEADER
+========================================================= */
+
+.delivery-register-header {
+  text-align: center;
+  margin-bottom: 35px;
+}
+
+.delivery-register-icon {
+  width: 76px;
+  height: 76px;
+  margin: 0 auto 16px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #eaf2ff;
+  border-radius: 22px;
+  font-size: 40px;
+  box-shadow: 0 8px 20px rgba(37, 99, 235, 0.08);
+}
+
+.delivery-register-header h1 {
+  margin: 0;
+  color: #111827;
+  font-size: 29px;
+  font-weight: 800;
+  letter-spacing: -0.5px;
+}
+
+.delivery-register-header p {
+  margin: 9px 0 0;
+  color: #6b7280;
+  font-size: 14px;
+}
+
+/* =========================================================
+   FORM
+========================================================= */
+
+.delivery-form-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 20px 22px;
+}
+
+.delivery-form-group {
+  display: flex;
+  flex-direction: column;
+  margin-bottom: 20px;
+}
+
+.delivery-form-group label {
+  color: #374151;
+  font-size: 13px;
+  font-weight: 700;
+  margin-bottom: 8px;
+}
+
+/* =========================================================
+   INPUTS
+========================================================= */
+
+.delivery-form-group input,
+.delivery-form-group select,
+.delivery-form-group textarea {
+  width: 100%;
+  box-sizing: border-box;
+  padding: 13px 14px;
+  border: 1px solid #d8dee8;
+  border-radius: 10px;
+  background: #ffffff;
+  color: #111827;
+  font-size: 14px;
+  outline: none;
+  transition:
+    border-color 0.2s ease,
+    box-shadow 0.2s ease,
+    background 0.2s ease;
+}
+
+.delivery-form-group input,
+.delivery-form-group select {
+  height: 48px;
+}
+
+.delivery-form-group input::placeholder,
+.delivery-form-group textarea::placeholder {
+  color: #a0a7b2;
+}
+
+.delivery-form-group input:hover,
+.delivery-form-group select:hover,
+.delivery-form-group textarea:hover {
+  border-color: #b8c1d0;
+}
+
+.delivery-form-group input:focus,
+.delivery-form-group select:focus,
+.delivery-form-group textarea:focus {
+  border-color: #2563eb;
+  box-shadow:
+    0 0 0 3px rgba(37, 99, 235, 0.10);
+  background: #ffffff;
+}
+
+.delivery-form-group textarea {
+  min-height: 105px;
+  resize: vertical;
+  line-height: 1.5;
+}
+
+/* =========================================================
+   FULL WIDTH
+========================================================= */
+
+.full-width {
+  width: 100%;
+}
+
+/* =========================================================
+   PASSWORD SECTION
+========================================================= */
+
+.delivery-password-rules {
+  margin: 2px 0 22px;
+  padding: 16px 18px;
+  background: #f8fafc;
+  border: 1px solid #e5eaf1;
+  border-radius: 12px;
+}
+
+.delivery-password-rules p {
+  margin: 0 0 9px;
+  color: #374151;
+  font-size: 13px;
+  font-weight: 700;
+}
+
+.delivery-password-rules span {
+  display: block;
+  color: #6b7280;
+  font-size: 12px;
+  line-height: 1.8;
+}
+
+/* =========================================================
+   MESSAGE
+========================================================= */
+
+.delivery-register-message {
+  padding: 13px 15px;
+  margin-bottom: 18px;
+  border-radius: 10px;
+  background: #eff6ff;
+  border: 1px solid #bfdbfe;
+  color: #1d4ed8;
+  font-size: 13px;
+  line-height: 1.5;
+}
+
+/* =========================================================
+   REGISTER BUTTON
+========================================================= */
+
+.delivery-register-button {
+  width: 100%;
+  height: 52px;
+  border: none;
+  border-radius: 11px;
+  background: #2563eb;
+  color: #ffffff;
+  font-size: 15px;
+  font-weight: 800;
+  letter-spacing: 0.1px;
+  cursor: pointer;
+  box-shadow:
+    0 8px 18px rgba(37, 99, 235, 0.20);
+  transition:
+    transform 0.2s ease,
+    box-shadow 0.2s ease,
+    background 0.2s ease;
+}
+
+.delivery-register-button:hover {
+  background: #1d4ed8;
+  transform: translateY(-1px);
+  box-shadow:
+    0 11px 24px rgba(37, 99, 235, 0.25);
+}
+
+.delivery-register-button:active {
+  transform: translateY(0);
+}
+
+/* =========================================================
+   LOGIN
+========================================================= */
+
+.delivery-login-link {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 5px;
+  margin-top: 24px;
+  color: #6b7280;
+  font-size: 13px;
+}
+
+.delivery-login-link button {
+  border: none;
+  background: transparent;
+  color: #2563eb;
+  font-size: 13px;
+  font-weight: 800;
+  cursor: pointer;
+  padding: 0;
+}
+
+.delivery-login-link button:hover {
+  text-decoration: underline;
+}
+
+/* =========================================================
+   RESPONSIVE - TABLET
+========================================================= */
+
+@media (max-width: 800px) {
+  .delivery-register-page {
+    padding: 30px 18px;
+  }
+
+  .delivery-register-card {
+    padding: 32px 28px;
+  }
+
+  .delivery-register-header h1 {
+    font-size: 26px;
+  }
+}
+
+/* =========================================================
+   RESPONSIVE - MOBILE
+========================================================= */
+
+@media (max-width: 650px) {
+  .delivery-register-page {
+    min-height: 100vh;
+    padding: 18px 12px;
+    align-items: flex-start;
+  }
+
+  .delivery-register-card {
+    padding: 25px 18px;
+    border-radius: 17px;
+  }
+
+  .delivery-back-button {
+    margin-bottom: 20px;
+  }
+
+  .delivery-register-header {
+    margin-bottom: 28px;
+  }
+
+  .delivery-register-icon {
+    width: 64px;
+    height: 64px;
+    border-radius: 18px;
+    font-size: 33px;
+  }
+
+  .delivery-register-header h1 {
+    font-size: 23px;
+    line-height: 1.25;
+  }
+
+  .delivery-register-header p {
+    font-size: 13px;
+    line-height: 1.5;
+  }
+
+  .delivery-form-grid {
+    grid-template-columns: 1fr;
+    gap: 0;
+  }
+
+  .delivery-form-group {
+    margin-bottom: 17px;
+  }
+
+  .delivery-form-group input,
+  .delivery-form-group select {
+    height: 49px;
+  }
+
+  .delivery-password-rules {
+    padding: 14px;
+  }
+
+  .delivery-register-button {
+    height: 50px;
+    font-size: 14px;
+  }
+}
+
+/* =========================================================
+   SMALL MOBILE
+========================================================= */
+
+@media (max-width: 380px) {
+  .delivery-register-card {
+    padding: 22px 15px;
+  }
+
+  .delivery-register-header h1 {
+    font-size: 21px;
+  }
+
+  .delivery-register-header p {
+    font-size: 12px;
+  }
+}

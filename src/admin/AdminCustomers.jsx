@@ -2,7 +2,7 @@ import React, { useEffect, useState } from "react";
 import { API_BASE_URL } from "../api";
 import "./AdminCustomers.css";
 
-function AdminCustomers({ onBack }) {
+function AdminCustomers({ onBack, admin }) {
 
   const [customers, setCustomers] =
     useState([]);
@@ -13,35 +13,111 @@ function AdminCustomers({ onBack }) {
   const [error, setError] =
     useState("");
 
-  useEffect(() => {
-    fetchCustomers();
-  }, []);
+  // =====================================
+  //  CUSTOMERS
+  // =====================================
 
   const fetchCustomers = async () => {
+
     try {
 
       setLoading(true);
       setError("");
 
-      const response = await fetch(
-        `${API_BASE_URL}/api/admin/customers`
+     // =====================================
+// GET ADMIN LOGIN TOKEN
+// =====================================
+
+const token =
+  admin?.token ||
+  localStorage.getItem("adminToken");
+
+console.log("=================================");
+console.log(
+  "ADMIN CUSTOMERS TOKEN:",
+  token ? "Token found" : "Token missing"
+);
+console.log(
+  "ADMIN CUSTOMERS USER:",
+  localStorage.getItem("adminUser")
+);
+console.log("ADMIN OBJECT:", admin);
+console.log("=================================");
+
+// =====================================
+// TOKEN CHECK
+// =====================================
+
+if (!token) {
+  throw new Error(
+    "Authentication required. Please login again."
+  );
+}
+
+// =====================================
+// GET CUSTOMERS FROM BACKEND
+// =====================================
+
+const response = await fetch(
+  `${API_BASE_URL}/api/admin/customers`,
+  {
+    method: "GET",
+
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${token}`,
+    },
+  }
+);
+
+      // =====================================
+      // READ RESPONSE
+      // =====================================
+
+      let data;
+
+      try {
+
+        data =
+          await response.json();
+
+      } catch {
+
+        throw new Error(
+          "Server returned an invalid response."
+        );
+
+      }
+
+      console.log(
+        "ADMIN CUSTOMERS RESPONSE:",
+        data
       );
 
-      const data =
-        await response.json();
+      // =====================================
+      // CHECK RESPONSE
+      // =====================================
 
       if (
         !response.ok ||
         !data.success
       ) {
+
         throw new Error(
           data.message ||
           "Failed to load customers"
         );
+
       }
 
+      // =====================================
+      // SAVE CUSTOMERS
+      // =====================================
+
       setCustomers(
-        data.customers || []
+        Array.isArray(data.customers)
+          ? data.customers
+          : []
       );
 
     } catch (error) {
@@ -50,6 +126,8 @@ function AdminCustomers({ onBack }) {
         "Customers error:",
         error
       );
+
+      setCustomers([]);
 
       setError(
         error.message ||
@@ -61,10 +139,32 @@ function AdminCustomers({ onBack }) {
       setLoading(false);
 
     }
+
   };
 
+
+  // =====================================
+  // LOAD WHEN PAGE OPENS
+  // =====================================
+
+  useEffect(() => {
+
+    fetchCustomers();
+
+  }, []);
+
+
+  // =====================================
+  // RENDER
+  // =====================================
+
   return (
+
     <section className="admin-customers-page">
+
+      {/* =================================
+          HEADER
+      ================================= */}
 
       <header className="admin-customers-header">
 
@@ -77,7 +177,10 @@ function AdminCustomers({ onBack }) {
         </button>
 
         <div>
-          <p>ADMIN</p>
+
+          <p>
+            ADMIN
+          </p>
 
           <h1>
             Customers
@@ -86,41 +189,74 @@ function AdminCustomers({ onBack }) {
           <span>
             Manage registered ShopEase customers
           </span>
+
         </div>
 
       </header>
 
 
+      {/* =================================
+          CONTENT
+      ================================= */}
+
       <main className="admin-customers-content">
+
+
+        {/* =================================
+            SUMMARY
+        ================================= */}
 
         <div className="customers-summary">
 
           <div>
-            <span>👤</span>
+
+            <span>
+              👤
+            </span>
 
             <div>
-              <p>Total Customers</p>
+
+              <p>
+                Total Customers
+              </p>
 
               <h2>
                 {customers.length}
               </h2>
+
             </div>
+
           </div>
 
         </div>
 
 
+        {/* =================================
+            LOADING
+        ================================= */}
+
         {loading && (
+
           <div className="customers-message">
+
             Loading customers...
+
           </div>
+
         )}
 
 
-        {error && (
+        {/* =================================
+            ERROR
+        ================================= */}
+
+        {!loading && error && (
+
           <div className="customers-error">
 
-            <p>{error}</p>
+            <p>
+              {error}
+            </p>
 
             <button
               type="button"
@@ -130,17 +266,30 @@ function AdminCustomers({ onBack }) {
             </button>
 
           </div>
+
         )}
 
+
+        {/* =================================
+            EMPTY
+        ================================= */}
 
         {!loading &&
           !error &&
           customers.length === 0 && (
+
             <div className="customers-message">
+
               No customers found.
+
             </div>
+
           )}
 
+
+        {/* =================================
+            CUSTOMERS TABLE
+        ================================= */}
 
         {!loading &&
           !error &&
@@ -153,13 +302,35 @@ function AdminCustomers({ onBack }) {
                 <thead>
 
                   <tr>
-                    <th>ID</th>
-                    <th>Customer</th>
-                    <th>Email</th>
-                    <th>Phone</th>
-                    <th>Orders</th>
-                    <th>Total Spent</th>
-                    <th>Registered</th>
+
+                    <th>
+                      ID
+                    </th>
+
+                    <th>
+                      Customer
+                    </th>
+
+                    <th>
+                      Email
+                    </th>
+
+                    <th>
+                      Phone
+                    </th>
+
+                    <th>
+                      Orders
+                    </th>
+
+                    <th>
+                      Total Spent
+                    </th>
+
+                    <th>
+                      Registered
+                    </th>
+
                   </tr>
 
                 </thead>
@@ -170,58 +341,120 @@ function AdminCustomers({ onBack }) {
                   {customers.map(
                     (customer) => (
 
-                      <tr key={customer.id}>
+                      <tr
+                        key={
+                          customer.id
+                        }
+                      >
+
+                        {/* ID */}
 
                         <td>
-                          #{customer.id}
+
+                          #
+                          {
+                            customer.id
+                          }
+
                         </td>
 
+
+                        {/* CUSTOMER */}
+
                         <td>
+
                           <div className="customer-name">
 
                             <div className="customer-avatar">
-                              {customer.name
-                                ?.charAt(0)
-                                ?.toUpperCase() || "C"}
+
+                              {
+                                customer.name
+                                  ?.charAt(0)
+                                  ?.toUpperCase() ||
+                                "C"
+                              }
+
                             </div>
 
                             <strong>
-                              {customer.name}
+
+                              {
+                                customer.name
+                              }
+
                             </strong>
 
                           </div>
+
                         </td>
 
-                        <td>
-                          {customer.email}
-                        </td>
+
+                        {/* EMAIL */}
 
                         <td>
-                          {customer.phone ||
-                            "Not provided"}
+
+                          {
+                            customer.email
+                          }
+
                         </td>
 
-                        <td>
-                          {customer.total_orders}
-                        </td>
+
+                        {/* PHONE */}
 
                         <td>
+
+                          {
+                            customer.phone ||
+                            "Not provided"
+                          }
+
+                        </td>
+
+
+                        {/* ORDERS */}
+
+                        <td>
+
+                          {
+                            customer.total_orders ||
+                            0
+                          }
+
+                        </td>
+
+
+                        {/* TOTAL SPENT */}
+
+                        <td>
+
                           ₹
-                          {Number(
-                            customer.total_spent
-                          ).toLocaleString(
-                            "en-IN"
-                          )}
+                          {
+                            Number(
+                              customer.total_spent ||
+                              0
+                            ).toLocaleString(
+                              "en-IN"
+                            )
+                          }
+
                         </td>
 
+
+                        {/* REGISTERED */}
+
                         <td>
-                          {customer.created_at
-                            ? new Date(
-                                customer.created_at
-                              ).toLocaleDateString(
-                                "en-IN"
-                              )
-                            : "-"}
+
+                          {
+                            customer.created_at
+                              ? new Date(
+                                  customer.created_at
+                                ).toLocaleDateString(
+                                  "en-IN"
+                                )
+                              : "-"
+                          }
+
                         </td>
 
                       </tr>
@@ -240,7 +473,9 @@ function AdminCustomers({ onBack }) {
       </main>
 
     </section>
+
   );
+
 }
 
 export default AdminCustomers;

@@ -2,7 +2,7 @@ import React, { useEffect, useState } from "react";
 import { API_BASE_URL } from "../api";
 import "./AdminPayments.css";
 
-function AdminPayments({ onBack }) {
+function AdminPayments({ onBack, admin }) {
   const [payments, setPayments] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
@@ -16,9 +16,31 @@ function AdminPayments({ onBack }) {
       setLoading(true);
       setError("");
 
-      const response = await fetch(
-        `${API_BASE_URL}/api/admin/payments`
-      );
+      const token =
+  admin?.token ||
+  localStorage.getItem("adminToken");
+
+console.log(
+  "ADMIN PAYMENTS TOKEN:",
+  token ? "Token found" : "Token missing"
+);
+
+if (!token) {
+  throw new Error(
+    "Authentication required. Please login again."
+  );
+}
+
+const response = await fetch(
+  `${API_BASE_URL}/api/admin/payments`,
+  {
+    method: "GET",
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${token}`,
+    },
+  }
+);
 
       const data = await response.json();
 

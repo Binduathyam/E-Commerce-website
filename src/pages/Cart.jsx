@@ -6,11 +6,14 @@ function Cart({
   onRemove,
   onUpdateQuantity,
   onWishlistClick,
+  onMoveToWishlist,
   onCheckout,
 }) {
   const [coupon, setCoupon] = useState("");
-  const [couponApplied, setCouponApplied] =
-    useState(false);
+  const [couponApplied, setCouponApplied] = useState(false);
+
+  // NEW: Product selected for Remove / Wishlist popup
+  const [actionItem, setActionItem] = useState(null);
 
   const subtotal = cart.reduce(
     (sum, item) =>
@@ -70,7 +73,9 @@ function Cart({
             ←
           </button>
 
-          <h1>Cart</h1>
+          <h1>
+            Cart
+          </h1>
 
           <button
             type="button"
@@ -119,7 +124,9 @@ function Cart({
   return (
     <section className="cart-page">
 
-      {/* HEADER */}
+      {/* =========================
+          HEADER
+      ========================= */}
 
       <div className="cart-header">
 
@@ -132,7 +139,9 @@ function Cart({
           ←
         </button>
 
-        <h1>Cart</h1>
+        <h1>
+          Cart
+        </h1>
 
         <button
           type="button"
@@ -145,7 +154,9 @@ function Cart({
 
       </div>
 
-      {/* CART PRODUCTS */}
+      {/* =========================
+          CART PRODUCTS
+      ========================= */}
 
       <div className="cart-items-container">
 
@@ -180,10 +191,12 @@ function Cart({
               </h2>
 
               <p className="cart-price">
+
                 ₹
                 {Number(item.price).toLocaleString(
                   "en-IN"
                 )}
+
               </p>
 
               {/* QUANTITY */}
@@ -222,11 +235,14 @@ function Cart({
 
             </div>
 
-            {/* PRICE + REMOVE */}
+            {/* =========================
+                PRICE + ACTION
+            ========================= */}
 
             <div className="cart-product-actions">
 
               <strong>
+
                 ₹
                 {(
                   Number(item.price) *
@@ -234,13 +250,16 @@ function Cart({
                 ).toLocaleString(
                   "en-IN"
                 )}
+
               </strong>
+
+              {/* REMOVE BUTTON */}
 
               <button
                 type="button"
                 className="remove-cart-button"
                 onClick={() =>
-                  onRemove(item.id)
+                  setActionItem(item)
                 }
               >
                 Remove
@@ -254,7 +273,9 @@ function Cart({
 
       </div>
 
-      {/* COUPON */}
+      {/* =========================
+          COUPON
+      ========================= */}
 
       <div className="coupon-section">
 
@@ -299,7 +320,9 @@ function Cart({
 
       </div>
 
-      {/* ORDER DETAILS */}
+      {/* =========================
+          ORDER DETAILS
+      ========================= */}
 
       <div className="order-details">
 
@@ -314,10 +337,12 @@ function Cart({
           </span>
 
           <strong>
+
             ₹
             {subtotal.toLocaleString(
               "en-IN"
             )}
+
           </strong>
 
         </div>
@@ -329,10 +354,12 @@ function Cart({
           </span>
 
           <strong>
+
             ₹
             {savings.toLocaleString(
               "en-IN"
             )}
+
           </strong>
 
         </div>
@@ -344,10 +371,12 @@ function Cart({
           </span>
 
           <strong className="green-text">
+
             ₹
             {couponDiscount.toLocaleString(
               "en-IN"
             )}
+
           </strong>
 
         </div>
@@ -359,9 +388,11 @@ function Cart({
           </span>
 
           <strong className="green-text">
+
             {deliveryFee === 0
               ? "FREE"
               : `₹${deliveryFee}`}
+
           </strong>
 
         </div>
@@ -387,10 +418,12 @@ function Cart({
           </span>
 
           <strong>
+
             ₹
             {amountPayable.toLocaleString(
               "en-IN"
             )}
+
           </strong>
 
         </div>
@@ -411,7 +444,9 @@ function Cart({
 
       </div>
 
-      {/* BOTTOM PAY BAR */}
+      {/* =========================
+          BOTTOM PAY BAR
+      ========================= */}
 
       <div className="cart-pay-bar">
 
@@ -422,10 +457,12 @@ function Cart({
           </span>
 
           <strong>
+
             ₹
             {amountPayable.toLocaleString(
               "en-IN"
             )}
+
           </strong>
 
         </div>
@@ -439,6 +476,88 @@ function Cart({
         </button>
 
       </div>
+
+      {/* =================================================
+          REMOVE / MOVE TO WISHLIST POPUP
+      ================================================= */}
+
+      {actionItem && (
+
+        <div className="cart-action-overlay">
+
+          <div className="cart-action-popup">
+
+            <h3>
+              What do you want to do?
+            </h3>
+
+            <p>
+              Choose an action for
+              <strong> "{actionItem.name}"</strong>
+            </p>
+
+            <div className="cart-action-buttons">
+
+              {/* REMOVE */}
+
+              <button
+                type="button"
+                className="cart-remove-action"
+                onClick={() => {
+
+                  onRemove(
+                    actionItem.id
+                  );
+
+                  setActionItem(null);
+
+                }}
+              >
+                🗑️ Remove
+              </button>
+
+              {/* MOVE TO WISHLIST */}
+
+              <button
+                type="button"
+                className="cart-wishlist-action"
+                onClick={() => {
+
+                  if (
+                    typeof onMoveToWishlist ===
+                    "function"
+                  ) {
+                    onMoveToWishlist(
+                      actionItem
+                    );
+                  }
+
+                  setActionItem(null);
+
+                }}
+              >
+                ♡ Move to Wishlist
+              </button>
+
+              {/* CANCEL */}
+
+              <button
+                type="button"
+                className="cart-cancel-action"
+                onClick={() =>
+                  setActionItem(null)
+                }
+              >
+                Cancel
+              </button>
+
+            </div>
+
+          </div>
+
+        </div>
+
+      )}
 
     </section>
   );

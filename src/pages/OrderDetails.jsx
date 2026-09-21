@@ -6,6 +6,7 @@ function OrderDetails({
   onBack,
   onTrack,
   onCancel,
+  onDownloadInvoice,
 }) {
   const [items, setItems] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -25,6 +26,18 @@ function OrderDetails({
     useState("");
 
   // =========================================
+  // GET CUSTOMER TOKEN
+  // =========================================
+
+  const getToken = () => {
+    return (
+      localStorage.getItem("customer_token") ||
+      localStorage.getItem("authToken") ||
+      localStorage.getItem("token")
+    );
+  };
+
+  // =========================================
   // FETCH COMPLETE ORDER DETAILS
   // =========================================
 
@@ -39,32 +52,120 @@ function OrderDetails({
         setLoading(true);
         setError("");
 
+        const token = getToken();
+
+        const userId =
+          currentOrder?.user_id ||
+          currentOrder?.customer_id ||
+          currentOrder?.userId ||
+          "";
+
         const response = await fetch(
-          `${API_BASE_URL}/api/orders/${currentOrder.id}`
+          `${API_BASE_URL}/api/orders/${currentOrder.id}`,
+          {
+            method: "GET",
+
+            headers: {
+              "Content-Type": "application/json",
+
+              ...(userId
+                ? {
+                    "x-user-id": String(userId),
+                  }
+                : {}),
+
+              ...(token
+                ? {
+                    Authorization: `Bearer ${token}`,
+                  }
+                : {}),
+            },
+          }
         );
 
         const data = await response.json();
 
-        if (!response.ok || !data.success) {
+        console.log(
+          "ORDER DETAILS RESPONSE:",
+          data
+        );
+
+        if (!response.ok) {
           throw new Error(
-            data.message ||
-              "Failed to fetch order details"
+            data?.message ||
+              data?.error ||
+              "Failed to fetch order details."
           );
         }
 
-        const fetchedOrder =
-          data.order;
+        // =====================================
+        // SAME RESPONSE FORMAT AS MOBILE APP
+        // =====================================
 
-        // Update complete order
+        const fetchedOrder =
+          data?.order ||
+          data?.data ||
+          data;
+
+        console.log(
+          "FETCHED ORDER:",
+          fetchedOrder
+        );
+
+        // =====================================
+        // UPDATE COMPLETE ORDER
+        // =====================================
+
         setCurrentOrder((previous) => ({
           ...previous,
           ...fetchedOrder,
         }));
 
-        // Backend returns items inside order
-        setItems(
-          fetchedOrder?.items || []
+        // =====================================
+        // GET PRODUCTS
+        // =====================================
+
+        let orderItems = [];
+
+        if (
+          Array.isArray(
+            fetchedOrder?.items
+          )
+        ) {
+          orderItems =
+            fetchedOrder.items;
+        } else if (
+          typeof fetchedOrder?.items ===
+          "string"
+        ) {
+          try {
+            const parsedItems =
+              JSON.parse(
+                fetchedOrder.items
+              );
+
+            if (
+              Array.isArray(
+                parsedItems
+              )
+            ) {
+              orderItems =
+                parsedItems;
+            }
+          } catch (parseError) {
+            console.error(
+              "Items JSON parse error:",
+              parseError
+            );
+          }
+        }
+
+        console.log(
+          "ORDER ITEMS:",
+          orderItems
         );
+
+        setItems(orderItems);
 
       } catch (err) {
         console.error(
@@ -72,8 +173,11 @@ function OrderDetails({
           err
         );
 
+        setItems([]);
+
         setError(
-          "Unable to load order details."
+          err?.message ||
+            "Unable to load order details."
         );
       } finally {
         setLoading(false);
@@ -81,7 +185,6 @@ function OrderDetails({
     };
 
     fetchOrderDetails();
-
   }, [currentOrder?.id]);
 
   // =========================================
@@ -131,19 +234,21 @@ function OrderDetails({
   // PAYMENT METHOD
   // =========================================
 
-  const paymentMethod = String(
-    currentOrder.payment_method ||
-      currentOrder.paymentMethod ||
-      "cod"
-  )
-    .trim()
-    .toLowerCase();
+  const paymentMethod =
+    String(
+      currentOrder.payment_method ||
+        currentOrder.paymentMethod ||
+        "cod"
+    )
+      .trim()
+      .toLowerCase();
 
   let paymentText = "Payment";
 
   if (
     paymentMethod === "cod" ||
-    paymentMethod === "cash on delivery"
+    paymentMethod ===
+      "cash on delivery"
   ) {
     paymentText =
       "Cash on Delivery";
@@ -175,11 +280,12 @@ function OrderDetails({
   // TOTAL
   // =========================================
 
-  const totalAmount = Number(
-    currentOrder.total_amount ||
-      currentOrder.total ||
-      0
-  );
+  const totalAmount =
+    Number(
+      currentOrder.total_amount ||
+        currentOrder.total ||
+        0
+    );
 
   // =========================================
   // ORDER STATUS
@@ -187,6 +293,7 @@ function OrderDetails({
 
   const orderStatus =
     currentOrder.order_status ||
+    currentOrder.status ||
     "Placed";
 
   const normalizedStatus =
@@ -225,19 +332,26 @@ function OrderDetails({
   const addressName =
     shippingAddress.full_name ||
     shippingAddress.name ||
+    shippingAddress.address_name ||
+    currentOrder.customer_name ||
     currentOrder.full_name ||
+    currentOrder.address_name ||
     "";
 
   const addressPhone =
     shippingAddress.phone ||
     shippingAddress.mobile ||
+    shippingAddress.address_phone ||
+    currentOrder.customer_phone ||
     currentOrder.phone ||
+    currentOrder.address_phone ||
     "";
 
   const addressLine =
     shippingAddress.address_line ||
     shippingAddress.address ||
     currentOrder.address_line ||
+    currentOrder.address ||
     "";
 
   const addressCity =
@@ -253,8 +367,567 @@ function OrderDetails({
   const addressPincode =
     shippingAddress.pincode ||
     shippingAddress.zipcode ||
+    shippingAddress.postal_code ||
     currentOrder.pincode ||
+    currentOrder.postal_code ||
     "";
+
+  // =========================================
+  // PRODUCT IMAGE URL
+  // =========================================
+
+  const getProductImage = (
+    image
+  ) => {
+    if (!image) {
+      return "";
+    }
+
+    const imageString =
+      String(image).trim();
+
+    if (
+      imageString.startsWith(
+        "http://"
+      ) ||
+      imageString.startsWith(
+        "https://"
+      )
+    ) {
+      return imageString;
+    }
+
+    if (
+      imageString.startsWith("/")
+    ) {
+      return `${API_BASE_URL}${imageString}`;
+    }
+
+    return `${API_BASE_URL}/uploads/${imageString}`;
+  };
+
+  // =========================================
+  // DOWNLOAD / PRINT INVOICE
+  // =========================================
+
+  const handleDownloadInvoice = () => {
+    if (!currentOrder?.id) {
+      return;
+    }
+
+    const invoiceWindow =
+      window.open(
+        "",
+        "_blank"
+      );
+
+    if (!invoiceWindow) {
+      alert(
+        "Please allow pop-ups to generate the invoice."
+      );
+      return;
+    }
+
+    const invoiceDate =
+      currentOrder.created_at
+        ? new Date(
+            currentOrder.created_at
+          ).toLocaleString(
+            "en-IN"
+          )
+        : "—";
+
+    const productRows =
+      items
+        .map(
+          (
+            item,
+            index
+          ) => {
+            const name =
+              item.product_name ||
+              item.name ||
+              item.title ||
+              `Product ${
+                index + 1
+              }`;
+
+            const quantity =
+              Number(
+                item.quantity || 1
+              );
+
+            const price =
+              Number(
+                item.price ??
+                  item.unit_price ??
+                  0
+              );
+
+            const itemTotal =
+              Number(
+                item.total_price ??
+                  item.subtotal ??
+                  price *
+                    quantity
+              );
+
+            return `
+              <tr>
+                <td>${index + 1}</td>
+                <td>${name}</td>
+                <td>${quantity}</td>
+                <td>
+                  ₹${price.toLocaleString(
+                    "en-IN"
+                  )}
+                </td>
+                <td>
+                  ₹${itemTotal.toLocaleString(
+                    "en-IN"
+                  )}
+                </td>
+              </tr>
+            `;
+          }
+        )
+        .join("");
+
+    invoiceWindow.document.write(`
+      <!DOCTYPE html>
+
+      <html>
+
+      <head>
+
+        <title>
+          Invoice - Order #${currentOrder.id}
+        </title>
+
+        <style>
+
+          * {
+            box-sizing: border-box;
+          }
+
+          body {
+            font-family:
+              Arial,
+              Helvetica,
+              sans-serif;
+
+            padding: 40px;
+
+            color: #222;
+
+            max-width: 1000px;
+
+            margin: auto;
+          }
+
+          .top {
+            display: flex;
+
+            justify-content:
+              space-between;
+
+            align-items:
+              flex-start;
+
+            border-bottom:
+              2px solid #222;
+
+            padding-bottom:
+              18px;
+
+            margin-bottom:
+              25px;
+          }
+
+          .shop-name {
+            font-size: 28px;
+
+            font-weight: 700;
+
+            margin: 0;
+          }
+
+          .invoice-title {
+            margin-top: 5px;
+
+            color: #777;
+
+            font-size: 14px;
+          }
+
+          .order-info {
+            text-align: right;
+
+            line-height: 1.6;
+          }
+
+          .section {
+            margin-bottom: 25px;
+          }
+
+          .section-title {
+            font-size: 16px;
+
+            font-weight: 700;
+
+            margin-bottom: 10px;
+          }
+
+          .address {
+            line-height: 1.7;
+
+            color: #555;
+          }
+
+          table {
+            width: 100%;
+
+            border-collapse:
+              collapse;
+
+            margin-top: 10px;
+          }
+
+          th,
+          td {
+            border:
+              1px solid #ddd;
+
+            padding: 10px;
+
+            text-align: left;
+
+            font-size: 13px;
+          }
+
+          th {
+            background:
+              #f5f5f5;
+
+            font-weight: 700;
+          }
+
+          .summary {
+            margin-top: 25px;
+
+            margin-left: auto;
+
+            width: 300px;
+          }
+
+          .summary-row {
+            display: flex;
+
+            justify-content:
+              space-between;
+
+            padding: 7px 0;
+
+            font-size: 14px;
+          }
+
+          .grand-total {
+            border-top:
+              2px solid #222;
+
+            margin-top: 8px;
+
+            padding-top: 10px;
+
+            font-size: 18px;
+
+            font-weight: 700;
+          }
+
+          .footer {
+            margin-top: 50px;
+
+            padding-top: 20px;
+
+            border-top:
+              1px solid #ddd;
+
+            text-align: center;
+
+            color: #777;
+
+            font-size: 13px;
+          }
+
+          .print-button {
+            background: #171717;
+
+            color: white;
+
+            border: none;
+
+            padding: 10px 18px;
+
+            border-radius: 6px;
+
+            cursor: pointer;
+
+            margin-bottom: 25px;
+
+            font-size: 13px;
+          }
+
+          @media print {
+
+            body {
+              padding: 10px;
+            }
+
+            .print-button {
+              display: none;
+            }
+              .back-button {
+  padding: 9px 16px;
+  background: #fff;
+  color: #222;
+  border: 1px solid #ddd;
+  border-radius: 6px;
+  cursor: pointer;
+  margin-bottom: 15px;
+  font-size: 13px;
+}
+
+          }
+
+        </style>
+
+      </head>
+
+      <body>
+<button
+  class="back-button"
+  onclick="window.close()"
+>
+  ← Back
+</button>
+        <button
+          class="print-button"
+          onclick="window.print()"
+        >
+          Print / Save PDF
+        </button>
+
+
+        <div class="top">
+
+          <div>
+
+            <h1 class="shop-name">
+              ShopEase
+            </h1>
+
+            <div class="invoice-title">
+              Order Invoice
+            </div>
+
+          </div>
+
+
+          <div class="order-info">
+
+            <strong>
+              Order #${currentOrder.id}
+            </strong>
+
+            <br />
+
+            ${invoiceDate}
+
+          </div>
+
+        </div>
+
+
+        <div class="section">
+
+          <div class="section-title">
+            Delivery Address
+          </div>
+
+          <div class="address">
+
+            <strong>
+              ${addressName || "Customer"}
+            </strong>
+
+            <br />
+
+            ${
+              addressPhone
+                ? addressPhone
+                : ""
+            }
+
+            ${
+              addressPhone
+                ? "<br />"
+                : ""
+            }
+
+            ${
+              addressLine
+                ? addressLine
+                : ""
+            }
+
+            ${
+              addressLine
+                ? "<br />"
+                : ""
+            }
+
+            ${
+              addressCity
+                ? addressCity
+                : ""
+            }
+
+            ${
+              addressState
+                ? `, ${addressState}`
+                : ""
+            }
+
+            ${
+              addressPincode
+                ? ` - ${addressPincode}`
+                : ""
+            }
+
+          </div>
+
+        </div>
+
+
+        <div class="section">
+
+          <div class="section-title">
+            Ordered Items
+          </div>
+
+          <table>
+
+            <thead>
+
+              <tr>
+
+                <th>
+                  #
+                </th>
+
+                <th>
+                  Product
+                </th>
+
+                <th>
+                  Quantity
+                </th>
+
+                <th>
+                  Price
+                </th>
+
+                <th>
+                  Total
+                </th>
+
+              </tr>
+
+            </thead>
+
+
+            <tbody>
+
+              ${
+                productRows ||
+                `
+                  <tr>
+                    <td colspan="5">
+                      No product details available.
+                    </td>
+                  </tr>
+                `
+              }
+
+            </tbody>
+
+          </table>
+
+        </div>
+
+
+        <div class="summary">
+
+          <div class="summary-row">
+
+            <span>
+              Payment Method
+            </span>
+
+            <strong>
+              ${paymentText}
+            </strong>
+
+          </div>
+
+
+          <div class="summary-row">
+
+            <span>
+              Payment Status
+            </span>
+
+            <strong>
+              ${
+                currentOrder.payment_status ||
+                "Pending"
+              }
+            </strong>
+
+          </div>
+
+
+          <div class="summary-row grand-total">
+
+            <span>
+              Order Total
+            </span>
+
+            <strong>
+              ₹${totalAmount.toLocaleString(
+                "en-IN"
+              )}
+            </strong>
+
+          </div>
+
+        </div>
+
+
+        <div class="footer">
+
+          Thank you for shopping with
+          ShopEase.
+
+        </div>
+
+      </body>
+
+      </html>
+    `);
+
+    invoiceWindow.document.close();
+  };
 
   // =========================================
   // CANCEL ORDER
@@ -262,15 +935,7 @@ function OrderDetails({
 
   const handleCancelOrder =
     async () => {
-
       if (!currentOrder?.id) {
-        return;
-      }
-
-      if (!currentOrder?.user_id) {
-        alert(
-          "User information is missing."
-        );
         return;
       }
 
@@ -287,6 +952,9 @@ function OrderDetails({
         setCancelling(true);
         setCancelMessage("");
 
+        const token =
+          getToken();
+
         const response =
           await fetch(
             `${API_BASE_URL}/api/orders/${currentOrder.id}/cancel`,
@@ -296,12 +964,17 @@ function OrderDetails({
               headers: {
                 "Content-Type":
                   "application/json",
+
+                ...(token
+                  ? {
+                      Authorization:
+                        `Bearer ${token}`,
+                    }
+                  : {}),
               },
 
-              body: JSON.stringify({
-                user_id:
-                  currentOrder.user_id,
-              }),
+              body:
+                JSON.stringify({}),
             }
           );
 
@@ -313,19 +986,22 @@ function OrderDetails({
           !data.success
         ) {
           throw new Error(
-            data.message ||
+            data?.message ||
+              data?.error ||
               "Failed to cancel order"
           );
         }
 
-        setCurrentOrder(
-          (previous) => ({
-            ...previous,
+        const updatedOrder = {
+          ...currentOrder,
 
-            order_status:
-              data.order_status ||
-              "Cancelled",
-          })
+          order_status:
+            data.order_status ||
+            "Cancelled",
+        };
+
+        setCurrentOrder(
+          updatedOrder
         );
 
         setCancelMessage(
@@ -333,24 +1009,19 @@ function OrderDetails({
         );
 
         if (onCancel) {
-          onCancel({
-            ...currentOrder,
-
-            order_status:
-              data.order_status ||
-              "Cancelled",
-          });
+          onCancel(
+            updatedOrder
+          );
         }
 
       } catch (error) {
-
         console.error(
           "Cancel order error:",
           error
         );
 
         setCancelMessage(
-          error.message ||
+          error?.message ||
             "Failed to cancel order."
         );
 
@@ -397,6 +1068,10 @@ function OrderDetails({
     statusClass +=
       " confirmed";
   }
+
+  // =========================================
+  // RETURN UI
+  // =========================================
 
   return (
     <section className="order-details-page">
@@ -447,7 +1122,7 @@ function OrderDetails({
       <div className="order-details-content">
 
         {/* ===================================
-            SUCCESS / ERROR MESSAGE
+            CANCEL MESSAGE
         ==================================== */}
 
         {cancelMessage && (
@@ -625,7 +1300,7 @@ function OrderDetails({
             )}
 
 
-          {/* ITEMS */}
+          {/* PRODUCTS */}
 
           {!loading &&
             !error &&
@@ -634,29 +1309,54 @@ function OrderDetails({
               <div className="order-details-items">
 
                 {items.map(
-                  (item) => {
+                  (
+                    item,
+                    index
+                  ) => {
 
                     const price =
                       Number(
-                        item.price ||
+                        item.price ??
+                          item.unit_price ??
                           0
                       );
 
                     const quantity =
                       Number(
-                        item.quantity ||
-                          0
+                        item.quantity ??
+                          1
                       );
 
                     const itemTotal =
-                      price *
-                      quantity;
+                      Number(
+                        item.total_price ??
+                          item.subtotal ??
+                          price *
+                            quantity
+                      );
+
+                    const productName =
+                      item.product_name ||
+                      item.name ||
+                      item.title ||
+                      `Product ${
+                        index + 1
+                      }`;
+
+                    const image =
+                      item.product_image ||
+                      item.image ||
+                      item.image_url ||
+                      "";
 
                     return (
+
                       <div
                         className="order-details-product-row"
                         key={
-                          item.id
+                          item.id ||
+                          item.product_id ||
+                          index
                         }
                       >
 
@@ -664,23 +1364,23 @@ function OrderDetails({
 
                         <div className="order-details-product-image">
 
-                          {item.image ||
-                          item.product_image ? (
+                          {image ? (
+
                             <img
-                              src={
-                                item.image ||
-                                item.product_image
-                              }
+                              src={getProductImage(
+                                image
+                              )}
                               alt={
-                                item.name ||
-                                item.product_name ||
-                                "Product"
+                                productName
                               }
                             />
+
                           ) : (
+
                             <span>
                               🛍️
                             </span>
+
                           )}
 
                         </div>
@@ -692,13 +1392,12 @@ function OrderDetails({
 
                           <p>
                             {item.category ||
+                              item.brand ||
                               "PRODUCT"}
                           </p>
 
                           <h3>
-                            {item.name ||
-                              item.product_name ||
-                              "Product"}
+                            {productName}
                           </h3>
 
                           <span>
@@ -812,6 +1511,7 @@ function OrderDetails({
               {(addressCity ||
                 addressState ||
                 addressPincode) && (
+
                 <p>
 
                   {addressCity}
@@ -833,11 +1533,13 @@ function OrderDetails({
                 !addressCity &&
                 !addressState &&
                 !addressPincode && (
+
                   <p>
                     Delivery address
                     not available.
                   </p>
-                )}
+
+              )}
 
             </div>
 
@@ -936,7 +1638,7 @@ function OrderDetails({
               {normalizedStatus ===
               "cancelled"
                 ? "This order has been cancelled."
-                : "Need help with this order? Track your delivery or cancel the order if eligible."}
+                : "Need help with this order? Track your delivery or download your invoice."}
             </span>
 
           </div>
@@ -948,26 +1650,61 @@ function OrderDetails({
 
             {normalizedStatus !==
               "cancelled" && (
+
               <button
                 type="button"
                 className="order-details-track-button"
                 onClick={() => {
+
                   if (onTrack) {
                     onTrack(
                       currentOrder
                     );
                   }
+
                 }}
               >
                 🚚 Track Order
               </button>
+
             )}
+
+
+            {/* INVOICE */}
+
+            <button
+              type="button"
+              className="order-details-invoice-button"
+              onClick={() => {
+
+                // Use parent invoice function
+                // if available
+
+                if (
+                  onDownloadInvoice
+                ) {
+                  onDownloadInvoice(
+                    currentOrder
+                  );
+                  return;
+                }
+
+                // Otherwise generate
+                // invoice directly
+
+                handleDownloadInvoice();
+
+              }}
+            >
+              📄 Invoice
+            </button>
 
 
             {/* CANCEL ORDER */}
 
             {canCancel &&
               !cancelling && (
+
                 <button
                   type="button"
                   className="order-details-cancel-button"
@@ -977,13 +1714,15 @@ function OrderDetails({
                 >
                   Cancel Order
                 </button>
-              )}
+
+            )}
 
 
             {/* CANCELLING */}
 
             {canCancel &&
               cancelling && (
+
                 <button
                   type="button"
                   className="order-details-cancel-button"
@@ -991,7 +1730,8 @@ function OrderDetails({
                 >
                   Cancelling...
                 </button>
-              )}
+
+            )}
 
           </div>
 

@@ -19,30 +19,93 @@ function MerchantInventory({
   const [updatingStock, setUpdatingStock] =
     useState(false);
 
+
+  /* =========================
+     GET AUTH TOKEN
+  ========================= */
+
+  const getToken = () => {
+    return (
+      localStorage.getItem("merchant_token")||
+      localStorage.getItem("authToken") ||
+      localStorage.getItem("accessToken")
+    );
+  };
+
+
   /* =========================
      FETCH INVENTORY
   ========================= */
 
   const fetchInventory = async () => {
+    if (!merchant?.id) {
+      setError(
+        "Merchant information is missing."
+      );
+      setLoading(false);
+      return;
+    }
+
     try {
       setLoading(true);
       setError("");
 
-      const response = await fetch(
-        `${API_BASE_URL}/api/products/merchant/${merchant.id}`
+      const token = getToken();
+
+      console.log(
+        "Merchant Inventory Token exists:",
+        !!token
       );
 
-      const data = await response.json();
+      if (!token) {
+        throw new Error(
+          "Authentication required. Please login again."
+        );
+      }
 
-      if (!response.ok || !data.success) {
+      const response = await fetch(
+        `${API_BASE_URL}/api/products/merchant/${merchant.id}`,
+        {
+          method: "GET",
+
+          headers: {
+            "Content-Type": "application/json",
+
+            Authorization:
+              `Bearer ${token}`,
+
+            "x-user-id":
+              merchant.id,
+          },
+        }
+      );
+
+      const data =
+        await response.json();
+
+      console.log(
+        "Merchant inventory response:",
+        data
+      );
+
+      if (
+        !response.ok ||
+        !data.success
+      ) {
         throw new Error(
           data.message ||
             "Failed to fetch inventory"
         );
       }
 
-      setProducts(data.products || []);
+      setProducts(
+        Array.isArray(data.products)
+          ? data.products
+          : []
+      );
+
     } catch (error) {
+
       console.error(
         "Inventory error:",
         error
@@ -52,16 +115,29 @@ function MerchantInventory({
         error.message ||
           "Unable to load inventory"
       );
+
     } finally {
+
       setLoading(false);
+
     }
   };
 
+
+  /* =========================
+     INITIAL LOAD
+  ========================= */
+
   useEffect(() => {
+
     if (merchant?.id) {
       fetchInventory();
+    } else {
+      setLoading(false);
     }
+
   }, [merchant?.id]);
+
 
   /* =========================
      CALCULATIONS
@@ -73,7 +149,8 @@ function MerchantInventory({
   const totalStock =
     products.reduce(
       (sum, product) =>
-        sum + Number(product.stock || 0),
+        sum +
+        Number(product.stock || 0),
       0
     );
 
@@ -96,170 +173,267 @@ function MerchantInventory({
         Number(product.stock || 0) > 5
     );
 
+
   /* =========================
      STOCK STATUS
   ========================= */
 
-  const getStockStatus = (stock) => {
-    const value = Number(stock || 0);
+  const getStockStatus = (
+    stock
+  ) => {
+
+    const value =
+      Number(stock || 0);
 
     if (value === 0) {
+
       return {
         text: "Out of Stock",
-        className: "inventory-out",
+        className:
+          "inventory-out",
       };
+
     }
 
     if (value <= 5) {
+
       return {
         text: "Low Stock",
-        className: "inventory-low",
+        className:
+          "inventory-low",
       };
+
     }
 
     return {
       text: "In Stock",
-      className: "inventory-good",
+      className:
+        "inventory-good",
     };
+
   };
+
 
   /* =========================
      UPDATE STOCK
   ========================= */
 
-  const handleStockUpdate = async () => {
-    if (!editingProduct) {
-      return;
-    }
+  const handleStockUpdate =
+    async () => {
 
-    const stockValue =
-      Number(newStock);
-
-    if (
-      !Number.isInteger(stockValue) ||
-      stockValue < 0
-    ) {
-      alert(
-        "Please enter a valid stock quantity."
-      );
-      return;
-    }
-
-    try {
-      setUpdatingStock(true);
-
-      const response = await fetch(
-        `${API_BASE_URL}/api/products/${editingProduct.id}`,
-        {
-          method: "PUT",
-
-          headers: {
-            "Content-Type":
-              "application/json",
-          },
-
-          body: JSON.stringify({
-            merchant_id:
-              merchant.id,
-
-            name:
-              editingProduct.name,
-
-            category:
-              editingProduct.category || "",
-
-            price:
-              editingProduct.price,
-
-            original_price:
-              editingProduct.original_price ||
-              editingProduct.price,
-
-            discount:
-              editingProduct.discount || 0,
-
-            stock:
-              stockValue,
-
-            brand:
-              editingProduct.brand || "",
-
-            description:
-              editingProduct.description || "",
-
-            image:
-              editingProduct.image || "",
-          }),
-        }
-      );
-
-      const data =
-        await response.json();
-
-      if (
-        !response.ok ||
-        !data.success
-      ) {
-        throw new Error(
-          data.message ||
-            "Failed to update stock"
-        );
+      if (!editingProduct) {
+        return;
       }
 
-      setProducts(
-        (currentProducts) =>
-          currentProducts.map(
-            (product) =>
-              product.id ===
-              editingProduct.id
-                ? data.product
-                : product
-          )
-      );
+      const stockValue =
+        Number(newStock);
 
-      setEditingProduct(null);
-      setNewStock("");
+      if (
+        !Number.isInteger(stockValue) ||
+        stockValue < 0
+      ) {
 
-    } catch (error) {
-      console.error(
-        "Stock update error:",
-        error
-      );
+        alert(
+          "Please enter a valid stock quantity."
+        );
 
-      alert(
-        error.message ||
-          "Failed to update stock"
-      );
-    } finally {
-      setUpdatingStock(false);
-    }
-  };
+        return;
+      }
+
+      try {
+
+        setUpdatingStock(true);
+
+        const token =
+          getToken();
+
+        if (!token) {
+
+          throw new Error(
+            "Authentication required. Please login again."
+          );
+
+        }
+
+        const response =
+          await fetch(
+            `${API_BASE_URL}/api/products/${editingProduct.id}`,
+            {
+              method: "PUT",
+
+              headers: {
+
+                "Content-Type":
+                  "application/json",
+
+                Authorization:
+                  `Bearer ${token}`,
+
+                "x-user-id":
+                  merchant.id,
+
+              },
+
+              body:
+                JSON.stringify({
+
+                  merchant_id:
+                    merchant.id,
+
+                  name:
+                    editingProduct.name,
+
+                  category:
+                    editingProduct.category ||
+                    "",
+
+                  price:
+                    editingProduct.price,
+
+                  original_price:
+                    editingProduct.original_price ||
+                    editingProduct.price,
+
+                  discount:
+                    editingProduct.discount ||
+                    0,
+
+                  stock:
+                    stockValue,
+
+                  brand:
+                    editingProduct.brand ||
+                    "",
+
+                  description:
+                    editingProduct.description ||
+                    "",
+
+                  image:
+                    editingProduct.image ||
+                    "",
+
+                }),
+
+            }
+          );
+
+
+        const data =
+          await response.json();
+
+
+        console.log(
+          "Stock update response:",
+          data
+        );
+
+
+        if (
+          !response.ok ||
+          !data.success
+        ) {
+
+          throw new Error(
+            data.message ||
+              "Failed to update stock"
+          );
+
+        }
+
+
+        /* =================================
+           UPDATE UI IMMEDIATELY
+        ================================= */
+
+        setProducts(
+          (currentProducts) =>
+            currentProducts.map(
+              (product) =>
+                product.id ===
+                editingProduct.id
+                  ? (
+                      data.product ||
+                      {
+                        ...product,
+                        stock:
+                          stockValue,
+                      }
+                    )
+                  : product
+            )
+        );
+
+
+        setEditingProduct(null);
+        setNewStock("");
+
+
+      } catch (error) {
+
+        console.error(
+          "Stock update error:",
+          error
+        );
+
+        alert(
+          error.message ||
+            "Failed to update stock"
+        );
+
+      } finally {
+
+        setUpdatingStock(false);
+
+      }
+
+    };
+
 
   /* =========================
      LOADING
   ========================= */
 
   if (loading) {
+
     return (
-      <section className="merchant-inventory-page">
-        <div className="inventory-loading">
+
+      <section
+        className="merchant-inventory-page"
+      >
+
+        <div
+          className="inventory-loading"
+        >
           Loading inventory...
         </div>
+
       </section>
+
     );
+
   }
+
 
   /* =========================
      ERROR
   ========================= */
 
   if (error) {
+
     return (
-      <section className="merchant-inventory-page">
 
-        <div className="inventory-error">
+      <section
+        className="merchant-inventory-page"
+      >
 
-          <div className="inventory-error-icon">
+        <div
+          className="inventory-error"
+        >
+
+          <div
+            className="inventory-error-icon"
+          >
             ⚠️
           </div>
 
@@ -281,19 +455,33 @@ function MerchantInventory({
         </div>
 
       </section>
+
     );
+
   }
 
+
+  /* =========================
+     MAIN PAGE
+  ========================= */
+
   return (
-    <section className="merchant-inventory-page">
+
+    <section
+      className="merchant-inventory-page"
+    >
 
       {/* =========================
           HEADER
       ========================= */}
 
-      <div className="merchant-inventory-header">
+      <div
+        className="merchant-inventory-header"
+      >
 
-        <div className="inventory-heading">
+        <div
+          className="inventory-heading"
+        >
 
           <button
             type="button"
@@ -322,6 +510,7 @@ function MerchantInventory({
 
         </div>
 
+
         <button
           type="button"
           className="inventory-refresh-button"
@@ -337,9 +526,13 @@ function MerchantInventory({
           STORE
       ========================= */}
 
-      <div className="inventory-store-card">
+      <div
+        className="inventory-store-card"
+      >
 
-        <div className="inventory-store-icon">
+        <div
+          className="inventory-store-icon"
+        >
           🏪
         </div>
 
@@ -365,15 +558,22 @@ function MerchantInventory({
           SUMMARY
       ========================= */}
 
-      <div className="inventory-summary-grid">
+      <div
+        className="inventory-summary-grid"
+      >
 
-        <div className="inventory-summary-card">
+        <div
+          className="inventory-summary-card"
+        >
 
-          <div className="inventory-card-icon">
+          <div
+            className="inventory-card-icon"
+          >
             📦
           </div>
 
           <div>
+
             <span>
               Total Products
             </span>
@@ -381,18 +581,24 @@ function MerchantInventory({
             <strong>
               {totalProducts}
             </strong>
+
           </div>
 
         </div>
 
 
-        <div className="inventory-summary-card">
+        <div
+          className="inventory-summary-card"
+        >
 
-          <div className="inventory-card-icon">
+          <div
+            className="inventory-card-icon"
+          >
             📊
           </div>
 
           <div>
+
             <span>
               Total Stock
             </span>
@@ -400,18 +606,24 @@ function MerchantInventory({
             <strong>
               {totalStock}
             </strong>
+
           </div>
 
         </div>
 
 
-        <div className="inventory-summary-card">
+        <div
+          className="inventory-summary-card"
+        >
 
-          <div className="inventory-card-icon">
+          <div
+            className="inventory-card-icon"
+          >
             ✅
           </div>
 
           <div>
+
             <span>
               In Stock
             </span>
@@ -419,18 +631,24 @@ function MerchantInventory({
             <strong>
               {inStockProducts.length}
             </strong>
+
           </div>
 
         </div>
 
 
-        <div className="inventory-summary-card inventory-warning-card">
+        <div
+          className="inventory-summary-card inventory-warning-card"
+        >
 
-          <div className="inventory-card-icon">
+          <div
+            className="inventory-card-icon"
+          >
             ⚠️
           </div>
 
           <div>
+
             <span>
               Low Stock
             </span>
@@ -438,18 +656,24 @@ function MerchantInventory({
             <strong>
               {lowStockProducts.length}
             </strong>
+
           </div>
 
         </div>
 
 
-        <div className="inventory-summary-card inventory-danger-card">
+        <div
+          className="inventory-summary-card inventory-danger-card"
+        >
 
-          <div className="inventory-card-icon">
+          <div
+            className="inventory-card-icon"
+          >
             🚫
           </div>
 
           <div>
+
             <span>
               Out of Stock
             </span>
@@ -457,6 +681,7 @@ function MerchantInventory({
             <strong>
               {outOfStockProducts.length}
             </strong>
+
           </div>
 
         </div>
@@ -469,9 +694,14 @@ function MerchantInventory({
       ========================= */}
 
       {lowStockProducts.length > 0 && (
-        <div className="inventory-alert">
 
-          <div className="inventory-alert-icon">
+        <div
+          className="inventory-alert"
+        >
+
+          <div
+            className="inventory-alert-icon"
+          >
             ⚠️
           </div>
 
@@ -482,17 +712,22 @@ function MerchantInventory({
             </strong>
 
             <p>
+
               {lowStockProducts.length}{" "}
+
               product
               {lowStockProducts.length !== 1
                 ? "s are"
                 : " is"}{" "}
+
               running low on stock.
+
             </p>
 
           </div>
 
         </div>
+
       )}
 
 
@@ -500,9 +735,13 @@ function MerchantInventory({
           PRODUCT TABLE
       ========================= */}
 
-      <div className="inventory-products-section">
+      <div
+        className="inventory-products-section"
+      >
 
-        <div className="inventory-section-header">
+        <div
+          className="inventory-section-header"
+        >
 
           <div>
 
@@ -521,7 +760,9 @@ function MerchantInventory({
 
         {products.length === 0 ? (
 
-          <div className="inventory-empty">
+          <div
+            className="inventory-empty"
+          >
 
             <div>
               📦
@@ -540,9 +781,13 @@ function MerchantInventory({
 
         ) : (
 
-          <div className="inventory-table-wrapper">
+          <div
+            className="inventory-table-wrapper"
+          >
 
-            <table className="inventory-table">
+            <table
+              className="inventory-table"
+            >
 
               <thead>
 
@@ -588,6 +833,7 @@ function MerchantInventory({
                       );
 
                     return (
+
                       <tr
                         key={product.id}
                       >
@@ -596,9 +842,13 @@ function MerchantInventory({
 
                         <td>
 
-                          <div className="inventory-product-info">
+                          <div
+                            className="inventory-product-info"
+                          >
 
-                            <div className="inventory-product-image">
+                            <div
+                              className="inventory-product-image"
+                            >
 
                               {product.image ? (
 
@@ -609,9 +859,7 @@ function MerchantInventory({
                                   alt={
                                     product.name
                                   }
-                                  onError={(
-                                    e
-                                  ) => {
+                                  onError={(e) => {
                                     e.currentTarget.style.display =
                                       "none";
                                   }}
@@ -626,6 +874,7 @@ function MerchantInventory({
                               )}
 
                             </div>
+
 
                             <div>
 
@@ -648,8 +897,10 @@ function MerchantInventory({
                         {/* CATEGORY */}
 
                         <td>
+
                           {product.category ||
                             "Product"}
+
                         </td>
 
 
@@ -658,12 +909,15 @@ function MerchantInventory({
                         <td>
 
                           <strong>
+
                             ₹
                             {Number(
-                              product.price || 0
+                              product.price ||
+                                0
                             ).toLocaleString(
                               "en-IN"
                             )}
+
                           </strong>
 
                         </td>
@@ -676,13 +930,16 @@ function MerchantInventory({
                           <span
                             className={
                               Number(
-                                product.stock || 0
+                                product.stock ||
+                                  0
                               ) <= 5
                                 ? "inventory-stock-number inventory-stock-low"
                                 : "inventory-stock-number"
                             }
                           >
+
                             {product.stock}
+
                           </span>
 
                         </td>
@@ -695,7 +952,9 @@ function MerchantInventory({
                           <span
                             className={`inventory-status ${status.className}`}
                           >
+
                             {status.text}
+
                           </span>
 
                         </td>
@@ -709,15 +968,18 @@ function MerchantInventory({
                             type="button"
                             className="inventory-update-stock-button"
                             onClick={() => {
+
                               setEditingProduct(
                                 product
                               );
 
                               setNewStock(
                                 String(
-                                  product.stock || 0
+                                  product.stock ||
+                                    0
                                 )
                               );
+
                             }}
                           >
                             Update Stock
@@ -726,7 +988,9 @@ function MerchantInventory({
                         </td>
 
                       </tr>
+
                     );
+
                   }
                 )}
 
@@ -747,41 +1011,58 @@ function MerchantInventory({
 
       {editingProduct && (
 
-        <div className="inventory-modal-overlay">
+        <div
+          className="inventory-modal-overlay"
+        >
 
-          <div className="inventory-modal">
+          <div
+            className="inventory-modal"
+          >
 
             <button
               type="button"
               className="inventory-modal-close"
               onClick={() => {
+
                 setEditingProduct(null);
+
                 setNewStock("");
+
               }}
             >
               ×
             </button>
 
+
             <p>
               INVENTORY
             </p>
+
 
             <h2>
               Update Stock
             </h2>
 
+
             <strong>
               {editingProduct.name}
             </strong>
 
-            <div className="inventory-current-stock">
+
+            <div
+              className="inventory-current-stock"
+            >
+
               Current Stock:{" "}
               {editingProduct.stock}
+
             </div>
+
 
             <label>
               New Stock
             </label>
+
 
             <input
               type="number"
@@ -794,29 +1075,42 @@ function MerchantInventory({
               }
             />
 
-            <div className="inventory-modal-actions">
+
+            <div
+              className="inventory-modal-actions"
+            >
 
               <button
                 type="button"
                 onClick={() => {
+
                   setEditingProduct(null);
+
                   setNewStock("");
+
                 }}
-                disabled={updatingStock}
+                disabled={
+                  updatingStock
+                }
               >
                 Cancel
               </button>
+
 
               <button
                 type="button"
                 onClick={
                   handleStockUpdate
                 }
-                disabled={updatingStock}
+                disabled={
+                  updatingStock
+                }
               >
+
                 {updatingStock
                   ? "Updating..."
                   : "Update Stock"}
+
               </button>
 
             </div>
@@ -828,6 +1122,7 @@ function MerchantInventory({
       )}
 
     </section>
+
   );
 }
 

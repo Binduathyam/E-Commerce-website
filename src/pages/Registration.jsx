@@ -6,7 +6,7 @@ function Registration({
   onLogin,
 }) {
   const [formData, setFormData] = useState({
-    businessName: "",
+    fullName: "",
     email: "",
     password: "",
     confirmPassword: "",
@@ -34,16 +34,17 @@ function Registration({
 
     const newErrors = {};
 
-    // Business Name validation
-    if (!formData.businessName.trim()) {
-      newErrors.businessName =
-        "Business Name is required";
+    // Full Name validation
+    if (!formData.fullName.trim()) {
+      newErrors.fullName = "Full Name is required";
+    } else if (formData.fullName.trim().length < 3) {
+      newErrors.fullName =
+        "Full Name must be at least 3 characters";
     }
 
     // Email validation
     if (!formData.email.trim()) {
-      newErrors.email =
-        "Email is required";
+      newErrors.email = "Email is required";
     } else if (
       !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(
         formData.email
@@ -53,18 +54,29 @@ function Registration({
         "Enter a valid email address";
     }
 
-    // Password validation
-    if (!formData.password) {
+    // Strong Password validation
+    const password = formData.password;
+
+    if (!password) {
+      newErrors.password = "Password is required";
+    } else if (password.length < 8) {
       newErrors.password =
-        "Password is required";
-    } else if (
-      formData.password.length < 6
-    ) {
+        "Password must be at least 8 characters";
+    } else if (!/[A-Z]/.test(password)) {
       newErrors.password =
-        "Password must be at least 6 characters";
+        "Password must contain at least 1 uppercase letter";
+    } else if (!/[a-z]/.test(password)) {
+      newErrors.password =
+        "Password must contain at least 1 lowercase letter";
+    } else if (!/[0-9]/.test(password)) {
+      newErrors.password =
+        "Password must contain at least 1 number";
+    } else if (!/[^A-Za-z0-9]/.test(password)) {
+      newErrors.password =
+        "Password must contain at least 1 special symbol";
     }
 
-    // Confirm password validation
+    // Confirm Password validation
     if (!formData.confirmPassword) {
       newErrors.confirmPassword =
         "Confirm Password is required";
@@ -94,7 +106,7 @@ function Registration({
           },
 
           body: JSON.stringify({
-            name: formData.businessName,
+            name: formData.fullName,
             email: formData.email,
             password: formData.password,
           }),
@@ -152,6 +164,7 @@ function Registration({
         </button>
 
         <div className="auth-header">
+
           <p>CREATE ACCOUNT</p>
 
           <h1>
@@ -161,6 +174,7 @@ function Registration({
           <span>
             Register to start shopping
           </span>
+
         </div>
 
         <form
@@ -168,12 +182,12 @@ function Registration({
           onSubmit={handleRegister}
         >
 
-          {/* BUSINESS NAME */}
+          {/* FULL NAME */}
 
           <div className="form-group">
 
             <label>
-              Business Name
+              Full Name
               <span className="required-star">
                 *
               </span>
@@ -181,17 +195,17 @@ function Registration({
 
             <input
               type="text"
-              name="businessName"
-              placeholder="Enter business name"
+              name="fullName"
+              placeholder="Enter your full name"
               value={
-                formData.businessName
+                formData.fullName
               }
               onChange={handleChange}
             />
 
-            {errors.businessName && (
+            {errors.fullName && (
               <small>
-                {errors.businessName}
+                {errors.fullName}
               </small>
             )}
 
@@ -238,12 +252,33 @@ function Registration({
             <input
               type="password"
               name="password"
-              placeholder="Create a password"
+              placeholder="Create a strong password"
               value={
                 formData.password
               }
               onChange={handleChange}
             />
+
+            <div
+              style={{
+                marginTop: "7px",
+                fontSize: "11px",
+                lineHeight: "1.6",
+                color: "#777",
+              }}
+            >
+              Password must contain:
+              <br />
+              • At least 8 characters
+              <br />
+              • 1 uppercase letter (A-Z)
+              <br />
+              • 1 lowercase letter (a-z)
+              <br />
+              • 1 number (0-9)
+              <br />
+              • 1 special symbol (! @ # $ % etc.)
+            </div>
 
             {errors.password && (
               <small>

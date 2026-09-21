@@ -40,6 +40,34 @@ function MerchantRegister({
   };
 
   /* =========================
+     PASSWORD VALIDATION
+  ========================= */
+
+  const validatePassword = (password) => {
+    if (password.length < 8) {
+      return "Password must be at least 8 characters long.";
+    }
+
+    if (!/[A-Z]/.test(password)) {
+      return "Password must contain at least one uppercase letter.";
+    }
+
+    if (!/[a-z]/.test(password)) {
+      return "Password must contain at least one lowercase letter.";
+    }
+
+    if (!/[0-9]/.test(password)) {
+      return "Password must contain at least one number.";
+    }
+
+    if (!/[!@#$%^&*(),.?":{}|<>_\-\\[\]/`~+=;']/.test(password)) {
+      return "Password must contain at least one special character.";
+    }
+
+    return "";
+  };
+
+  /* =========================
      VALIDATION
   ========================= */
 
@@ -81,8 +109,15 @@ function MerchantRegister({
       return "Please enter a password.";
     }
 
-    if (password.length < 6) {
-      return "Password must be at least 6 characters.";
+    /* =========================
+       STRONG PASSWORD RULES
+    ========================= */
+
+    const passwordError =
+      validatePassword(password);
+
+    if (passwordError) {
+      return passwordError;
     }
 
     if (!confirmPassword) {
@@ -239,7 +274,6 @@ function MerchantRegister({
 
       </div>
 
-
       {/* =========================
           MAIN CARD
       ========================= */}
@@ -253,6 +287,7 @@ function MerchantRegister({
         </div>
 
         <div className="merchant-register-title">
+
           <h2>
             Register Your Store
           </h2>
@@ -261,8 +296,8 @@ function MerchantRegister({
             Enter your details to create
             a merchant account.
           </p>
-        </div>
 
+        </div>
 
         {/* =========================
             ERROR
@@ -274,7 +309,6 @@ function MerchantRegister({
           </div>
         )}
 
-
         {/* =========================
             SUCCESS
         ========================= */}
@@ -284,7 +318,6 @@ function MerchantRegister({
             ✓ {success}
           </div>
         )}
-
 
         {/* =========================
             FORM
@@ -314,7 +347,6 @@ function MerchantRegister({
 
           </div>
 
-
           {/* BUSINESS NAME */}
 
           <div className="merchant-register-field">
@@ -336,7 +368,6 @@ function MerchantRegister({
 
           </div>
 
-
           {/* EMAIL */}
 
           <div className="merchant-register-field">
@@ -355,7 +386,6 @@ function MerchantRegister({
             />
 
           </div>
-
 
           {/* PHONE */}
 
@@ -377,7 +407,6 @@ function MerchantRegister({
 
           </div>
 
-
           {/* PASSWORD */}
 
           <div className="merchant-register-field">
@@ -391,12 +420,41 @@ function MerchantRegister({
               name="password"
               value={formData.password}
               onChange={handleChange}
-              placeholder="Minimum 6 characters"
+              placeholder="Minimum 8 characters"
               disabled={loading}
             />
 
           </div>
 
+          {/* PASSWORD REQUIREMENTS */}
+
+          <div className="merchant-password-rules">
+
+            <p>
+              Password must contain:
+            </p>
+
+            <span>
+              • At least 8 characters
+            </span>
+
+            <span>
+              • At least one uppercase letter
+            </span>
+
+            <span>
+              • At least one lowercase letter
+            </span>
+
+            <span>
+              • At least one number
+            </span>
+
+            <span>
+              • At least one special character
+            </span>
+
+          </div>
 
           {/* CONFIRM PASSWORD */}
 
@@ -419,7 +477,6 @@ function MerchantRegister({
 
           </div>
 
-
           {/* SUBMIT */}
 
           <button
@@ -433,7 +490,6 @@ function MerchantRegister({
           </button>
 
         </form>
-
 
         {/* =========================
             LOGIN
