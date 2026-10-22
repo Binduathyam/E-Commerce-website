@@ -859,3 +859,19 @@
     font-size: 18px;
   }
 }
+.forgot-password-button {
+  display: block;
+  margin-top: 8px;
+  margin-left: auto;
+  padding: 0;
+  border: none;
+  background: none;
+  color: #7c3aed;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.forgot-password-button:hover {
+  text-decoration: underline;
+}

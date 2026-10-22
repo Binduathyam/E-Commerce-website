@@ -10,9 +10,21 @@ function Registration({
     email: "",
     password: "",
     confirmPassword: "",
+    securityQuestion: "",
+    securityAnswer: "",
   });
 
   const [errors, setErrors] = useState({});
+
+  const [passwordFocused, setPasswordFocused] =
+    useState(false);
+
+  const securityQuestions = [
+    "What was the name of your first school?",
+    "What was the name of your first pet?",
+    "What is your childhood nickname?",
+    "What is your favourite food?",
+  ];
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -36,15 +48,19 @@ function Registration({
 
     // Full Name validation
     if (!formData.fullName.trim()) {
-      newErrors.fullName = "Full Name is required";
-    } else if (formData.fullName.trim().length < 3) {
+      newErrors.fullName =
+        "Full Name is required";
+    } else if (
+      formData.fullName.trim().length < 3
+    ) {
       newErrors.fullName =
         "Full Name must be at least 3 characters";
     }
 
     // Email validation
     if (!formData.email.trim()) {
-      newErrors.email = "Email is required";
+      newErrors.email =
+        "Email is required";
     } else if (
       !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(
         formData.email
@@ -55,10 +71,12 @@ function Registration({
     }
 
     // Strong Password validation
-    const password = formData.password;
+    const password =
+      formData.password;
 
     if (!password) {
-      newErrors.password = "Password is required";
+      newErrors.password =
+        "Password is required";
     } else if (password.length < 8) {
       newErrors.password =
         "Password must be at least 8 characters";
@@ -71,7 +89,9 @@ function Registration({
     } else if (!/[0-9]/.test(password)) {
       newErrors.password =
         "Password must contain at least 1 number";
-    } else if (!/[^A-Za-z0-9]/.test(password)) {
+    } else if (
+      !/[^A-Za-z0-9]/.test(password)
+    ) {
       newErrors.password =
         "Password must contain at least 1 special symbol";
     }
@@ -88,10 +108,24 @@ function Registration({
         "Passwords do not match";
     }
 
+    // Security Question
+    if (!formData.securityQuestion) {
+      newErrors.securityQuestion =
+        "Please select a security question";
+    }
+
+    // Security Answer
+    if (!formData.securityAnswer.trim()) {
+      newErrors.securityAnswer =
+        "Security answer is required";
+    }
+
     setErrors(newErrors);
 
     // Stop if validation errors exist
-    if (Object.keys(newErrors).length > 0) {
+    if (
+      Object.keys(newErrors).length > 0
+    ) {
       return;
     }
 
@@ -102,18 +136,33 @@ function Registration({
           method: "POST",
 
           headers: {
-            "Content-Type": "application/json",
+            "Content-Type":
+              "application/json",
           },
 
           body: JSON.stringify({
-            name: formData.fullName,
-            email: formData.email,
-            password: formData.password,
+            name:
+              formData.fullName.trim(),
+
+            email:
+              formData.email
+                .trim()
+                .toLowerCase(),
+
+            password:
+              formData.password,
+
+            security_question:
+              formData.securityQuestion,
+
+            security_answer:
+              formData.securityAnswer.trim(),
           }),
         }
       );
 
-      const data = await response.json();
+      const data =
+        await response.json();
 
       // Backend returned an error
       if (!response.ok) {
@@ -129,7 +178,7 @@ function Registration({
       // Registration successful
       alert(
         data.message ||
-        "Registration successful!"
+          "Registration successful!"
       );
 
       // Go to Login
@@ -226,7 +275,9 @@ function Registration({
               type="email"
               name="email"
               placeholder="Enter your email"
-              value={formData.email}
+              value={
+                formData.email
+              }
               onChange={handleChange}
             />
 
@@ -249,35 +300,80 @@ function Registration({
               </span>
             </label>
 
-            <input
-              type="password"
-              name="password"
-              placeholder="Create a strong password"
-              value={
-                formData.password
-              }
-              onChange={handleChange}
-            />
-
             <div
               style={{
-                marginTop: "7px",
-                fontSize: "11px",
-                lineHeight: "1.6",
-                color: "#777",
+                position: "relative",
               }}
             >
-              Password must contain:
-              <br />
-              • At least 8 characters
-              <br />
-              • 1 uppercase letter (A-Z)
-              <br />
-              • 1 lowercase letter (a-z)
-              <br />
-              • 1 number (0-9)
-              <br />
-              • 1 special symbol (! @ # $ % etc.)
+
+              <input
+                type="password"
+                name="password"
+                placeholder="Create a strong password"
+                value={
+                  formData.password
+                }
+                onChange={handleChange}
+                onFocus={() =>
+                  setPasswordFocused(true)
+                }
+                onBlur={() =>
+                  setPasswordFocused(false)
+                }
+              />
+
+              {passwordFocused && (
+                <div
+                  style={{
+                    position: "absolute",
+                    top: "calc(100% + 6px)",
+                    left: "0",
+                    width: "100%",
+                    padding: "10px 12px",
+                    background: "#ffffff",
+                    border: "1px solid #ddd",
+                    borderRadius: "8px",
+                    boxShadow:
+                      "0 4px 12px rgba(0,0,0,0.12)",
+                    fontSize: "11px",
+                    lineHeight: "1.6",
+                    color: "#666",
+                    zIndex: 20,
+                    boxSizing: "border-box",
+                  }}
+                >
+
+                  <strong
+                    style={{
+                      color: "#333",
+                    }}
+                  >
+                    Password must contain:
+                  </strong>
+
+                  <div>
+                    • At least 8 characters
+                  </div>
+
+                  <div>
+                    • 1 uppercase letter (A-Z)
+                  </div>
+
+                  <div>
+                    • 1 lowercase letter (a-z)
+                  </div>
+
+                  <div>
+                    • 1 number (0-9)
+                  </div>
+
+                  <div>
+                    • 1 special symbol (! @ # $ % etc.)
+                  </div>
+
+                </div>
+              )}
+
             </div>
 
             {errors.password && (
@@ -312,6 +408,84 @@ function Registration({
             {errors.confirmPassword && (
               <small>
                 {errors.confirmPassword}
+              </small>
+            )}
+
+          </div>
+
+          {/* SECURITY QUESTION */}
+
+          <div className="form-group">
+
+            <label>
+              Security Question
+              <span className="required-star">
+                *
+              </span>
+            </label>
+
+            <select
+              name="securityQuestion"
+              value={
+                formData.securityQuestion
+              }
+              onChange={handleChange}
+            >
+
+              <option value="">
+                Select a security question
+              </option>
+
+              {securityQuestions.map(
+                (question, index) => (
+                  <option
+                    key={index}
+                    value={question}
+                  >
+                    {question}
+                  </option>
+                )
+              )}
+
+            </select>
+
+            {errors.securityQuestion && (
+              <small>
+                {
+                  errors.securityQuestion
+                }
+              </small>
+            )}
+
+          </div>
+
+          {/* SECURITY ANSWER */}
+
+          <div className="form-group">
+
+            <label>
+              Security Answer
+              <span className="required-star">
+                *
+              </span>
+            </label>
+
+            <input
+              type="text"
+              name="securityAnswer"
+              placeholder="Enter your answer"
+              value={
+                formData.securityAnswer
+              }
+              onChange={handleChange}
+              autoComplete="off"
+            />
+
+            {errors.securityAnswer && (
+              <small>
+                {
+                  errors.securityAnswer
+                }
               </small>
             )}
 

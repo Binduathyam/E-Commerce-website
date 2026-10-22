@@ -1,7 +1,6 @@
 import { useEffect, useState } from "react";
 
 
-
 import Navbar from "./components/Navbar";
 
 import Footer from "./components/Footer";
@@ -13,7 +12,8 @@ import Hero from "./components/Hero";
 import ProductCard from "./components/ProductCard";
 
 import Chatbot from "./components/Chatbot";
-
+import About from "./components/About";
+import ReturnsRefunds from "./components/ReturnsRefunds";
 
 
 import ProductDetails from "./pages/ProductDetails";
@@ -45,6 +45,8 @@ import Contact from "./pages/Contact";
 import Login from "./pages/Login";
 
 import Registration from "./pages/Registration";
+
+import ForgotPassword from "./pages/ForgotPassword";
 
 
 
@@ -85,14 +87,16 @@ import AdminDeliveryPartners from "./admin/AdminDeliveryPartners";
 import AdminProfit from "./admin/AdminProfit";
 
 import AdminLogin from "./admin/AdminLogin";
-
-
+import BannerManagement from "./admin/BannerManagement";
+import HelpSupport from "./components/HelpSupport";
 
 import Profile from "./pages/Profile";
 
 import OrderHistory from "./pages/OrderHistory";
 
 import Invoice from "./pages/Invoice";
+
+
 
 
 
@@ -115,6 +119,7 @@ const API_BASE_URL = "http://3.110.90.184";
 
 
 function App() {
+ 
 
   /* =========================================================
 
@@ -248,12 +253,20 @@ function App() {
 
   ========================================================= */
 
+const [loggedInUser, setLoggedInUser] = useState(() => {
+  try {
+    const activeUser = sessionStorage.getItem("active_user");
 
+    if (activeUser) {
+      return JSON.parse(activeUser);
+    }
 
-  const [loggedInUser, setLoggedInUser] = useState(null);
-
-
-
+    return null;
+  } catch (error) {
+    console.error("Failed to restore logged-in user:", error);
+    return null;
+  }
+});
   /* =========================================================
 
      LIVE TOUR
@@ -366,7 +379,8 @@ function App() {
 
     useState(false);
 
-
+  const [showAdminBanners, setShowAdminBanners] = 
+    useState(false);
 
   const [showAdminOrders, setShowAdminOrders] =
 
@@ -440,7 +454,11 @@ function App() {
 
     useState(false);
 
+  const [showAbout, setShowAbout] = useState(false);
+  const [showHelpSupport, setShowHelpSupport] = useState(false);
 
+const [showReturnsRefunds, setShowReturnsRefunds] =
+  useState(false);
 
   const [showInvoice, setShowInvoice] =
 
@@ -505,106 +523,89 @@ function App() {
     `${API_BASE_URL}/api/wishlist`;
 
 
+/* =========================================================
+   LOAD CART
+========================================================= */
 
-  /* =========================================================
+const loadCart = async (userId) => {
+  if (!userId) return;
 
-     LOAD CART
+  try {
+    const response = await fetch(
+      `${CART_API_URL}/${userId}`
+    );
 
-  ========================================================= */
+    const data = await response.json();
 
-
-
-  const loadCart = async (userId) => {
-
-    if (!userId) return;
-
-
-
-    try {
-
-      const response = await fetch(
-
-        `${CART_API_URL}/${userId}`
-
+    if (!response.ok || !data.success) {
+      throw new Error(
+        data.message || "Failed to load cart"
       );
-
-
-
-      const data = await response.json();
-
-
-
-      if (!response.ok || !data.success) {
-
-        throw new Error(
-
-          data.message || "Failed to load cart"
-
-        );
-
-      }
-
-
-
-      const dbCart = (
-
-        data.cart || []
-
-      ).map((item) => ({
-
-        id: item.product_id,
-
-        cartItemId: item.id,
-
-        user_id: item.user_id,
-
-        product_id: item.product_id,
-
-        name: item.name,
-
-        price: Number(item.price),
-
-        category: item.category,
-
-        image: item.image,
-
-        quantity: Number(item.quantity),
-
-      }));
-
-
-
-      setCart(dbCart);
-
-    } catch (error) {
-
-      console.error(
-
-        "Load cart error:",
-
-        error
-
-      );
-
     }
 
-  };
+    const dbCart = (data.cart || []).map((item) => ({
+  id: item.product_id,
 
+  // Actual cart table row ID
+  cartItemId: item.id,
 
+  user_id: item.user_id,
 
-  useEffect(() => {
+  product_id: item.product_id,
 
-    if (loggedInUser?.id) {
+  name: item.name,
 
-      loadCart(loggedInUser.id);
+  price:
+    Number(item.price) || 0,
 
-    } else {
+  original_price:
+    Number(item.original_price) || 0,
 
-      setCart([]);
+  discount:
+    Number(item.discount) || 0,
 
-    }
+  gst_rate:
+    Number(item.gst_rate) || 0,
 
-  }, [loggedInUser]);
+  category:
+    item.category || "",
+
+  image:
+    item.image || "",
+
+  quantity:
+    Number(item.quantity) || 1,
+
+  // Preserve selected variant
+  variant_id:
+    item.variant_id ??
+    item.variantId ??
+    null,
+
+  // Preserve selected size
+  selected_size:
+    item.selected_size ??
+    item.selectedSize ??
+    null,
+}));
+
+    setCart(dbCart);
+
+  } catch (error) {
+    console.error(
+      "Load cart error:",
+      error
+    );
+  }
+};
+
+useEffect(() => {
+  if (loggedInUser?.id) {
+    loadCart(loggedInUser.id);
+  } else {
+    setCart([]);
+  }
+}, [loggedInUser]);
 
 
 
@@ -736,14 +737,7 @@ function App() {
 
 
 
-  const [
-
-    selectedProduct,
-
-    setSelectedProduct,
-
-  ] = useState(null);
-
+  const [selectedProduct, setSelectedProduct] = useState(null);
 
 
   /* =========================================================
@@ -806,6 +800,16 @@ function App() {
 
   ] = useState(false);
 
+  const [
+  showForgotPassword,
+  setShowForgotPassword,
+] = useState(false);
+
+const [
+  forgotPasswordRole,
+  setForgotPasswordRole,
+] = useState("customer");
+
 
 
   const [orderData, setOrderData] =
@@ -821,10 +825,9 @@ function App() {
   ========================================================= */
 
 
-
-  const [showProfile, setShowProfile] =
-
-    useState(false);
+const [showProfile, setShowProfile] = useState(
+  window.location.pathname === "/shopease/profile"
+);
 
 
 
@@ -883,126 +886,537 @@ function App() {
 
 
   const [
-
     trackingFromDetails,
-
     setTrackingFromDetails,
-
   ] = useState(false);
 
+useEffect(() => {
+  const handleBrowserPopState = (event) => {
+    const path = window.location.pathname;
+    const historyState = event.state;
 
+    // Reset all page states
+    setShowCart(false);
+    setShowWishlist(false);
+    setShowCheckout(false);
+    setShowOrderSuccess(false);
+    setShowOrderTracking(false);
+    setShowLogin(false);
+    setShowRegistration(false);
+    setShowForgotPassword(false);
+    setShowOrderHistory(false);
+    setShowOrderDetails(false);
+    setShowInvoice(false);
+    setShowProfile(false);
 
-  /* =========================================================
+    setShowMerchantHome(false);
+    setShowAddProduct(false);
+    setShowMerchantProducts(false);
+    setShowMerchantInventory(false);
+    setShowMerchantOrders(false);
+    setShowMerchantProfile(false);
+    setShowMerchantRegister(false);
+    setShowMerchantSales(false);
 
-     ADD TO CART
+    setShowAdminHome(false);
+    setShowAdminCustomers(false);
+    setShowAdminMerchants(false);
+    setShowAdminProducts(false);
+    setShowAdminOrders(false);
+    setShowAdminPayments(false);
+    setShowAdminReports(false);
+    setShowAdminDeliveryPartners(false);
+    setShowAdminProfit(false);
+    setShowAdminLogin(false);
 
-  ========================================================= */
+    setShowMyAddresses(false);
+    setShowAccountSettings(false);
+    setShowPrivacy(false);
+    setShowTerms(false);
+    setShowContact(false);
+    setShowAbout(false);
+    setShowHelpSupport(false);
+    setShowReturnsRefunds(false);
 
+    setShowDeliveryPartnerHome(false);
+    setShowAssignedOrders(false);
+    setShowDeliveryProfile(false);
+    setShowDeliveryRegister(false);
 
+    setSelectedProduct(null);
+    setSelectedOrder(null);
+    setSelectedInvoiceOrder(null);
+    setOrderData(null);
 
-  const addToCart = async (product) => {
+    // ==============================
+    // PRODUCT DETAILS
+    // ==============================
+    const productMatch = path.match(
+      /^\/shopease\/product\/(\d+)$/
+    );
 
-    if (!loggedInUser?.id) {
+    if (productMatch) {
+      const productId = Number(productMatch[1]);
 
-      setShowLogin(true);
-
-      return;
-
-    }
-
-
-
-    try {
-
-      const response = await fetch(
-
-        CART_API_URL,
-
-        {
-
-          method: "POST",
-
-
-
-          headers: {
-
-            "Content-Type": "application/json",
-
-          },
-
-
-
-          body: JSON.stringify({
-
-            user_id: loggedInUser.id,
-
-            product_id: product.id,
-
-            quantity: 1,
-
-          }),
-
-        }
-
+      const product = products.find(
+        (item) => Number(item.id) === productId
       );
 
-
-
-      const data = await response.json();
-
-
-
-      if (
-
-        !response.ok ||
-
-        !data.success
-
-      ) {
-
-        throw new Error(
-
-          data.message ||
-
-          "Failed to add product to cart"
-
-        );
-
+      if (product) {
+        setSelectedProduct(product);
       }
 
-
-
-      await loadCart(
-
-        loggedInUser.id
-
-      );
-
-    } catch (error) {
-
-      console.error(
-
-        "Add to cart error:",
-
-        error
-
-      );
-
-
-
-      alert(
-
-        error.message ||
-
-        "Failed to add product to cart"
-
-      );
-
+      return;
     }
 
+    // ==============================
+    // CUSTOMER PAGES
+    // ==============================
+    if (path === "/shopease/cart") {
+      setShowCart(true);
+      return;
+    }
+
+    if (path === "/shopease/wishlist") {
+      setShowWishlist(true);
+      return;
+    }
+
+    if (path === "/shopease/checkout") {
+      setShowCheckout(true);
+      return;
+    }
+
+    if (path === "/shopease/order-success") {
+      setShowOrderSuccess(true);
+      return;
+    }
+
+    if (path === "/shopease/order-tracking") {
+      if (historyState?.order) {
+        setOrderData(historyState.order);
+      }
+
+      setShowOrderTracking(true);
+      return;
+    }
+
+    if (path === "/shopease/login") {
+      setShowLogin(true);
+      return;
+    }
+
+    if (path === "/shopease/forgot-password") {
+      setShowForgotPassword(true);
+      return;
+    }
+
+    if (path === "/shopease/registration") {
+      setShowRegistration(true);
+      return;
+    }
+
+    if (path === "/shopease/profile") {
+      setShowProfile(true);
+      return;
+    }
+
+    if (path === "/shopease/order-history") {
+      setShowOrderHistory(true);
+      return;
+    }
+
+    if (path.startsWith("/shopease/order-details/")) {
+      if (historyState?.order) {
+        setSelectedOrder(historyState.order);
+      }
+
+      setShowOrderDetails(true);
+      return;
+    }
+
+    if (path.startsWith("/shopease/invoice/")) {
+      if (historyState?.order) {
+        setSelectedInvoiceOrder(historyState.order);
+      }
+
+      setShowInvoice(true);
+      return;
+    }
+
+    if (path === "/shopease/addresses") {
+      setShowMyAddresses(true);
+      return;
+    }
+
+    if (path === "/shopease/account-settings") {
+      setShowAccountSettings(true);
+      return;
+    }
+
+    if (path === "/shopease/privacy") {
+      setShowPrivacy(true);
+      return;
+    }
+
+    if (path === "/shopease/terms") {
+      setShowTerms(true);
+      return;
+    }
+
+    if (path === "/shopease/contact") {
+      setShowContact(true);
+      return;
+    }
+    if (path === "/shopease/about") {
+  setShowAbout(true);
+  return;
+}
+
+if (path === "/shopease/help-support") {
+  setShowHelpSupport(true);
+  return;
+}
+if (path === "/shopease/returns-refunds") {
+  setShowReturnsRefunds(true);
+  return;
+}
+
+    // ==============================
+    // MERCHANT PAGES
+    // ==============================
+    if (path === "/shopease/merchant") {
+      setShowMerchantHome(true);
+      return;
+    }
+
+    if (path === "/shopease/merchant/add-product") {
+      setShowMerchantHome(true);
+      setShowAddProduct(true);
+      return;
+    }
+
+    if (path === "/shopease/merchant/products") {
+      setShowMerchantHome(true);
+      setShowMerchantProducts(true);
+      return;
+    }
+
+    if (path === "/shopease/merchant/inventory") {
+      setShowMerchantHome(true);
+      setShowMerchantInventory(true);
+      return;
+    }
+
+    if (path === "/shopease/merchant/orders") {
+      setShowMerchantHome(true);
+      setShowMerchantOrders(true);
+      return;
+    }
+
+    if (path === "/shopease/merchant/profile") {
+      setShowMerchantHome(true);
+      setShowMerchantProfile(true);
+      return;
+    }
+
+    if (path === "/shopease/merchant/sales") {
+      setShowMerchantHome(true);
+      setShowMerchantSales(true);
+      return;
+    }
+
+    if (path === "/shopease/merchant-register") {
+      setShowMerchantRegister(true);
+      return;
+    }
+
+    // ==============================
+    // ADMIN PAGES
+    // ==============================
+    if (path === "/shopease/admin") {
+      setShowAdminHome(true);
+      return;
+    }
+
+    if (path === "/shopease/admin/customers") {
+      setShowAdminCustomers(true);
+      return;
+    }
+
+    if (path === "/shopease/admin/merchants") {
+      setShowAdminMerchants(true);
+      return;
+    }
+
+    if (path === "/shopease/admin/products") {
+      setShowAdminProducts(true);
+      return;
+    }
+
+    if (path === "/shopease/admin/orders") {
+      setShowAdminOrders(true);
+      return;
+    }
+
+    if (path === "/shopease/admin/payments") {
+      setShowAdminPayments(true);
+      return;
+    }
+
+    if (path === "/shopease/admin/reports") {
+      setShowAdminReports(true);
+      return;
+    }
+
+    if (path === "/shopease/admin/delivery-partners") {
+      setShowAdminDeliveryPartners(true);
+      return;
+    }
+
+    if (path === "/shopease/admin/profit") {
+      setShowAdminProfit(true);
+      return;
+    }
+
+    if (path === "/shopease/admin-login") {
+      setShowAdminLogin(true);
+      return;
+    }
+
+    // ==============================
+    // DELIVERY PAGES
+    // ==============================
+    if (path === "/shopease/delivery") {
+      setShowDeliveryPartnerHome(true);
+      return;
+    }
+
+    if (path === "/shopease/delivery/assigned-orders") {
+      setShowDeliveryPartnerHome(true);
+      setShowAssignedOrders(true);
+      return;
+    }
+
+    if (path === "/shopease/delivery/profile") {
+      setShowDeliveryPartnerHome(true);
+      setShowDeliveryProfile(true);
+      return;
+    }
+
+    if (path === "/shopease/delivery-register") {
+      setShowDeliveryRegister(true);
+      return;
+    }
   };
 
+  window.addEventListener(
+    "popstate",
+    handleBrowserPopState
+  );
 
+  // Run routing when app starts/reloads
+  handleBrowserPopState({
+    state: window.history.state
+  });
+
+  return () => {
+    window.removeEventListener(
+      "popstate",
+      handleBrowserPopState
+    );
+  };
+}, [products]);
+
+const addToCart = async (product, options = {}) => {
+  const openCart = options.openCart !== false;
+
+  // =========================================
+  // LOGIN CHECK
+  // =========================================
+  if (!loggedInUser?.id) {
+    setShowLogin(true);
+
+    window.history.pushState(
+      { page: "login" },
+      "",
+      "/shopease/login"
+    );
+
+    return;
+  }
+
+  // =========================================
+  // FIND PRICE / VARIANT
+  // (home page products have price 0 when
+  //  the real prices are inside the variants)
+  // =========================================
+  const parseAttributes = (attributes) => {
+    if (!attributes) return {};
+    if (typeof attributes === "object") return attributes;
+
+    try {
+      return JSON.parse(attributes);
+    } catch {
+      return {};
+    }
+  };
+
+  let finalPrice =
+    Number(product.price) ||
+    Number(product.discount_price) ||
+    Number(product.discountPrice) ||
+    0;
+
+  let variantId =
+    product.variant_id ??
+    product.variantId ??
+    product.selectedVariant?.id ??
+    null;
+
+  let selectedSize =
+    product.selected_size ??
+    product.selectedSize ??
+    null;
+
+  const productVariants = Array.isArray(product.product_variants)
+    ? product.product_variants
+    : [];
+
+  // No variant chosen (home page) -> use the cheapest available one
+  if (productVariants.length > 0 && !variantId) {
+    const availableVariants = productVariants.filter(
+      (variant) =>
+        Number(variant.stock || 0) > 0 &&
+        variant.available !== false
+    );
+
+    const candidates =
+      availableVariants.length > 0
+        ? availableVariants
+        : productVariants;
+
+    const cheapest = candidates.reduce((best, current) => {
+      const bestPrice =
+        Number(best.discount_price) || Number(best.price) || 0;
+      const currentPrice =
+        Number(current.discount_price) || Number(current.price) || 0;
+
+      return currentPrice > 0 &&
+        (bestPrice === 0 || currentPrice < bestPrice)
+        ? current
+        : best;
+    });
+
+    variantId = cheapest.id ?? null;
+
+    finalPrice =
+      Number(cheapest.discount_price) ||
+      Number(cheapest.price) ||
+      finalPrice;
+
+    const attributes = parseAttributes(cheapest.attributes);
+
+    if (!selectedSize && attributes.size) {
+      selectedSize = String(attributes.size);
+    }
+  }
+
+  // Never add a ₹0 item
+  if (finalPrice <= 0) {
+    alert("This product has no valid price. Please contact the seller.");
+    return;
+  }
+
+  try {
+    console.log("ADD TO CART PRODUCT:", product);
+
+    // =========================================
+    // SEND PRODUCT TO BACKEND
+    // =========================================
+    const response = await fetch(CART_API_URL, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        user_id: loggedInUser.id,
+
+        product_id: product.id,
+
+        quantity:
+          Number(product.quantity) > 0
+            ? Number(product.quantity)
+            : 1,
+
+        price: finalPrice,
+
+        gst_rate:
+          Number(
+            product.gst_rate ??
+              product.gstRate ??
+              0
+          ),
+
+        selected_size: selectedSize,
+
+        variant_id: variantId,
+      }),
+    });
+
+    const data = await response.json();
+
+    console.log("ADD TO CART RESPONSE:", data);
+
+    if (!response.ok || !data.success) {
+      throw new Error(
+        data.message ||
+          "Failed to add product to cart"
+      );
+    }
+
+    // =========================================
+    // LOAD UPDATED CART
+    // =========================================
+    await loadCart(loggedInUser.id);
+
+    // =========================================
+    // HOME PAGE: stay on the page, just show a message
+    // =========================================
+    if (!openCart) {
+      setLoginMessage("Added to cart");
+
+      setTimeout(() => {
+        setLoginMessage("");
+      }, 2000);
+
+      return;
+    }
+
+    // =========================================
+    // PRODUCT DETAILS / WISHLIST: open the cart
+    // =========================================
+    setSelectedProduct(null);
+    setShowCheckout(false);
+    setShowCart(true);
+
+    window.history.pushState(
+      { page: "cart" },
+      "",
+      "/shopease/cart"
+    );
+  } catch (error) {
+    console.error(
+      "Add to cart error:",
+      error
+    );
+
+    alert(
+      error.message ||
+        "Failed to add product to cart"
+    );
+  }
+};
 
 /* =========================================================
 
@@ -1142,7 +1556,7 @@ const moveToWishlist = async (item) => {
 
       await fetch(
 
-        `${CART_API_URL}/${item.id}`,
+       `${CART_API_URL}/${item.cartItemId}`,
 
         {
 
@@ -1251,284 +1665,156 @@ const moveToWishlist = async (item) => {
 };
 
 
+/* =========================================================
+   REMOVE FROM CART
+========================================================= */
 
-  /* =========================================================
+const removeFromCart = async (
+  cartItemId
+) => {
 
-     REMOVE FROM CART
+  if (!loggedInUser?.id) {
+    setShowLogin(true);
+    return;
+  }
 
-  ========================================================= */
+  try {
 
+    const response = await fetch(
+      `${CART_API_URL}/${cartItemId}`,
+      {
+        method: "DELETE",
 
+        headers: {
+          "Content-Type":
+            "application/json",
+        },
 
-  const removeFromCart = async (
-
-    productId
-
-  ) => {
-
-    if (!loggedInUser?.id) {
-
-      setShowLogin(true);
-
-      return;
-
-    }
-
-
-
-    try {
-
-      const response = await fetch(
-
-        `${CART_API_URL}/${productId}`,
-
-        {
-
-          method: "DELETE",
-
-
-
-          headers: {
-
-            "Content-Type": "application/json",
-
-          },
-
-
-
-          body: JSON.stringify({
-
-            user_id:
-
-              loggedInUser.id,
-
-          }),
-
-        }
-
-      );
-
-
-
-      const data =
-
-        await response.json();
-
-
-
-      if (
-
-        !response.ok ||
-
-        !data.success
-
-      ) {
-
-        throw new Error(
-
-          data.message ||
-
-          "Failed to remove product"
-
-        );
-
+        body: JSON.stringify({
+          user_id:
+            loggedInUser.id,
+        }),
       }
+    );
 
+    const data =
+      await response.json();
 
-
-      await loadCart(
-
-        loggedInUser.id
-
-      );
-
-    } catch (error) {
-
-      console.error(
-
-        "Remove cart error:",
-
-        error
-
-      );
-
-
-
-      alert(
-
-        error.message ||
-
+    if (
+      !response.ok ||
+      !data.success
+    ) {
+      throw new Error(
+        data.message ||
         "Failed to remove product"
-
       );
-
     }
 
-  };
+    await loadCart(
+      loggedInUser.id
+    );
 
+  } catch (error) {
 
+    console.error(
+      "Remove cart error:",
+      error
+    );
 
+    alert(
+      error.message ||
+      "Failed to remove product"
+    );
+  }
+};
   /* =========================================================
-
-     UPDATE CART QUANTITY
-
-  ========================================================= */
-
-
-
-  const updateQuantity = async (
-
-    productId,
-
-    change
-
-  ) => {
-
-    if (!loggedInUser?.id) {
-
-      setShowLogin(true);
-
-      return;
-
-    }
-
-
-
-    const currentItem =
-
-      cart.find(
-
-        (item) =>
-
-          item.id === productId
-
-      );
-
-
-
-    if (!currentItem) return;
-
-
-
-    const newQuantity =
-
-      currentItem.quantity +
-
-      change;
-
-
-
-    if (newQuantity <= 0) {
-
-      await removeFromCart(
-
-        productId
-
-      );
-
-      return;
-
-    }
-
-
-
-    try {
-
-      const response = await fetch(
-
-        `${CART_API_URL}/${productId}`,
-
-        {
-
-          method: "PUT",
-
-
-
-          headers: {
-
-            "Content-Type":
-
-              "application/json",
-
-          },
-
-
-
-          body: JSON.stringify({
-
-            user_id:
-
-              loggedInUser.id,
-
-            quantity:
-
-              newQuantity,
-
-          }),
-
-        }
-
-      );
-
-
-
-      const data =
-
-        await response.json();
-
-
-
-      if (
-
-        !response.ok ||
-
-        !data.success
-
-      ) {
-
-        throw new Error(
-
-          data.message ||
-
-          "Failed to update cart"
-
-        );
-
+   UPDATE CART QUANTITY
+========================================================= */
+
+const updateQuantity = async (
+  cartItemId,
+  change
+) => {
+
+  if (!loggedInUser?.id) {
+    setShowLogin(true);
+    return;
+  }
+
+  const currentItem = cart.find(
+    (item) =>
+      item.cartItemId === cartItemId
+  );
+
+  if (!currentItem) {
+    console.error(
+      "Cart item not found:",
+      cartItemId
+    );
+    return;
+  }
+
+  const newQuantity =
+    Number(currentItem.quantity) +
+    Number(change);
+
+  if (newQuantity <= 0) {
+    await removeFromCart(cartItemId);
+    return;
+  }
+
+  try {
+
+    const response = await fetch(
+      `${CART_API_URL}/${cartItemId}`,
+      {
+        method: "PUT",
+
+        headers: {
+          "Content-Type":
+            "application/json",
+        },
+
+        body: JSON.stringify({
+          user_id:
+            loggedInUser.id,
+
+          quantity:
+            newQuantity,
+        }),
       }
+    );
 
+    const data =
+      await response.json();
 
-
-      await loadCart(
-
-        loggedInUser.id
-
-      );
-
-    } catch (error) {
-
-      console.error(
-
-        "Update cart error:",
-
-        error
-
-      );
-
-
-
-      alert(
-
-        error.message ||
-
+    if (
+      !response.ok ||
+      !data.success
+    ) {
+      throw new Error(
+        data.message ||
         "Failed to update cart"
-
       );
-
     }
 
-  };
+    await loadCart(
+      loggedInUser.id
+    );
 
+  } catch (error) {
 
+    console.error(
+      "Update cart error:",
+      error
+    );
+
+    alert(
+      error.message ||
+      "Failed to update cart"
+    );
+  }
+};
 
   /* =========================================================
 
@@ -1697,8 +1983,6 @@ const moveToWishlist = async (item) => {
         }
 
       }
-
-
 
       await loadWishlist(
 
@@ -2010,7 +2294,111 @@ const moveToWishlist = async (item) => {
 
   );
 
+const renderFooter = () => {
+  return (
+    <Footer
+      onHome={() => {
+        window.history.pushState(
+          { page: "home" },
+          "",
+          "/shopease"
+        );
 
+        window.location.reload();
+      }}
+
+      onProducts={() => {
+        window.history.pushState(
+          { page: "home" },
+          "",
+          "/shopease#products"
+        );
+
+        window.location.reload();
+      }}
+
+      onOrders={() => {
+        setShowOrderHistory(true);
+
+        window.history.pushState(
+          { page: "order-history" },
+          "",
+          "/shopease/order-history"
+        );
+      }}
+
+      onAddresses={() => {
+        setShowMyAddresses(true);
+
+        window.history.pushState(
+          { page: "addresses" },
+          "",
+          "/shopease/addresses"
+        );
+      }}
+
+      onSupport={() => {
+        setShowHelpSupport(true);
+
+        window.history.pushState(
+          { page: "help-support" },
+          "",
+          "/shopease/help-support"
+        );
+      }}
+
+      onReturns={() => {
+        setShowReturnsRefunds(true);
+
+        window.history.pushState(
+          { page: "returns-refunds" },
+          "",
+          "/shopease/returns-refunds"
+        );
+      }}
+
+      onAbout={() => {
+        setShowAbout(true);
+
+        window.history.pushState(
+          { page: "about" },
+          "",
+          "/shopease/about"
+        );
+      }}
+
+      onPrivacy={() => {
+        setShowPrivacy(true);
+
+        window.history.pushState(
+          { page: "privacy" },
+          "",
+          "/shopease/privacy"
+        );
+      }}
+
+      onTerms={() => {
+        setShowTerms(true);
+
+        window.history.pushState(
+          { page: "terms" },
+          "",
+          "/shopease/terms"
+        );
+      }}
+
+      onContact={() => {
+        setShowContact(true);
+
+        window.history.pushState(
+          { page: "contact" },
+          "",
+          "/shopease/contact"
+        );
+      }}
+    />
+  );
+};
 
   /* =========================================================
 
@@ -2024,22 +2412,21 @@ const moveToWishlist = async (item) => {
 
     return (
 
+      <div className="app">
+
       <MyAddresses
 
         loggedInUser={loggedInUser}
 
 
-
-        onBack={() => {
-
-          setShowMyAddresses(false);
-
-          setShowProfile(true);
-
-        }}
+onBack={() => {
+  window.history.back();
+}}
 
       />
+      {renderFooter()}
 
+    </div>
     );
 
   }
@@ -2057,21 +2444,15 @@ const moveToWishlist = async (item) => {
   if (showAccountSettings) {
 
     return (
+      <div className="app">
 
       <AccountSettings
 
         loggedInUser={loggedInUser}
 
-
-
-        onBack={() => {
-
-          setShowAccountSettings(false);
-
-          setShowProfile(true);
-
-        }}
-
+onBack={() => {
+  window.history.back();
+}}
 
 
         onUpdated={(updatedUser) => {
@@ -2081,6 +2462,9 @@ const moveToWishlist = async (item) => {
         }}
 
       />
+ {renderFooter()}
+
+    </div>
 
     );
 
@@ -2099,69 +2483,69 @@ const moveToWishlist = async (item) => {
   if (showProfile) {
 
     return (
-
+ <div className="app">
       <Profile
 
         loggedInUser={loggedInUser}
 
 
+onBack={() => {
+  window.history.back();
+}}
+onLogin={() => {
+  setShowProfile(false);
+  setShowLogin(true);
 
-        onBack={() => {
+  window.history.pushState(
+    { page: "login" },
+    "",
+    "/shopease/login"
+  );
+}}
+      onRegister={() => {
 
-          setShowProfile(false);
+  setShowProfile(false);
+  setShowRegistration(true);
 
-        }}
+  window.history.pushState(
+    { page: "registration" },
+    "",
+    "/shopease/registration"
+  );
 
+}}
+onOrders={() => {
+  setShowProfile(false);
+  setShowOrderHistory(true);
 
+  window.history.pushState(
+    { page: "order-history" },
+    "",
+    "/shopease/order-history"
+  );
+}}
 
-        onLogin={() => {
+onAddresses={() => {
+  setShowProfile(false);
+  setShowMyAddresses(true);
 
-          setShowProfile(false);
+  window.history.pushState(
+    { page: "addresses" },
+    "",
+    "/shopease/addresses"
+  );
+}}
 
-          setShowLogin(true);
+       onAccountSettings={() => {
+  setShowProfile(false);
+  setShowAccountSettings(true);
 
-        }}
-
-
-
-        onRegister={() => {
-
-          setShowProfile(false);
-
-          setShowRegistration(true);
-
-        }}
-
-
-
-        onOrders={() => {
-
-          setShowProfile(false);
-
-          setShowOrderHistory(true);
-
-        }}
-
-
-
-        onAddresses={() => {
-
-          setShowProfile(false);
-
-          setShowMyAddresses(true);
-
-        }}
-
-
-
-        onAccountSettings={() => {
-
-          setShowProfile(false);
-
-          setShowAccountSettings(true);
-
-        }}
-
+  window.history.pushState(
+    { page: "account-settings" },
+    "",
+    "/shopease/account-settings"
+  );
+}}
 
 
         onLogout={() => {
@@ -2187,17 +2571,21 @@ const moveToWishlist = async (item) => {
             "customer_user"
 
           );
+          sessionStorage.removeItem("active_user");
+setShowProfile(false);
 
+setShowLogin(true);
 
-
-          setShowProfile(false);
-
-          setShowLogin(true);
-
-        }}
+window.history.pushState(
+  { page: "login" },
+  "",
+  "/shopease/login"
+);   }}
 
       />
+{renderFooter()}
 
+  </div>
     );
 
   }
@@ -2215,7 +2603,7 @@ const moveToWishlist = async (item) => {
   if (showOrderHistory) {
 
     return (
-
+      <div className="app">
       <OrderHistory
 
         loggedInUser={loggedInUser}
@@ -2223,25 +2611,24 @@ const moveToWishlist = async (item) => {
 
 
         onBack={() => {
-
-          setShowOrderHistory(false);
-
-          setShowProfile(true);
-
-        }}
+  window.history.back();
+}}
 
 
+onViewDetails={(order) => {
+  setSelectedOrder(order);
+  setShowOrderHistory(false);
+  setShowOrderDetails(true);
 
-        onViewDetails={(order) => {
-
-          setSelectedOrder(order);
-
-          setShowOrderHistory(false);
-
-          setShowOrderDetails(true);
-
-        }}
-
+  window.history.pushState(
+  {
+    page: "order-details",
+    order: order
+  },
+  "",
+  `/shopease/order-details/${order.id}`
+);
+}}
 
 
         onTrackOrder={async (order) => {
@@ -2319,29 +2706,37 @@ const moveToWishlist = async (item) => {
           }
 
 
+setShowOrderHistory(false);
+setTrackingFromDetails(false);
+setShowOrderTracking(true);
+window.history.pushState(
+  {
+    page: "order-tracking",
+    order: order
+  },
+  "",
+  "/shopease/order-tracking"
+);     }}
 
-          setShowOrderHistory(false);
+onDownloadInvoice={(order) => {
+  setSelectedInvoiceOrder(order);
+  setShowInvoice(true);
+  setShowOrderHistory(false);
 
-          setTrackingFromDetails(false);
-
-          setShowOrderTracking(true);
-
-        }}
-
-
-
-        onDownloadInvoice={(order) => {
-
-          setSelectedInvoiceOrder(order);
-
-          setShowInvoice(true);
-
-          setShowOrderHistory(false);
-
-        }}
-
+ window.history.pushState(
+  {
+    page: "invoice",
+    order: order
+  },
+  "",
+  `/shopease/invoice/${order.id}`
+);
+}}
       />
 
+      {renderFooter()}
+
+    </div>
     );
 
   }
@@ -2359,25 +2754,18 @@ const moveToWishlist = async (item) => {
   if (showInvoice) {
 
     return (
-
+<div className="app">
       <Invoice
 
         order={selectedInvoiceOrder}
 
-
-
-        onBack={() => {
-
-          setShowInvoice(false);
-
-          setSelectedInvoiceOrder(null);
-
-          setShowOrderHistory(true);
-
-        }}
-
+onBack={() => {
+  window.history.back();
+}}
       />
+{renderFooter()}
 
+    </div>
     );
 
   }
@@ -2395,22 +2783,16 @@ const moveToWishlist = async (item) => {
   if (showOrderDetails) {
 
     return (
-
+<div className="app">
       <OrderDetails
 
         order={selectedOrder}
 
 
 
-        onBack={() => {
-
-          setShowOrderDetails(false);
-
-          setSelectedOrder(null);
-
-          setShowOrderHistory(true);
-
-        }}
+       onBack={() => {
+  window.history.back();
+}}
 
 
 
@@ -2491,11 +2873,16 @@ const moveToWishlist = async (item) => {
 
 
           setShowOrderDetails(false);
-
-          setTrackingFromDetails(true);
-
-          setShowOrderTracking(true);
-
+setTrackingFromDetails(true);
+setShowOrderTracking(true);
+window.history.pushState(
+  {
+    page: "order-tracking",
+    order: order
+  },
+  "",
+  "/shopease/order-tracking"
+);
         }}
 
 
@@ -2511,6 +2898,10 @@ const moveToWishlist = async (item) => {
         }}
 
       />
+
+      {renderFooter()}
+
+    </div>
 
     );
 
@@ -2539,16 +2930,9 @@ const moveToWishlist = async (item) => {
       <AddProduct
 
         merchant={loggedInUser}
-
-
-
-        onBack={() => {
-
-          setShowAddProduct(false);
-
-        }}
-
-
+onBack={() => {
+  window.history.back();
+}}
 
         onProductAdded={(product) => {
 
@@ -2610,24 +2994,20 @@ const moveToWishlist = async (item) => {
 
         merchant={loggedInUser}
 
+onBack={() => {
+  window.history.back();
+}}
 
+    onAddProduct={() => {
+  setShowMerchantProducts(false);
+  setShowAddProduct(true);
 
-        onBack={() => {
-
-          setShowMerchantProducts(false);
-
-        }}
-
-
-
-        onAddProduct={() => {
-
-          setShowMerchantProducts(false);
-
-          setShowAddProduct(true);
-
-        }}
-
+  window.history.pushState(
+    { page: "merchant-add-product" },
+    "",
+    "/shopease/merchant/add-product"
+  );
+}}
       />
 
     );
@@ -2657,15 +3037,9 @@ const moveToWishlist = async (item) => {
       <MerchantOrders
 
         merchant={loggedInUser}
-
-
-
-        onBack={() => {
-
-          setShowMerchantOrders(false);
-
-        }}
-
+onBack={() => {
+  window.history.back();
+}}
       />
 
     );
@@ -2695,15 +3069,9 @@ const moveToWishlist = async (item) => {
       <MerchantInventory
 
         merchant={loggedInUser}
-
-
-
-        onBack={() => {
-
-          setShowMerchantInventory(false);
-
-        }}
-
+onBack={() => {
+  window.history.back();
+}}
       />
 
     );
@@ -2733,17 +3101,9 @@ const moveToWishlist = async (item) => {
       <MerchantProfile
 
         merchant={loggedInUser}
-
-
-
-        onBack={() => {
-
-          setShowMerchantProfile(false);
-
-        }}
-
-
-
+onBack={() => {
+  window.history.back();
+}}
         onLogout={() => {
 
           setLoggedInUser(null);
@@ -2763,16 +3123,20 @@ const moveToWishlist = async (item) => {
             "merchant_user"
 
           );
+          sessionStorage.removeItem("active_user");
+setShowMerchantHome(false);
 
+setShowLiveTour(false);
 
+setTourRole(null);
 
-          setShowMerchantHome(false);
+setShowLogin(true);
 
-          setShowLiveTour(false);
-
-          setTourRole(null);
-
-          setShowLogin(true);
+window.history.pushState(
+  { page: "login" },
+  "",
+  "/shopease/login"
+);
 
         }}
 
@@ -2805,27 +3169,19 @@ const moveToWishlist = async (item) => {
     return (
 
       <MerchantRegister
+onBack={() => {
+  window.history.back();
+}}
+onLogin={() => {
+  setShowMerchantRegister(false);
+  setShowLogin(true);
 
-        onBack={() => {
-
-          setShowMerchantRegister(false);
-
-          setShowLogin(true);
-
-        }}
-
-
-
-        onLogin={() => {
-
-          setShowMerchantRegister(false);
-
-          setShowLogin(true);
-
-        }}
-
-
-
+  window.history.pushState(
+    { page: "login" },
+    "",
+    "/shopease/login"
+  );
+}}
         onRegistered={(merchant) => {
 
           console.log(
@@ -2835,13 +3191,14 @@ const moveToWishlist = async (item) => {
             merchant
 
           );
+setShowMerchantRegister(false);
+setShowLogin(true);
 
-
-
-          setShowMerchantRegister(false);
-
-          setShowLogin(true);
-
+window.history.pushState(
+  { page: "login" },
+  "",
+  "/shopease/login"
+);
         }}
 
       />
@@ -2873,15 +3230,9 @@ const moveToWishlist = async (item) => {
       <MerchantSales
 
         merchant={loggedInUser}
-
-
-
-        onBack={() => {
-
-          setShowMerchantSales(false);
-
-        }}
-
+onBack={() => {
+  window.history.back();
+}}
       />
 
     );
@@ -2905,16 +3256,9 @@ const moveToWishlist = async (item) => {
       <AdminMerchants
 
         admin={loggedInUser}
-
-
-
-        onBack={() => {
-
-          setShowAdminMerchants(false);
-
-          setShowAdminHome(true);
-
-        }}
+onBack={() => {
+  window.history.back();
+}}
 
       />
 
@@ -2939,16 +3283,9 @@ const moveToWishlist = async (item) => {
       <AdminCustomers
 
         admin={loggedInUser}
-
-
-
-        onBack={() => {
-
-          setShowAdminCustomers(false);
-
-          setShowAdminHome(true);
-
-        }}
+onBack={() => {
+  window.history.back();
+}}
 
       />
 
@@ -2974,16 +3311,9 @@ const moveToWishlist = async (item) => {
 
         admin={loggedInUser}
 
-
-
-        onBack={() => {
-
-          setShowAdminProducts(false);
-
-          setShowAdminHome(true);
-
-        }}
-
+onBack={() => {
+  window.history.back();
+}}
       />
 
     );
@@ -3007,17 +3337,9 @@ const moveToWishlist = async (item) => {
       <AdminOrders
 
         admin={loggedInUser}
-
-
-
-        onBack={() => {
-
-          setShowAdminOrders(false);
-
-          setShowAdminHome(true);
-
-        }}
-
+onBack={() => {
+  window.history.back();
+}}
       />
 
     );
@@ -3041,17 +3363,9 @@ const moveToWishlist = async (item) => {
       <AdminPayments
 
         admin={loggedInUser}
-
-
-
-        onBack={() => {
-
-          setShowAdminPayments(false);
-
-          setShowAdminHome(true);
-
-        }}
-
+onBack={() => {
+  window.history.back();
+}}
       />
 
     );
@@ -3075,17 +3389,9 @@ const moveToWishlist = async (item) => {
       <AdminDeliveryPartners
 
         admin={loggedInUser}
-
-
-
-        onBack={() => {
-
-          setShowAdminDeliveryPartners(false);
-
-          setShowAdminHome(true);
-
-        }}
-
+onBack={() => {
+  window.history.back();
+}}
       />
 
     );
@@ -3109,17 +3415,9 @@ const moveToWishlist = async (item) => {
       <AdminProfit
 
         admin={loggedInUser}
-
-
-
-        onBack={() => {
-
-          setShowAdminProfit(false);
-
-          setShowAdminHome(true);
-
-        }}
-
+onBack={() => {
+  window.history.back();
+}}
       />
 
     );
@@ -3143,16 +3441,9 @@ const moveToWishlist = async (item) => {
       <AdminReports
 
         admin={loggedInUser}
-
-
-
-        onBack={() => {
-
-          setShowAdminReports(false);
-
-          setShowAdminHome(true);
-
-        }}
+onBack={() => {
+  window.history.back();
+}}
 
       />
 
@@ -3160,7 +3451,22 @@ const moveToWishlist = async (item) => {
 
   }
 
+if (showAdminBanners) {
+  return (
+    <BannerManagement
+      onBack={() => {
+        setShowAdminBanners(false);
+        setShowAdminHome(true);
 
+        window.history.pushState(
+          { page: "admin-home" },
+          "",
+          "/shopease/admin"
+        );
+      }}
+    />
+  );
+}
 
   /* =========================================================
 
@@ -3201,6 +3507,7 @@ const moveToWishlist = async (item) => {
             "admin_user"
 
           );
+          sessionStorage.removeItem("active_user");
 
 
 
@@ -3211,88 +3518,107 @@ const moveToWishlist = async (item) => {
           setTourRole(null);
 
           setShowLogin(true);
+          window.history.pushState(
+  { page: "login" },
+  "",
+  "/shopease/login"
+);
 
         }}
 
+onCustomers={() => {
+  setShowAdminHome(false);
+  setShowAdminCustomers(true);
 
+  window.history.pushState(
+    { page: "admin-customers" },
+    "",
+    "/shopease/admin/customers"
+  );
+}}
 
-        onCustomers={() => {
+      onMerchants={() => {
+  setShowAdminHome(false);
+  setShowAdminMerchants(true);
 
-          setShowAdminHome(false);
+  window.history.pushState(
+    { page: "admin-merchants" },
+    "",
+    "/shopease/admin/merchants"
+  );
+}}
 
-          setShowAdminCustomers(true);
+onProducts={() => {
+  setShowAdminHome(false);
+  setShowAdminProducts(true);
 
-        }}
+  window.history.pushState(
+    { page: "admin-products" },
+    "",
+    "/shopease/admin/products"
+  );
+}}
+onOrders={() => {
+  setShowAdminHome(false);
+  setShowAdminOrders(true);
 
+  window.history.pushState(
+    { page: "admin-orders" },
+    "",
+    "/shopease/admin/orders"
+  );
+}}
+onPayments={() => {
+  setShowAdminHome(false);
+  setShowAdminPayments(true);
 
+  window.history.pushState(
+    { page: "admin-payments" },
+    "",
+    "/shopease/admin/payments"
+  );
+}}
+     onReports={() => {
+  setShowAdminHome(false);
+  setShowAdminReports(true);
 
-        onMerchants={() => {
+  window.history.pushState(
+    { page: "admin-reports" },
+    "",
+    "/shopease/admin/reports"
+  );
+}}
+onDeliveryPartners={() => {
+  setShowAdminHome(false);
+  setShowAdminDeliveryPartners(true);
 
-          setShowAdminHome(false);
+  window.history.pushState(
+    { page: "admin-delivery-partners" },
+    "",
+    "/shopease/admin/delivery-partners"
+  );
+}}
+onProfit={() => {
+  setShowAdminHome(false);
+  setShowAdminProfit(true);
 
-          setShowAdminMerchants(true);
+  window.history.pushState(
+    { page: "admin-profit" },
+    "",
+    "/shopease/admin/profit"
+  );
+}}
 
-        }}
+onBanners={() => {
+  setShowAdminHome(false);
+  setShowAdminBanners(true);
 
-
-
-        onProducts={() => {
-
-          setShowAdminHome(false);
-
-          setShowAdminProducts(true);
-
-        }}
-
-
-
-        onOrders={() => {
-
-          setShowAdminHome(false);
-
-          setShowAdminOrders(true);
-
-        }}
-
-
-
-        onPayments={() => {
-
-          setShowAdminHome(false);
-
-          setShowAdminPayments(true);
-
-        }}
-
-
-
-        onReports={() => {
-
-          setShowAdminHome(false);
-
-          setShowAdminReports(true);
-
-        }}
-
-
-
-        onDeliveryPartners={() => {
-
-          setShowAdminHome(false);
-
-          setShowAdminDeliveryPartners(true);
-
-        }}
-
-
-
-        onProfit={() => {
-
-          setShowAdminHome(false);
-
-          setShowAdminProfit(true);
-
-        }}
+  window.history.pushState(
+    { page: "admin-banners" },
+    "",
+    "/shopease/admin/banners"
+  );
+}}
 
       />
 
@@ -3350,60 +3676,70 @@ const moveToWishlist = async (item) => {
 
             );
 
-
+sessionStorage.removeItem("active_user");
 
             setShowLogin(true);
+            window.history.pushState(
+  { page: "login" },
+  "",
+  "/shopease/login"
+);
 
           }}
+onAddProduct={() => {
+  setShowAddProduct(true);
 
+  window.history.pushState(
+    { page: "merchant-add-product" },
+    "",
+    "/shopease/merchant/add-product"
+  );
+}}
+onProducts={() => {
+  setShowMerchantProducts(true);
 
+  window.history.pushState(
+    { page: "merchant-products" },
+    "",
+    "/shopease/merchant/products"
+  );
+}}
+onOrders={() => {
+  setShowMerchantOrders(true);
 
-          onAddProduct={() => {
+  window.history.pushState(
+    { page: "merchant-orders" },
+    "",
+    "/shopease/merchant/orders"
+  );
+}}
+onInventory={() => {
+  setShowMerchantInventory(true);
 
-            setShowAddProduct(true);
+  window.history.pushState(
+    { page: "merchant-inventory" },
+    "",
+    "/shopease/merchant/inventory"
+  );
+}}
+onSales={() => {
+  setShowMerchantSales(true);
 
-          }}
+  window.history.pushState(
+    { page: "merchant-sales" },
+    "",
+    "/shopease/merchant/sales"
+  );
+}}
+onProfile={() => {
+  setShowMerchantProfile(true);
 
-
-
-          onProducts={() => {
-
-            setShowMerchantProducts(true);
-
-          }}
-
-
-
-          onOrders={() => {
-
-            setShowMerchantOrders(true);
-
-          }}
-
-
-
-          onInventory={() => {
-
-            setShowMerchantInventory(true);
-
-          }}
-
-
-
-          onSales={() => {
-
-            setShowMerchantSales(true);
-
-          }}
-
-
-
-          onProfile={() => {
-
-            setShowMerchantProfile(true);
-
-          }}
-
+  window.history.pushState(
+    { page: "merchant-profile" },
+    "",
+    "/shopease/merchant/profile"
+  );
+}}
         />
 
 
@@ -3450,13 +3786,9 @@ const moveToWishlist = async (item) => {
 
         <AdminLogin
 
-          onBack={() => {
-
-            setShowAdminLogin(false);
-
-            setShowLogin(true);
-
-          }}
+         onBack={() => {
+  window.history.back();
+}}
 
 
 
@@ -3469,6 +3801,11 @@ const moveToWishlist = async (item) => {
             setShowAdminLogin(false);
 
             setShowAdminHome(true);
+            window.history.pushState(
+  { page: "admin-home" },
+  "",
+  "/shopease/admin"
+);
 
             setShowMerchantHome(false);
 
@@ -3529,15 +3866,9 @@ const moveToWishlist = async (item) => {
       <AssignedOrders
 
         deliveryPartner={loggedInUser}
-
-
-
-        onBack={() => {
-
-          setShowAssignedOrders(false);
-
-        }}
-
+onBack={() => {
+  window.history.back();
+}}
       />
 
     );
@@ -3567,17 +3898,9 @@ const moveToWishlist = async (item) => {
       <DeliveryProfile
 
         deliveryPartner={loggedInUser}
-
-
-
-        onBack={() => {
-
-          setShowDeliveryProfile(false);
-
-        }}
-
-
-
+onBack={() => {
+  window.history.back();
+}}
         onLogout={() => {
 
           setLoggedInUser(null);
@@ -3597,7 +3920,7 @@ const moveToWishlist = async (item) => {
             "delivery_user"
 
           );
-
+sessionStorage.removeItem("active_user");
 
 
           setShowDeliveryPartnerHome(false);
@@ -3607,6 +3930,11 @@ const moveToWishlist = async (item) => {
           setTourRole(null);
 
           setShowLogin(true);
+          window.history.pushState(
+  { page: "login" },
+  "",
+  "/shopease/login"
+);
 
         }}
 
@@ -3635,25 +3963,24 @@ const moveToWishlist = async (item) => {
         <DeliveryDashboard
 
           deliveryPartner={loggedInUser}
+onAssignedOrders={() => {
+  setShowAssignedOrders(true);
 
+  window.history.pushState(
+    { page: "delivery-assigned-orders" },
+    "",
+    "/shopease/delivery/assigned-orders"
+  );
+}}
+onProfile={() => {
+  setShowDeliveryProfile(true);
 
-
-          onAssignedOrders={() => {
-
-            setShowAssignedOrders(true);
-
-          }}
-
-
-
-          onProfile={() => {
-
-            setShowDeliveryProfile(true);
-
-          }}
-
-
-
+  window.history.pushState(
+    { page: "delivery-profile" },
+    "",
+    "/shopease/delivery/profile"
+  );
+}}
           onLogout={() => {
 
             setLoggedInUser(null);
@@ -3685,6 +4012,11 @@ const moveToWishlist = async (item) => {
 
 
             setShowLogin(true);
+            window.history.pushState(
+  { page: "login" },
+  "",
+  "/shopease/login"
+);
 
           }}
 
@@ -3733,42 +4065,34 @@ const moveToWishlist = async (item) => {
       <DeliveryRegister
 
         onBack={() => {
+  window.history.back();
+}}
 
-          setShowDeliveryRegister(false);
+onLogin={() => {
+  setShowDeliveryRegister(false);
+  setShowLogin(true);
 
-          setShowLogin(true);
+  window.history.pushState(
+    { page: "login" },
+    "",
+    "/shopease/login"
+  );
+}}
+onRegistered={(deliveryPartner) => {
+  console.log(
+    "Delivery Partner Registered:",
+    deliveryPartner
+  );
 
-        }}
+  setShowDeliveryRegister(false);
+  setShowLogin(true);
 
-
-
-        onLogin={() => {
-
-          setShowDeliveryRegister(false);
-
-          setShowLogin(true);
-
-        }}
-
-
-
-        onRegistered={(deliveryPartner) => {
-
-          console.log(
-
-            "Delivery Partner Registered:",
-
-            deliveryPartner
-
-          );
-
-
-
-          setShowDeliveryRegister(false);
-
-          setShowLogin(true);
-
-        }}
+  window.history.pushState(
+    { page: "login" },
+    "",
+    "/shopease/login"
+  );
+}}
 
       />
 
@@ -3776,7 +4100,29 @@ const moveToWishlist = async (item) => {
 
   }
 
+/* =========================================================
+   FORGOT PASSWORD
+========================================================= */
 
+if (showForgotPassword) {
+  return (
+    <div className="app">
+      <ForgotPassword
+        role={forgotPasswordRole}
+        onBack={() => {
+          setShowForgotPassword(false);
+          setShowLogin(true);
+
+          window.history.pushState(
+            { page: "login" },
+            "",
+            "/shopease/login"
+          );
+        }}
+      />
+    </div>
+  );
+}
 
   /* =========================================================
 
@@ -3794,52 +4140,63 @@ const moveToWishlist = async (item) => {
 
         <Login
 
-          onBack={() => {
+ onBack={() => {
+  window.history.back();
+}}
 
-            setShowLogin(false);
+         onRegister={() => {
+  setShowLogin(false);
+  setShowRegistration(true);
 
-          }}
+  window.history.pushState(
+    { page: "registration" },
+    "",
+    "/shopease/registration"
+  );
+}}
 
+         onMerchantRegister={() => {
+  setShowLogin(false);
+  setShowMerchantRegister(true);
 
+  window.history.pushState(
+    { page: "merchant-register" },
+    "",
+    "/shopease/merchant-register"
+  );
+}}
+        onDeliveryLogin={() => {
+  setShowLogin(false);
+  setShowDeliveryRegister(true);
 
-          onRegister={() => {
-
-            setShowLogin(false);
-
-            setShowRegistration(true);
-
-          }}
-
-
-
-          onMerchantRegister={() => {
-
-            setShowLogin(false);
-
-            setShowMerchantRegister(true);
-
-          }}
-
-
-
-          onDeliveryLogin={() => {
-
-            setShowLogin(false);
-
-            setShowDeliveryRegister(true);
-
-          }}
-
-
+  window.history.pushState(
+    { page: "delivery-register" },
+    "",
+    "/shopease/delivery-register"
+  );
+}}
 
           onAdminLogin={() => {
+  setShowLogin(false);
+  setShowAdminLogin(true);
 
-            setShowLogin(false);
+  window.history.pushState(
+    { page: "admin-login" },
+    "",
+    "/shopease/admin-login"
+  );
+}}
+onForgotPassword={(role) => {
+  setShowLogin(false);
+  setForgotPasswordRole(role || "customer");
+  setShowForgotPassword(true);
 
-            setShowAdminLogin(true);
-
-          }}
-
+  window.history.pushState(
+    { page: "forgot-password" },
+    "",
+    "/shopease/forgot-password"
+  );
+}}
 
 
           onLoginSuccess={(user) => {
@@ -3853,8 +4210,12 @@ const moveToWishlist = async (item) => {
             );
 
 
+sessionStorage.setItem(
+  "active_user",
+  JSON.stringify(user)
+);
 
-            setLoggedInUser(user);
+setLoggedInUser(user);
 
 
 
@@ -3891,6 +4252,11 @@ const moveToWishlist = async (item) => {
             if (user.role === "admin") {
 
               setShowAdminHome(true);
+              window.history.pushState(
+  { page: "admin-home" },
+  "",
+  "/shopease/admin"
+);
 
               setShowMerchantHome(false);
 
@@ -3919,6 +4285,11 @@ const moveToWishlist = async (item) => {
               setShowAdminHome(false);
 
               setShowMerchantHome(true);
+              window.history.pushState(
+  { page: "merchant-home" },
+  "",
+  "/shopease/merchant"
+);
 
               setShowDeliveryPartnerHome(false);
 
@@ -3965,6 +4336,11 @@ const moveToWishlist = async (item) => {
               setShowMerchantHome(false);
 
               setShowDeliveryPartnerHome(true);
+              window.history.pushState(
+  { page: "delivery-home" },
+  "",
+  "/shopease/delivery"
+);
 
 
 
@@ -4005,7 +4381,11 @@ const moveToWishlist = async (item) => {
               setShowMerchantHome(false);
 
               setShowDeliveryPartnerHome(false);
-
+              window.history.pushState(
+  { page: "home" },
+  "",
+  "/shopease/"
+);
 
 
               setTourRole("customer");
@@ -4060,21 +4440,21 @@ const moveToWishlist = async (item) => {
 
         <Registration
 
-          onBack={() => {
-
-            setShowRegistration(false);
-
-          }}
+         onBack={() => {
+  window.history.back();
+}}
 
 
+onLogin={() => {
+  setShowRegistration(false);
+  setShowLogin(true);
 
-          onLogin={() => {
-
-            setShowRegistration(false);
-
-            setShowLogin(true);
-
-          }}
+  window.history.pushState(
+    { page: "login" },
+    "",
+    "/shopease/login"
+  );
+}}
 
         />
 
@@ -4092,87 +4472,28 @@ const moveToWishlist = async (item) => {
 
   ========================================================= */
 
-
-
-  if (showPrivacy) {
-
-    return (
-
-      <div className="app simple-page-wrapper">
-
-        <button
-
-          type="button"
-
-          className="simple-page-back"
-
-          onClick={() =>
-
-            setShowPrivacy(false)
-
-          }
-
-        >
-
-          ← Back
-
-        </button>
-
-
-
-        <Privacy />
-
-      </div>
-
-    );
-
-  }
-
-
+if (showPrivacy) {
+  return (
+    <div className="app simple-page-wrapper">
+      <Privacy />
+       {renderFooter()}
+    </div>
+  );
+}
 
   /* =========================================================
 
      TERMS
 
   ========================================================= */
-
-
-
-  if (showTerms) {
-
-    return (
-
-      <div className="app simple-page-wrapper">
-
-        <button
-
-          type="button"
-
-          className="simple-page-back"
-
-          onClick={() =>
-
-            setShowTerms(false)
-
-          }
-
-        >
-
-          ← Back
-
-        </button>
-
-
-
-        <Terms />
-
-      </div>
-
-    );
-
-  }
-
-
+if (showTerms) {
+  return (
+    <div className="app simple-page-wrapper">
+      <Terms />
+       {renderFooter()}
+    </div>
+  );
+}
 
   /* =========================================================
 
@@ -4180,44 +4501,41 @@ const moveToWishlist = async (item) => {
 
   ========================================================= */
 
+if (showContact) {
+  return (
+    <div className="app simple-page-wrapper">
+      <Contact />
 
+      {renderFooter()}
+    </div>
+  );
+}
+if (showAbout) {
+  return (
+    <div className="app">
+      <About />
+      {renderFooter()}
+    </div>
+  );
+}
 
-  if (showContact) {
+if (showHelpSupport) {
+  return (
+    <div className="app">
+      <HelpSupport />
 
-    return (
-
-      <div className="app simple-page-wrapper">
-
-        <button
-
-          type="button"
-
-          className="simple-page-back"
-
-          onClick={() =>
-
-            setShowContact(false)
-
-          }
-
-        >
-
-          ← Back
-
-        </button>
-
-
-
-        <Contact />
-
-      </div>
-
-    );
-
-  }
-
-
-
+      {renderFooter()}
+    </div>
+  );
+}
+if (showReturnsRefunds) {
+  return (
+    <div className="app">
+      <ReturnsRefunds />
+      {renderFooter()}
+    </div>
+  );
+}
   /* =========================================================
 
      ORDER TRACKING
@@ -4429,45 +4747,23 @@ const moveToWishlist = async (item) => {
 
 
     return (
-
+ <div className="app">
       <OrderTracking
 
         order={orderData}
 
-
-
-        onBack={() => {
-
-          setShowOrderTracking(false);
-
-
-
-          if (trackingFromDetails) {
-
-            setShowOrderDetails(true);
-
-          } else {
-
-            setShowOrderHistory(true);
-
-          }
-
-
-
-          setTrackingFromDetails(false);
-
-        }}
-
-
+       onBack={() => {
+  window.history.back();
+}}
 
         onCancel={handleCancelOrder}
-
-
-
         onReturn={handleReturnOrder}
 
       />
 
+    {renderFooter()}
+
+  </div>
     );
 
   }
@@ -4493,37 +4789,34 @@ const moveToWishlist = async (item) => {
           order={orderData}
 
 
+onContinueShopping={() => {
+  setShowOrderSuccess(false);
+  setOrderData(null);
+  setCart([]);
+  setVisibleCount(20);
 
-          onContinueShopping={() => {
-
-            setShowOrderSuccess(false);
-
-            setOrderData(null);
-
-
-
-            setCart([]);
-
-
-
-            setVisibleCount(20);
-
-          }}
-
-
-
-          onTrackOrder={() => {
-
-            setShowOrderSuccess(false);
-
-            setTrackingFromDetails(false);
-
-            setShowOrderTracking(true);
-
-          }}
+  window.history.pushState(
+    { page: "home" },
+    "",
+    "/shopease/"
+  );
+}}
+         onTrackOrder={() => {
+  setShowOrderSuccess(false);
+  setTrackingFromDetails(false);
+  setShowOrderTracking(true);
+window.history.pushState(
+  {
+    page: "order-tracking",
+    order: orderData
+  },
+  "",
+  "/shopease/order-tracking"
+);
+}}
 
         />
-
+{renderFooter()}
       </div>
 
     );
@@ -4555,16 +4848,19 @@ const moveToWishlist = async (item) => {
 
 
         loggedInUser={loggedInUser}
+onBack={() => {
+  window.history.back();
+}}
+onManageAddresses={() => {
+  setShowCheckout(false);
+  setShowMyAddresses(true);
 
-
-
-        onBack={() => {
-
-          setShowCheckout(false);
-
-          setShowCart(true);
-
-        }}
+  window.history.pushState(
+    { page: "addresses" },
+    "",
+    "/shopease/addresses"
+  );
+}}
 
 
 onOrderPlaced={async (order) => {
@@ -4617,13 +4913,18 @@ onOrderPlaced={async (order) => {
 
     setCart([]);
 
-    // ==============================
-    // GO TO ORDER SUCCESS
-    // ==============================
+// ==============================
+// GO TO ORDER SUCCESS
+// ==============================
 
-    setShowCheckout(false);
-    setShowOrderSuccess(true);
+setShowCheckout(false);
+setShowOrderSuccess(true);
 
+window.history.pushState(
+  { page: "order-success" },
+  "",
+  "/shopease/order-success"
+);
   } catch (error) {
     console.error(
       "Post-order cart cleanup error:",
@@ -4633,14 +4934,20 @@ onOrderPlaced={async (order) => {
     // Even if cart cleanup has an issue,
     // show the successful order page.
     setCart([]);
-    setShowCheckout(false);
-    setShowOrderSuccess(true);
+setShowCheckout(false);
+setShowOrderSuccess(true);
+
+window.history.pushState(
+  { page: "order-success" },
+  "",
+  "/shopease/order-success"
+);
   }
 }}
 
       />
 
-
+{renderFooter()}
 
     </div>
 
@@ -4671,54 +4978,44 @@ onOrderPlaced={async (order) => {
         <Wishlist
 
           wishlist={wishlist}
-
-
-
-          onBack={() =>
-
-            setShowWishlist(false)
-
-          }
-
-
-
+onBack={() => {
+  window.history.back();
+}}
           onRemove={
-
             removeFromWishlist
-
           }
-
-
-
           onAddToCart={
 
             addToCart
 
           }
 
+onCartClick={() => {
+  setShowWishlist(false);
+  setShowCart(true);
 
+  window.history.pushState(
+    { page: "cart" },
+    "",
+    "/shopease/cart"
+  );
+}}
+onAdminLogin={() => {
 
-          onCartClick={() => {
+  setShowWishlist(false);
+  setShowAdminLogin(true);
 
-            setShowWishlist(false);
+  window.history.pushState(
+    { page: "admin-login" },
+    "",
+    "/shopease/admin-login"
+  );
 
-            setShowCart(true);
-
-          }}
-
-
-
-          onAdminLogin={() => {
-
-            setShowWishlist(false);
-
-            setShowAdminLogin(true);
-
-          }}
+}}
 
         />
 
-
+{renderFooter()}
 
       </div>
 
@@ -4751,13 +5048,9 @@ onOrderPlaced={async (order) => {
           cart={cart}
 
 
-
-          onBack={() =>
-
-            setShowCart(false)
-
-          }
-
+onBack={() => {
+  window.history.back();
+}}
 
 
           onRemove={
@@ -4778,28 +5071,30 @@ onOrderPlaced={async (order) => {
 
           onMoveToWishlist={moveToWishlist}
 
+onWishlistClick={() => {
+  setShowCart(false);
+  setShowWishlist(true);
 
+  window.history.pushState(
+    { page: "wishlist" },
+    "",
+    "/shopease/wishlist"
+  );
+}}
 
-          onWishlistClick={() => {
+onCheckout={() => {
+  setShowCart(false);
+  setShowCheckout(true);
 
-            setShowCart(false);
-
-            setShowWishlist(true);
-
-          }}
-
-
-
-          onCheckout={() => {
-
-            setShowCart(false);
-
-            setShowCheckout(true);
-
-          }}
+  window.history.pushState(
+    { page: "checkout" },
+    "",
+    "/shopease/checkout"
+  );
+}}
 
         />
-
+{renderFooter()}
 
 
       </div>
@@ -4818,87 +5113,158 @@ onOrderPlaced={async (order) => {
 
 
 
-  if (selectedProduct) {
+    if (selectedProduct) {
 
     return (
 
       <div className="app">
 
-
+        {/* ADDED TO CART MESSAGE */}
+        {loginMessage && (
+          <div className="login-success-message">
+            ✓ {loginMessage}
+          </div>
+        )}
 
         <Navbar
+  search={search}
+  setSearch={handleSearchChange}
 
-          search={search}
+  loggedInUser={loggedInUser}
 
-          setSearch={handleSearchChange}
+  cartCount={cartCount}
 
+  wishlistCount={wishlist.length}
 
+  onLoginClick={() => {
+    setShowLogin(true);
 
-          cartCount={cartCount}
+    window.history.pushState(
+      { page: "login" },
+      "",
+      "/shopease/login"
+    );
+  }}
 
+  onOrders={() => {
+    setSelectedProduct(null);
+    setShowOrderHistory(true);
 
+    window.history.pushState(
+      { page: "order-history" },
+      "",
+      "/shopease/order-history"
+    );
+  }}
 
-          wishlistCount={
+  onAddresses={() => {
+    setSelectedProduct(null);
+    setShowMyAddresses(true);
 
-            wishlist.length
+    window.history.pushState(
+      { page: "addresses" },
+      "",
+      "/shopease/addresses"
+    );
+  }}
 
-          }
+  onAccountSettings={() => {
+    setSelectedProduct(null);
+    setShowAccountSettings(true);
 
+    window.history.pushState(
+      { page: "account-settings" },
+      "",
+      "/shopease/account-settings"
+    );
+  }}
 
+  onLogout={() => {
+    setLoggedInUser(null);
+    setCart([]);
+    setWishlist([]);
 
-          onLoginClick={() => {
+    localStorage.removeItem(
+      "customer_token"
+    );
 
-            setShowProfile(true);
+    localStorage.removeItem(
+      "customer_user"
+    );
 
-          }}
+    sessionStorage.removeItem(
+      "active_user"
+    );
 
+    setSelectedProduct(null);
+    setShowLogin(true);
 
+    window.history.pushState(
+      { page: "login" },
+      "",
+      "/shopease/login"
+    );
+  }}
 
-          onCartClick={() => {
+  onCartClick={() => {
+    setSelectedProduct(null);
+    setShowCart(true);
 
-            setSelectedProduct(null);
+    window.history.pushState(
+      { page: "cart" },
+      "",
+      "/shopease/cart"
+    );
+  }}
 
-            setShowCart(true);
+  onWishlistClick={() => {
+    setSelectedProduct(null);
+    setShowWishlist(true);
 
-          }}
+    window.history.pushState(
+      { page: "wishlist" },
+      "",
+      "/shopease/wishlist"
+    );
+  }}
+/>
+<ProductDetails
+  product={selectedProduct}
+  products={products}
 
+  onBack={() => {
+    window.history.back();
+  }}
 
+  onAddToCart={(item) => addToCart(item, { openCart: false })}
 
-          onWishlistClick={() => {
+  onBuyNow={(product) => {
+    console.log("BUY NOW CLICKED:", product);
 
-            setSelectedProduct(null);
+    setCart([product]);
 
-            setShowWishlist(true);
+    setSelectedProduct(null);
 
-          }}
+    setShowCheckout(true);
 
-        />
+    window.history.pushState(
+      { page: "checkout" },
+      "",
+      "/shopease/checkout"
+    );
+  }}
 
+   onProductSelect={(relatedProduct) => {
+    setSelectedProduct(relatedProduct);
+  }}
 
+  onToggleWishlist={toggleWishlist}
+  isWishlisted={wishlist.some(
+    (item) => item.id === selectedProduct.id
+  )}
+/>
 
-        <ProductDetails
-
-          product={selectedProduct}
-
-
-
-          onBack={() =>
-
-            setSelectedProduct(null)
-
-          }
-
-
-
-          onAddToCart={
-
-            addToCart
-
-          }
-
-        />
-
-
+{renderFooter()}
 
       </div>
 
@@ -4913,7 +5279,6 @@ onOrderPlaced={async (order) => {
      HOME PAGE
 
   ========================================================= */
-
 
 
   return (
@@ -4967,56 +5332,101 @@ onOrderPlaced={async (order) => {
 
 
       <Navbar
+  search={search}
+  setSearch={handleSearchChange}
 
-        search={search}
+  loggedInUser={loggedInUser}
 
-        setSearch={handleSearchChange}
+  cartCount={cartCount}
 
+  wishlistCount={wishlist.length}
 
+  onLoginClick={() => {
+    setShowLogin(true);
 
-        loggedInUser={
+    window.history.pushState(
+      { page: "login" },
+      "",
+      "/shopease/login"
+    );
+  }}
 
-          loggedInUser
+  onOrders={() => {
+    setShowOrderHistory(true);
 
-        }
+    window.history.pushState(
+      { page: "order-history" },
+      "",
+      "/shopease/order-history"
+    );
+  }}
 
+  onAddresses={() => {
+    setShowMyAddresses(true);
 
+    window.history.pushState(
+      { page: "addresses" },
+      "",
+      "/shopease/addresses"
+    );
+  }}
 
-        cartCount={cartCount}
+  onAccountSettings={() => {
+    setShowAccountSettings(true);
 
+    window.history.pushState(
+      { page: "account-settings" },
+      "",
+      "/shopease/account-settings"
+    );
+  }}
 
+  onLogout={() => {
+    setLoggedInUser(null);
+    setCart([]);
+    setWishlist([]);
 
-        wishlistCount={
+    localStorage.removeItem(
+      "customer_token"
+    );
 
-          wishlist.length
+    localStorage.removeItem(
+      "customer_user"
+    );
 
-        }
+    sessionStorage.removeItem(
+      "active_user"
+    );
 
+    setShowLogin(true);
 
+    window.history.pushState(
+      { page: "login" },
+      "",
+      "/shopease/login"
+    );
+  }}
 
-        onLoginClick={() => {
+  onCartClick={() => {
+    setShowCart(true);
 
-          setShowProfile(true);
+    window.history.pushState(
+      { page: "cart" },
+      "",
+      "/shopease/cart"
+    );
+  }}
 
-        }}
+  onWishlistClick={() => {
+    setShowWishlist(true);
 
-
-
-        onCartClick={() =>
-
-          setShowCart(true)
-
-        }
-
-
-
-        onWishlistClick={() =>
-
-          setShowWishlist(true)
-
-        }
-
-      />
+    window.history.pushState(
+      { page: "wishlist" },
+      "",
+      "/shopease/wishlist"
+    );
+  }}
+/>
 
 
 
@@ -5299,13 +5709,7 @@ onOrderPlaced={async (order) => {
                     product={product}
 
 
-
-                    onAddToCart={
-
-                      addToCart
-
-                    }
-
+onAddToCart={(item) => addToCart(item, { openCart: false })}
 
 
                     onToggleWishlist={
@@ -5331,16 +5735,14 @@ onOrderPlaced={async (order) => {
                     }
 
 
-
-                    onViewDetails={() =>
-
-                      setSelectedProduct(
-
-                        product
-
-                      )
-
-                    }
+onViewDetails={() => {
+  setSelectedProduct(product);
+  window.history.pushState(
+  { page: "product-details" },
+  "",
+  `/shopease/product/${product.id}`
+);
+}}
 
                   />
 
@@ -5601,32 +6003,130 @@ onOrderPlaced={async (order) => {
       {/* FOOTER */}
 
 
+<Footer
 
-      <Footer
+  onHome={() => {
+    window.history.pushState(
+      { page: "home" },
+      "",
+      "/shopease"
+    );
 
-        onPrivacy={() =>
+    window.location.reload();
+  }}
 
-          setShowPrivacy(true)
+ onProducts={() => {
+  const productsSection = document.getElementById("products");
 
-        }
+  if (productsSection) {
+    productsSection.scrollIntoView({
+      behavior: "smooth",
+      block: "start",
+    });
+  }
+}}
 
+  onOffers={() => {
+    window.history.pushState(
+      { page: "offers" },
+      "",
+      "/shopease"
+    );
 
+    window.location.reload();
+  }}
 
-        onTerms={() =>
+  onNewArrivals={() => {
+    window.history.pushState(
+      { page: "new-arrivals" },
+      "",
+      "/shopease"
+    );
 
-          setShowTerms(true)
+    window.location.reload();
+  }}
 
-        }
+  onOrders={() => {
+    setShowOrderHistory(true);
 
+    window.history.pushState(
+      { page: "order-history" },
+      "",
+      "/shopease/order-history"
+    );
+  }}
 
+  onAddresses={() => {
+    setShowMyAddresses(true);
 
-        onContact={() =>
+    window.history.pushState(
+      { page: "addresses" },
+      "",
+      "/shopease/addresses"
+    );
+  }}
 
-          setShowContact(true)
+ onSupport={() => {
+  setShowHelpSupport(true);
 
-        }
+  window.history.pushState(
+    { page: "help-support" },
+    "",
+    "/shopease/help-support"
+  );
+}}
 
-      />
+ onReturns={() => {
+  setShowReturnsRefunds(true);
+
+  window.history.pushState(
+    { page: "returns-refunds" },
+    "",
+    "/shopease/returns-refunds"
+  );
+}}
+
+onAbout={() => {
+  setShowAbout(true);
+
+  window.history.pushState(
+    { page: "about" },
+    "",
+    "/shopease/about"
+  );
+}}
+
+  onPrivacy={() => {
+    setShowPrivacy(true);
+
+    window.history.pushState(
+      { page: "privacy" },
+      "",
+      "/shopease/privacy"
+    );
+  }}
+
+  onTerms={() => {
+    setShowTerms(true);
+
+    window.history.pushState(
+      { page: "terms" },
+      "",
+      "/shopease/terms"
+    );
+  }}
+
+  onContact={() => {
+    setShowContact(true);
+
+    window.history.pushState(
+      { page: "contact" },
+      "",
+      "/shopease/contact"
+    );
+  }}
+
+/>
 
 
 

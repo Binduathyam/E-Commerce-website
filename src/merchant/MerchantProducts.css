@@ -1,155 +1,308 @@
+/* =========================================================
+   MERCHANT PRODUCTS PAGE
+========================================================= */
+
 .merchant-products-page {
+  width: 100%;
   min-height: 100vh;
-  background: #f7f7fb;
-  padding: 35px;
+  padding: 32px 42px 60px;
+  box-sizing: border-box;
+  background: #f7f8fc;
 }
 
+
+/* =========================================================
+   HEADER
+========================================================= */
+
 .merchant-products-header {
+  width: 100%;
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 20px;
+  gap: 24px;
   margin-bottom: 28px;
 }
 
-.merchant-products-heading {
+.merchant-products-title-area {
   display: flex;
-  align-items: flex-start;
+  align-items: center;
   gap: 18px;
 }
 
 .merchant-products-back {
-  border: none;
-  background: white;
-  width: 45px;
-  height: 45px;
-  border-radius: 11px;
-  font-size: 20px;
+  width: 46px;
+  height: 46px;
+  border: 1px solid #dfe3eb;
+  border-radius: 12px;
+  background: #ffffff;
+  color: #222;
+  font-size: 25px;
   cursor: pointer;
+  transition: 0.2s ease;
 }
 
-.merchant-products-heading p {
-  margin: 0 0 5px;
-  color: #7c3aed;
+.merchant-products-back:hover {
+  transform: translateX(-2px);
+  border-color: #bfc6d4;
+}
+
+.merchant-products-label {
   font-size: 12px;
-  font-weight: 800;
+  font-weight: 700;
+  letter-spacing: 1.4px;
+  color: #7c8495;
+  margin-bottom: 4px;
 }
 
-.merchant-products-heading h1 {
+.merchant-products-header h1 {
   margin: 0;
-  font-size: 30px;
-  color: #181818;
+  font-size: 32px;
+  line-height: 1.15;
+  color: #171a21;
 }
 
-.merchant-products-heading span {
-  display: block;
-  margin-top: 6px;
-  color: #777;
-  font-size: 14px;
+.merchant-products-header p {
+  margin: 7px 0 0;
+  color: #707888;
+  font-size: 15px;
 }
 
-.merchant-products-add {
+.merchant-add-product-top-button {
   border: none;
-  background: #7c3aed;
-  color: white;
-  padding: 14px 22px;
+  background: #111827;
+  color: #ffffff;
+  padding: 13px 20px;
   border-radius: 11px;
-  font-weight: 800;
+  font-size: 14px;
+  font-weight: 700;
   cursor: pointer;
+  white-space: nowrap;
+  transition: 0.2s ease;
 }
+
+.merchant-add-product-top-button:hover {
+  background: #000000;
+  transform: translateY(-1px);
+}
+
+
+/* =========================================================
+   ERROR
+========================================================= */
+
+.merchant-products-error {
+  width: 100%;
+  box-sizing: border-box;
+  padding: 14px 18px;
+  margin-bottom: 22px;
+  border-radius: 10px;
+  background: #fff1f2;
+  border: 1px solid #fecdd3;
+  color: #be123c;
+  font-size: 14px;
+  font-weight: 600;
+}
+
+
+/* =========================================================
+   SUMMARY
+========================================================= */
 
 .merchant-products-summary {
-  background: white;
-  border-radius: 15px;
-  padding: 20px 24px;
+  width: 100%;
+  box-sizing: border-box;
+  background: #ffffff;
+  border: 1px solid #e5e8ef;
+  border-radius: 16px;
+  padding: 22px 24px;
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 25px;
-  box-shadow: 0 5px 20px rgba(0, 0, 0, 0.04);
+  margin-bottom: 20px;
 }
 
-.merchant-products-summary strong {
-  display: block;
-  font-size: 18px;
+.merchant-products-summary h3 {
+  margin: 0;
+  color: #1c2028;
+  font-size: 19px;
 }
 
-.merchant-products-summary span {
-  display: block;
-  margin-top: 5px;
-  color: #777;
+.merchant-products-summary p {
+  margin: 5px 0 0;
+  color: #7b8290;
+  font-size: 14px;
+}
+
+.merchant-refresh-button {
+  border: 1px solid #d9dee7;
+  background: #ffffff;
+  color: #343944;
+  padding: 10px 15px;
+  border-radius: 9px;
   font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
 }
 
-.merchant-products-summary button {
-  border: 1px solid #ddd;
-  background: white;
-  padding: 9px 15px;
-  border-radius: 8px;
-  cursor: pointer;
-  font-weight: 700;
+.merchant-refresh-button:hover {
+  background: #f5f6f8;
 }
+
+
+/* =========================================================
+   SEARCH / FILTER
+========================================================= */
+
+.merchant-products-controls {
+  display: flex;
+  gap: 14px;
+  width: 100%;
+  margin-bottom: 15px;
+}
+
+.merchant-product-search {
+  flex: 1;
+  height: 48px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 0 15px;
+  box-sizing: border-box;
+  background: #ffffff;
+  border: 1px solid #dfe3eb;
+  border-radius: 11px;
+}
+
+.merchant-product-search span {
+  color: #8a92a1;
+  font-size: 22px;
+}
+
+.merchant-product-search input {
+  flex: 1;
+  border: none;
+  outline: none;
+  background: transparent;
+  font-size: 14px;
+  color: #22252c;
+}
+
+.merchant-product-search input::placeholder {
+  color: #9ca3af;
+}
+
+.merchant-category-filter select {
+  height: 48px;
+  min-width: 190px;
+  padding: 0 14px;
+  border: 1px solid #dfe3eb;
+  border-radius: 11px;
+  background: #ffffff;
+  color: #333741;
+  outline: none;
+  cursor: pointer;
+}
+
+
+/* =========================================================
+   FILTER RESULT
+========================================================= */
+
+.merchant-filter-result {
+  color: #737b8a;
+  font-size: 14px;
+  margin: 16px 2px;
+}
+
+.merchant-filter-result strong {
+  color: #252a33;
+}
+
+
+/* =========================================================
+   PRODUCT GRID
+========================================================= */
 
 .merchant-products-grid {
   display: grid;
   grid-template-columns: repeat(
     auto-fill,
-    minmax(280px, 1fr)
+    minmax(260px, 1fr)
   );
   gap: 22px;
 }
 
+
+/* =========================================================
+   PRODUCT CARD
+========================================================= */
+
 .merchant-product-card {
-  background: white;
-  border-radius: 17px;
+  background: #ffffff;
+  border: 1px solid #e5e8ef;
+  border-radius: 16px;
   overflow: hidden;
-  box-shadow: 0 5px 22px rgba(0, 0, 0, 0.05);
-  transition: transform 0.2s ease;
+  transition: 0.2s ease;
 }
 
 .merchant-product-card:hover {
   transform: translateY(-3px);
+  box-shadow:
+    0 10px 30px rgba(0, 0, 0, 0.08);
 }
 
-.merchant-product-image {
-  height: 230px;
-  background: #f1f1f5;
-  display: flex;
-  justify-content: center;
-  align-items: center;
+.merchant-product-card-image {
+  width: 100%;
+  height: 270px;
+  position: relative;
+  background: #f3f4f6;
   overflow: hidden;
 }
 
-.merchant-product-image img {
+.merchant-product-card-image img {
   width: 100%;
   height: 100%;
   object-fit: cover;
+  display: block;
 }
 
-.merchant-product-image span {
-  font-size: 55px;
+.merchant-product-discount {
+  position: absolute;
+  top: 13px;
+  left: 13px;
+  padding: 6px 9px;
+  border-radius: 7px;
+  background: #111827;
+  color: #ffffff;
+  font-size: 11px;
+  font-weight: 700;
 }
 
-.merchant-product-details {
-  padding: 20px;
+.merchant-product-card-content {
+  padding: 18px;
 }
 
 .merchant-product-category {
-  color: #7c3aed;
-  font-size: 12px;
-  font-weight: 800;
+  font-size: 11px;
+  color: #8a92a1;
   text-transform: uppercase;
+  letter-spacing: 0.8px;
+  font-weight: 700;
 }
 
-.merchant-product-details h2 {
+.merchant-product-card h3 {
   margin: 7px 0 5px;
-  font-size: 18px;
-  color: #222;
+  font-size: 17px;
+  color: #1b1e25;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .merchant-product-brand {
   margin: 0;
-  color: #777;
+  color: #757d8c;
   font-size: 13px;
 }
 
@@ -157,93 +310,587 @@
   display: flex;
   align-items: center;
   gap: 9px;
-  margin-top: 15px;
+  margin-top: 14px;
 }
 
 .merchant-product-price-row strong {
-  font-size: 20px;
+  font-size: 19px;
+  color: #111827;
 }
 
-.merchant-product-price-row del {
-  color: #999;
+.merchant-product-price-row span {
+  color: #969daa;
+  text-decoration: line-through;
   font-size: 13px;
 }
 
-.merchant-product-bottom {
+.merchant-product-stock {
+  margin-top: 9px;
+  color: #747c8b;
+  font-size: 13px;
+}
+
+.merchant-product-stock strong {
+  color: #262b34;
+}
+
+
+/* =========================================================
+   ACTION BUTTONS
+========================================================= */
+
+.merchant-product-actions {
   display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-top: 15px;
+  gap: 9px;
+  margin-top: 17px;
 }
 
-.stock-good,
-.stock-low,
-.product-discount {
-  padding: 6px 9px;
-  border-radius: 7px;
-  font-size: 12px;
-  font-weight: 700;
-}
-
-.stock-good {
-  background: #eefaf1;
-  color: #188038;
-}
-
-.stock-low {
-  background: #fff1f1;
-  color: #c62828;
-}
-
-.product-discount {
-  background: #f3edff;
-  color: #7c3aed;
-}
-
-.merchant-products-message,
-.merchant-products-empty,
-.merchant-products-error {
-  background: white;
-  border-radius: 16px;
-  padding: 60px 25px;
-  text-align: center;
-}
-
-.merchant-products-empty h2 {
-  margin: 15px 0 8px;
-}
-
-.merchant-products-empty p {
-  color: #777;
-}
-
-.merchant-products-empty button,
-.merchant-products-error button {
-  border: none;
-  background: #7c3aed;
-  color: white;
-  padding: 12px 20px;
+.merchant-edit-button,
+.merchant-delete-button {
+  flex: 1;
+  padding: 10px 8px;
   border-radius: 9px;
+  font-size: 13px;
   font-weight: 700;
   cursor: pointer;
 }
 
-.empty-product-icon {
-  font-size: 55px;
+.merchant-edit-button {
+  background: #f4f5f7;
+  color: #222832;
+  border: 1px solid #e1e4e9;
 }
 
-.merchant-products-error {
+.merchant-edit-button:hover {
+  background: #e9ebef;
+}
+
+.merchant-delete-button {
+  background: #fff4f4;
   color: #c62828;
+  border: 1px solid #ffd7d7;
 }
 
-.merchant-products-error button {
-  display: block;
-  margin: 15px auto 0;
+.merchant-delete-button:hover {
+  background: #ffe9e9;
 }
+
+
+/* =========================================================
+   EMPTY
+========================================================= */
+
+.merchant-products-empty {
+  text-align: center;
+  background: #ffffff;
+  border: 1px solid #e5e8ef;
+  border-radius: 16px;
+  padding: 70px 20px;
+}
+
+.merchant-empty-icon {
+  font-size: 46px;
+  margin-bottom: 15px;
+}
+
+.merchant-products-empty h2 {
+  margin: 0;
+  font-size: 23px;
+  color: #20242c;
+}
+
+.merchant-products-empty p {
+  color: #777f8d;
+  margin: 9px 0 22px;
+}
+
+.merchant-empty-add-button {
+  border: none;
+  border-radius: 10px;
+  padding: 12px 18px;
+  background: #111827;
+  color: #ffffff;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+
+/* =========================================================
+   LOADING
+========================================================= */
+
+.merchant-products-loading {
+  min-height: 60vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  color: #747b88;
+}
+
+.merchant-products-spinner {
+  width: 38px;
+  height: 38px;
+  border: 4px solid #e5e7eb;
+  border-top-color: #111827;
+  border-radius: 50%;
+  animation: merchantSpinner 0.8s linear infinite;
+  margin-bottom: 14px;
+}
+
+@keyframes merchantSpinner {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+
+/* =========================================================
+   EDIT PRODUCT PAGE
+========================================================= */
+
+.merchant-edit-product-page {
+  width: 100%;
+  min-height: 100vh;
+  padding: 32px 42px 70px;
+  box-sizing: border-box;
+  background: #f7f8fc;
+}
+
+
+/* =========================================================
+   EDIT HEADER
+========================================================= */
+
+.merchant-edit-header {
+  display: flex;
+  align-items: center;
+  gap: 18px;
+  margin-bottom: 28px;
+}
+
+.merchant-edit-back {
+  width: 46px;
+  height: 46px;
+  flex-shrink: 0;
+  border-radius: 12px;
+  border: 1px solid #dfe3eb;
+  background: #ffffff;
+  font-size: 25px;
+  cursor: pointer;
+}
+
+.merchant-edit-back:hover {
+  background: #f1f2f5;
+}
+
+.merchant-edit-header h1 {
+  margin: 0;
+  font-size: 32px;
+  color: #171a21;
+}
+
+.merchant-edit-header p {
+  margin: 7px 0 0;
+  color: #707888;
+  font-size: 15px;
+}
+
+
+/* =========================================================
+   EDIT FORM
+========================================================= */
+
+.merchant-edit-form {
+  width: 100%;
+}
+
+
+/* =========================================================
+   EDIT SECTION
+========================================================= */
+
+.merchant-edit-section {
+  width: 100%;
+  box-sizing: border-box;
+  background: #ffffff;
+  border: 1px solid #e4e7ed;
+  border-radius: 16px;
+  padding: 28px;
+  margin-bottom: 22px;
+}
+
+.merchant-edit-section-heading {
+  margin-bottom: 25px;
+}
+
+.merchant-edit-section-heading h2 {
+  margin: 0;
+  color: #1b1f27;
+  font-size: 21px;
+}
+
+.merchant-edit-section-heading p {
+  margin: 6px 0 0;
+  color: #7a8290;
+  font-size: 14px;
+}
+
+
+/* =========================================================
+   EDIT GRID
+========================================================= */
+
+.merchant-edit-grid {
+  display: grid;
+  grid-template-columns:
+    repeat(2, minmax(0, 1fr));
+  gap: 20px;
+}
+
+.merchant-edit-group {
+  min-width: 0;
+}
+
+.merchant-edit-group.full {
+  grid-column: 1 / -1;
+}
+
+.merchant-edit-group label {
+  display: block;
+  margin-bottom: 8px;
+  color: #333842;
+  font-size: 13px;
+  font-weight: 700;
+}
+
+.merchant-edit-group label span {
+  color: #d92d20;
+  margin-left: 3px;
+}
+
+.merchant-edit-group input,
+.merchant-edit-group textarea,
+.merchant-edit-group select {
+  width: 100%;
+  box-sizing: border-box;
+  border: 1px solid #d9dee7;
+  border-radius: 9px;
+  background: #ffffff;
+  color: #22262e;
+  font-size: 14px;
+  outline: none;
+  transition: 0.2s ease;
+}
+
+.merchant-edit-group input,
+.merchant-edit-group select {
+  height: 46px;
+  padding: 0 13px;
+}
+
+.merchant-edit-group textarea {
+  padding: 12px 13px;
+  resize: vertical;
+  min-height: 100px;
+  font-family: inherit;
+}
+
+.merchant-edit-group input:focus,
+.merchant-edit-group textarea:focus,
+.merchant-edit-group select:focus {
+  border-color: #8a93a4;
+  box-shadow:
+    0 0 0 3px rgba(17, 24, 39, 0.06);
+}
+
+.merchant-edit-group input:disabled,
+.merchant-edit-group textarea:disabled,
+.merchant-edit-group select:disabled {
+  background: #f5f6f8;
+  cursor: not-allowed;
+}
+
+
+/* =========================================================
+   PRODUCT IMAGES
+========================================================= */
+
+.merchant-edit-image-area {
+  width: 100%;
+}
+
+.merchant-edit-upload-box {
+  min-height: 170px;
+  width: 100%;
+  box-sizing: border-box;
+  border: 2px dashed #cfd5df;
+  border-radius: 14px;
+  background: #fafbfc;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: 0.2s ease;
+}
+
+.merchant-edit-upload-box:hover {
+  border-color: #9ca3af;
+  background: #f7f8fa;
+}
+
+.merchant-edit-upload-icon {
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  background: #111827;
+  color: #ffffff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 29px;
+  margin-bottom: 11px;
+}
+
+.merchant-edit-upload-box strong {
+  font-size: 15px;
+  color: #252a33;
+}
+
+.merchant-edit-upload-box span {
+  margin-top: 5px;
+  font-size: 12px;
+  color: #8a92a0;
+}
+
+.merchant-edit-upload-box small {
+  margin-top: 8px;
+  font-size: 12px;
+  color: #666f7d;
+  font-weight: 700;
+}
+
+
+/* =========================================================
+   IMAGE GRID
+========================================================= */
+
+.merchant-edit-image-grid {
+  display: grid;
+  grid-template-columns:
+    repeat(4, minmax(0, 1fr));
+  gap: 16px;
+  margin-top: 22px;
+}
+
+.merchant-edit-image-card {
+  position: relative;
+  min-width: 0;
+  overflow: hidden;
+  background: #f4f5f7;
+  border: 1px solid #e0e4ea;
+  border-radius: 12px;
+}
+
+.merchant-edit-image-card img {
+  width: 100%;
+  aspect-ratio: 1 / 1;
+  object-fit: cover;
+  display: block;
+}
+
+.merchant-edit-primary-badge {
+  position: absolute;
+  top: 9px;
+  left: 9px;
+  padding: 5px 8px;
+  border-radius: 6px;
+  background: #111827;
+  color: #ffffff;
+  font-size: 10px;
+  font-weight: 800;
+}
+
+.merchant-edit-remove-image {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  width: 30px;
+  height: 30px;
+  border: none;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.95);
+  color: #c62828;
+  font-size: 19px;
+  line-height: 1;
+  cursor: pointer;
+  box-shadow:
+    0 2px 8px rgba(0, 0, 0, 0.12);
+}
+
+.merchant-edit-remove-image:hover {
+  background: #fff0f0;
+}
+
+.merchant-edit-image-number {
+  padding: 9px 10px;
+  background: #ffffff;
+  color: #626a78;
+  font-size: 11px;
+  font-weight: 700;
+}
+
+.merchant-make-primary-button {
+  position: absolute;
+  left: 8px;
+  right: 8px;
+  bottom: 40px;
+  padding: 8px 7px;
+  border: none;
+  border-radius: 7px;
+  background: rgba(17, 24, 39, 0.9);
+  color: #ffffff;
+  font-size: 11px;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.merchant-make-primary-button:hover {
+  background: #000000;
+}
+
+
+/* =========================================================
+   VARIANTS
+========================================================= */
+
+.merchant-edit-variants {
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+}
+
+.merchant-edit-variant-card {
+  border: 1px solid #e0e4ea;
+  border-radius: 13px;
+  padding: 20px;
+  background: #fafbfc;
+}
+
+.merchant-edit-variant-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 18px;
+}
+
+.merchant-edit-variant-header h3 {
+  margin: 0;
+  font-size: 17px;
+  color: #242932;
+}
+
+.merchant-edit-variant-grid {
+  display: grid;
+  grid-template-columns:
+    repeat(2, minmax(0, 1fr));
+  gap: 17px;
+}
+
+.merchant-edit-available {
+  display: flex;
+  align-items: center;
+}
+
+.merchant-edit-available label {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: #424954;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.merchant-edit-available input {
+  width: 17px;
+  height: 17px;
+}
+
+
+/* =========================================================
+   EDIT ACTIONS
+========================================================= */
+
+.merchant-edit-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 12px;
+  padding: 5px 0 20px;
+}
+
+.merchant-edit-cancel,
+.merchant-edit-update {
+  min-width: 145px;
+  height: 46px;
+  border-radius: 10px;
+  font-size: 14px;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.merchant-edit-cancel {
+  border: 1px solid #d7dce4;
+  background: #ffffff;
+  color: #363c46;
+}
+
+.merchant-edit-cancel:hover {
+  background: #f3f4f6;
+}
+
+.merchant-edit-update {
+  border: none;
+  background: #111827;
+  color: #ffffff;
+}
+
+.merchant-edit-update:hover {
+  background: #000000;
+}
+
+.merchant-edit-cancel:disabled,
+.merchant-edit-update:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+
+/* =========================================================
+   RESPONSIVE
+========================================================= */
+
+@media (max-width: 1000px) {
+
+  .merchant-products-page,
+  .merchant-edit-product-page {
+    padding: 25px;
+  }
+
+  .merchant-edit-image-grid {
+    grid-template-columns:
+      repeat(3, minmax(0, 1fr));
+  }
+
+}
+
 
 @media (max-width: 700px) {
-  .merchant-products-page {
-    padding: 20px;
+
+  .merchant-products-page,
+  .merchant-edit-product-page {
+    padding: 18px;
   }
 
   .merchant-products-header {
@@ -251,144 +898,61 @@
     flex-direction: column;
   }
 
-  .merchant-products-add {
+  .merchant-add-product-top-button {
     width: 100%;
   }
 
-  .merchant-products-grid {
-    grid-template-columns: 1fr;
+  .merchant-products-controls {
+    flex-direction: column;
   }
-}
-.merchant-product-actions {
-  display: flex;
-  gap: 10px;
-  margin-top: 18px;
-}
 
-.merchant-edit-button,
-.merchant-delete-button {
-  flex: 1;
-  border: none;
-  padding: 10px 12px;
-  border-radius: 9px;
-  font-weight: 700;
-  cursor: pointer;
-}
+  .merchant-category-filter select {
+    width: 100%;
+  }
 
-.merchant-edit-button {
-  background: #f1ebff;
-  color: #6d28d9;
-}
-
-.merchant-delete-button {
-  background: #fff0f0;
-  color: #dc2626;
-}
-
-.merchant-edit-button:hover {
-  background: #e7dcff;
-}
-
-.merchant-delete-button:hover {
-  background: #ffe0e0;
-}
-
-.merchant-delete-button:disabled {
-  opacity: 0.6;
-  cursor: not-allowed;
-}
-
-/* =========================
-   EDIT PRODUCT
-========================= */
-
-.merchant-edit-card {
-  max-width: 1000px;
-  background: white;
-  border-radius: 18px;
-  padding: 30px;
-  box-shadow: 0 8px 30px rgba(0, 0, 0, 0.06);
-}
-
-.merchant-edit-grid {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 22px;
-}
-
-.merchant-edit-group {
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-}
-
-.merchant-edit-group label {
-  font-size: 14px;
-  font-weight: 700;
-}
-
-.merchant-edit-group input,
-.merchant-edit-group textarea {
-  width: 100%;
-  box-sizing: border-box;
-  padding: 13px 14px;
-  border: 1px solid #ddd;
-  border-radius: 10px;
-  font-family: inherit;
-  font-size: 14px;
-  outline: none;
-}
-
-.merchant-edit-group input:focus,
-.merchant-edit-group textarea:focus {
-  border-color: #7c3aed;
-}
-
-.merchant-edit-full {
-  margin-top: 22px;
-}
-
-.merchant-edit-group textarea {
-  resize: vertical;
-}
-
-.merchant-edit-actions {
-  display: flex;
-  justify-content: flex-end;
-  gap: 12px;
-  margin-top: 28px;
-}
-
-.merchant-edit-cancel,
-.merchant-edit-save {
-  border: none;
-  padding: 13px 22px;
-  border-radius: 10px;
-  font-weight: 700;
-  cursor: pointer;
-}
-
-.merchant-edit-cancel {
-  background: #eeeeee;
-}
-
-.merchant-edit-save {
-  background: #7c3aed;
-  color: white;
-}
-
-.merchant-edit-cancel:disabled,
-.merchant-edit-save:disabled {
-  opacity: 0.6;
-  cursor: not-allowed;
-}
-
-@media (max-width: 700px) {
   .merchant-edit-grid {
     grid-template-columns: 1fr;
+  }
+
+  .merchant-edit-group.full {
+    grid-column: auto;
+  }
+
+  .merchant-edit-variant-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .merchant-edit-image-grid {
+    grid-template-columns:
+      repeat(2, minmax(0, 1fr));
+  }
+
+  .merchant-edit-actions {
+    flex-direction: column-reverse;
+  }
+
+  .merchant-edit-cancel,
+  .merchant-edit-update {
+    width: 100%;
+  }
+
+}
+
+
+@media (max-width: 450px) {
+
+  .merchant-products-header h1,
+  .merchant-edit-header h1 {
+    font-size: 26px;
   }
 
   .merchant-product-actions {
     flex-direction: column;
   }
+
+  .merchant-edit-image-grid {
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+  }
+
 }

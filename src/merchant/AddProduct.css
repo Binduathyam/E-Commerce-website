@@ -1,593 +1,3035 @@
-/* =====================================================
-   ADD PRODUCT PAGE
-===================================================== */
+/* =========================================================
+   SHOP EASE - MERCHANT ADD PRODUCT
+   COMPLETE PROFESSIONAL ADMIN UI
+========================================================= */
+
+* {
+  box-sizing: border-box;
+}
+
+
+/* =========================================================
+   PAGE
+========================================================= */
 
 .merchant-add-product-page {
+  width: 100%;
   min-height: 100vh;
+
+  padding: 32px 30px 60px;
+
   background:
     radial-gradient(
-      circle at top right,
-      rgba(124, 58, 237, 0.07),
-      transparent 28%
+      circle at 85% 0%,
+      rgba(124, 58, 237, 0.08),
+      transparent 30%
     ),
-    #f7f7fb;
-  padding: 32px 42px 50px;
-  box-sizing: border-box;
+    linear-gradient(
+      180deg,
+      #faf9ff 0%,
+      #f7f7fa 100%
+    );
+
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+
+  overflow-x: hidden;
 }
 
 
-/* =====================================================
-   HEADER
-===================================================== */
+/* =========================================================
+   PAGE HEADER
+========================================================= */
 
-.merchant-add-header {
-  max-width: 1120px;
+.merchant-add-product-header {
+  width: min(1280px, calc(100% - 20px));
+
   margin: 0 auto 28px;
-  display: flex;
-  align-items: center;
-  gap: 18px;
-}
 
-.merchant-back-button {
-  width: 44px;
-  height: 44px;
-  border: 1px solid #e7e3ef;
-  border-radius: 12px;
-  background: #ffffff;
-  color: #27212f;
-  font-size: 21px;
-  font-weight: 600;
-  cursor: pointer;
-
-  display: flex;
-  align-items: center;
-  justify-content: center;
-
-  box-shadow:
-    0 3px 12px rgba(0, 0, 0, 0.04);
-
-  transition:
-    transform 0.2s ease,
-    box-shadow 0.2s ease,
-    background 0.2s ease;
-}
-
-.merchant-back-button:hover {
-  background: #faf8ff;
-  transform: translateX(-2px);
-  box-shadow:
-    0 6px 18px rgba(0, 0, 0, 0.07);
-}
-
-.merchant-add-header > div {
-  min-width: 0;
-}
-
-.merchant-add-header p {
-  margin: 0 0 5px;
-  color: #7c3aed;
-  font-size: 11px;
-  font-weight: 800;
-  letter-spacing: 1.6px;
-}
-
-.merchant-add-header h1 {
-  margin: 0;
-  color: #18141d;
-  font-size: 32px;
-  line-height: 1.15;
-  font-weight: 800;
-  letter-spacing: -0.7px;
-}
-
-.merchant-add-header span {
-  display: block;
-  margin-top: 7px;
-  color: #77717f;
-  font-size: 14px;
-}
-
-
-/* =====================================================
-   FORM
-===================================================== */
-
-.merchant-product-form {
-  max-width: 1120px;
-  margin: 0 auto;
-}
-
-
-/* =====================================================
-   FORM CARD
-===================================================== */
-
-.merchant-form-card {
-  background: #ffffff;
-  border: 1px solid #ebe7f0;
-  border-radius: 18px;
-  padding: 28px;
-  margin-bottom: 20px;
-
-  box-shadow:
-    0 8px 30px rgba(25, 15, 40, 0.045);
-}
-
-
-/* =====================================================
-   CARD HEADER
-===================================================== */
-
-.merchant-form-card-header {
-  display: flex;
-  align-items: center;
-  gap: 14px;
-  padding-bottom: 22px;
-  margin-bottom: 24px;
-  border-bottom: 1px solid #f0edf3;
-}
-
-.merchant-form-icon {
-  width: 38px;
-  height: 38px;
-  flex-shrink: 0;
-
-  border-radius: 11px;
-  background: #f1eaff;
-  color: #7c3aed;
-
-  display: flex;
-  align-items: center;
-  justify-content: center;
-
-  font-size: 14px;
-  font-weight: 800;
-}
-
-.merchant-form-card-header h2 {
-  margin: 0;
-  color: #211c27;
-  font-size: 18px;
-  font-weight: 750;
-}
-
-.merchant-form-card-header p {
-  margin: 4px 0 0;
-  color: #85808b;
-  font-size: 13px;
-}
-
-
-/* =====================================================
-   FORM GRID
-===================================================== */
-
-.merchant-form-grid {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 20px 22px;
-}
-
-
-/* =====================================================
-   FORM GROUP
-===================================================== */
-
-.merchant-form-group {
   display: flex;
   flex-direction: column;
+
+  align-items: center;
+  justify-content: center;
+
+  text-align: center;
+
   gap: 8px;
-  min-width: 0;
-}
-
-.merchant-form-group.full {
-  grid-column: 1 / -1;
-}
-
-.merchant-form-group label {
-  color: #37313e;
-  font-size: 13px;
-  font-weight: 700;
-}
-
-.merchant-form-group label span {
-  margin-left: 3px;
-  color: #dc2626;
 }
 
 
-/* =====================================================
-   INPUTS
-===================================================== */
-
-.merchant-form-group input,
-.merchant-form-group textarea,
-.merchant-form-group select {
+.merchant-add-product-header > div {
   width: 100%;
-  box-sizing: border-box;
 
-  border: 1px solid #ddd8e5;
-  border-radius: 11px;
-
-  background: #fff;
-  color: #211c27;
-
-  padding: 13px 14px;
-
-  font-family: inherit;
-  font-size: 14px;
-
-  outline: none;
-
-  transition:
-    border-color 0.2s ease,
-    box-shadow 0.2s ease,
-    background 0.2s ease;
-}
-
-.merchant-form-group input::placeholder,
-.merchant-form-group textarea::placeholder {
-  color: #aaa4b0;
-}
-
-.merchant-form-group input:hover,
-.merchant-form-group textarea:hover,
-.merchant-form-group select:hover {
-  border-color: #c9c2d2;
-}
-
-.merchant-form-group input:focus,
-.merchant-form-group textarea:focus,
-.merchant-form-group select:focus {
-  border-color: #8b5cf6;
-
-  box-shadow:
-    0 0 0 3px rgba(124, 58, 237, 0.10);
-}
-
-.merchant-form-group textarea {
-  min-height: 120px;
-  resize: vertical;
-  line-height: 1.6;
-}
-
-
-/* =====================================================
-   PRICE INPUT
-===================================================== */
-
-.price-input {
-  position: relative;
-  display: flex;
-  align-items: center;
-}
-
-.price-input > span {
-  position: absolute;
-  left: 14px;
-  color: #625a68;
-  font-size: 14px;
-  font-weight: 700;
-  pointer-events: none;
-}
-
-.price-input > input {
-  padding-left: 34px;
-}
-
-
-/* Percentage field */
-
-.price-input input[name="discount"] {
-  padding-left: 14px;
-  padding-right: 38px;
-}
-
-.price-input input[name="discount"] + span {
-  left: auto;
-  right: 14px;
-}
-
-
-/* =====================================================
-   IMAGE SECTION
-===================================================== */
-
-.merchant-image-section {
-  display: grid;
-  grid-template-columns: 1fr 300px;
-  gap: 30px;
-  align-items: stretch;
-}
-
-.merchant-image-input {
   display: flex;
   flex-direction: column;
+
+  align-items: center;
   justify-content: center;
+
+  text-align: center;
 }
 
-.merchant-image-input label {
-  color: #37313e;
-  font-size: 13px;
-  font-weight: 700;
-  margin-bottom: 8px;
+
+.merchant-add-product-header h1 {
+  margin: 0;
+
+  color: #17131d;
+
+  font-size: 40px;
+  line-height: 1.15;
+
+  font-weight: 800;
+
+  letter-spacing: -1px;
 }
 
-.merchant-image-input label span {
-  margin-left: 3px;
-  color: #dc2626;
-}
 
-.merchant-image-input input {
-  width: 100%;
-  box-sizing: border-box;
+.merchant-add-product-header p {
+  margin: 6px 0 5px;
 
-  border: 1px solid #ddd8e5;
-  border-radius: 11px;
-
-  padding: 13px 14px;
+  color: #77717f;
 
   font-size: 14px;
-  outline: none;
-
-  transition: 0.2s ease;
-}
-
-.merchant-image-input input:focus {
-  border-color: #8b5cf6;
-  box-shadow:
-    0 0 0 3px rgba(124, 58, 237, 0.10);
-}
-
-.merchant-image-input small {
-  margin-top: 8px;
-  color: #928c98;
-  font-size: 11px;
   line-height: 1.5;
 }
 
 
-/* =====================================================
-   IMAGE PREVIEW
-===================================================== */
+/* =========================================================
+   HEADER CANCEL
+========================================================= */
 
-.merchant-image-preview {
-  min-height: 230px;
+.merchant-add-product-header
+.merchant-cancel-button {
+  min-width: 92px;
+  min-height: 42px;
 
-  border: 1px dashed #cfc6dc;
-  border-radius: 15px;
+  padding: 10px 20px;
 
-  background:
-    linear-gradient(
-      135deg,
-      #faf9fc,
-      #f4f0fa
-    );
+  border: 1px solid #e3dfea;
+  border-radius: 10px;
 
-  display: flex;
-  align-items: center;
-  justify-content: center;
+  background: #ffffff;
 
-  overflow: hidden;
-}
+  color: #443d4b;
 
-.merchant-image-preview img {
-  width: 100%;
-  height: 230px;
-
-  display: block;
-
-  object-fit: contain;
-  background: #fff;
-}
-
-.merchant-image-preview > div {
-  text-align: center;
-  color: #958d9f;
-}
-
-.merchant-image-preview span {
-  display: block;
-  font-size: 38px;
-  margin-bottom: 8px;
-}
-
-.merchant-image-preview p {
-  margin: 0;
+  font-family: inherit;
   font-size: 13px;
-  font-weight: 600;
+  font-weight: 650;
+
+  cursor: pointer;
+
+  transition: all 0.2s ease;
 }
 
 
-/* =====================================================
-   ERROR
-===================================================== */
+.merchant-add-product-header
+.merchant-cancel-button:hover {
+  border-color: #cfc3df;
 
-.merchant-form-error {
-  margin-bottom: 20px;
+  background: #faf8ff;
+
+  color: #6d28d9;
+
+  transform: translateY(-1px);
+}
+
+
+/* =========================================================
+   ERROR
+========================================================= */
+
+.merchant-product-error {
+  width: min(1280px, calc(100% - 20px));
+
+  margin: 0 auto 20px;
 
   padding: 13px 16px;
 
   border: 1px solid #fecaca;
   border-radius: 11px;
 
-  background: #fff5f5;
-  color: #b42318;
+  background: #fff7f7;
+
+  color: #b91c1c;
 
   font-size: 13px;
-  font-weight: 600;
+
+  line-height: 1.5;
 }
 
 
-/* =====================================================
-   ACTIONS
-===================================================== */
+/* =========================================================
+   MAIN FORM
+========================================================= */
 
-.merchant-form-actions {
+.merchant-add-product-form {
+  width: min(1280px, calc(100% - 20px));
+
+  margin: 0 auto;
+
   display: flex;
-  align-items: center;
-  justify-content: flex-end;
-  gap: 12px;
+  flex-direction: column;
 
-  max-width: 1120px;
-  margin: 8px auto 0;
-  padding: 4px 0;
+  align-items: center;
 }
 
-.merchant-cancel-button,
-.merchant-save-button {
-  min-width: 130px;
 
-  border: none;
+/* =========================================================
+   ALL PRODUCT SECTIONS
+========================================================= */
+
+.merchant-product-section {
+  width: 100%;
+
+  margin: 0 auto 22px;
+
+  padding: 30px 34px;
+
+  background: #ffffff;
+
+  border: 1px solid #e7e3ed;
+  border-radius: 20px;
+
+  box-shadow:
+    0 8px 30px rgba(30, 20, 45, 0.045);
+
+  box-sizing: border-box;
+}
+
+
+/* =========================================================
+   PRODUCT INFORMATION FIRST SECTION
+========================================================= */
+
+.merchant-add-product-form
+> .merchant-product-section:first-child {
+  width: 100%;
+
+  margin-left: auto;
+  margin-right: auto;
+}
+
+
+/* =========================================================
+   SECTION HEADING
+========================================================= */
+
+.merchant-section-heading {
+  width: 100%;
+
+  margin: 0 0 26px;
+
+  padding: 0 0 18px;
+
+  border-bottom: 1px solid #eeeaf3;
+
+  text-align: center;
+}
+
+
+.merchant-section-heading h2,
+.merchant-section-heading h3 {
+  margin: 0;
+
+  color: #18151d;
+
+  font-size: 20px;
+
+  line-height: 1.3;
+
+  font-weight: 800;
+
+  letter-spacing: -0.3px;
+}
+
+
+.merchant-section-heading p {
+  margin: 7px 0 0;
+
+  color: #85808f;
+
+  font-size: 13px;
+
+  line-height: 1.5;
+}
+
+
+/* =========================================================
+   TOP PRODUCT INFORMATION LAYOUT
+========================================================= */
+
+/*
+   Product Name
+   ↓
+   Full Width
+
+   Description
+   ↓
+   Full Width
+
+   Category       Product Type
+   ↓              ↓
+   50%            50%
+
+   Brand          Size & Fit
+   ↓              ↓
+   50%            50%
+
+   Material & Care
+   ↓
+   Full Width
+*/
+
+
+.merchant-add-product-form
+> .merchant-product-section:first-child
+.merchant-form-group {
+  display: flex;
+
+  flex-direction: column;
+
+  gap: 8px;
+
+  min-width: 0;
+
+  margin-bottom: 20px;
+}
+
+
+/* Product Name */
+
+.merchant-add-product-form
+> .merchant-product-section:first-child
+.merchant-form-group:nth-of-type(1) {
+  width: 100%;
+}
+
+
+/* Description */
+
+.merchant-add-product-form
+> .merchant-product-section:first-child
+.merchant-form-group:nth-of-type(2) {
+  width: 100%;
+}
+
+
+/* Category */
+
+.merchant-add-product-form
+> .merchant-product-section:first-child
+.merchant-form-group:nth-of-type(3) {
+  width: calc(50% - 10px);
+
+  display: inline-flex;
+
+  vertical-align: top;
+
+  margin-right: 20px;
+}
+
+
+/* Product Type */
+
+.merchant-add-product-form
+> .merchant-product-section:first-child
+.merchant-form-group:nth-of-type(4) {
+  width: calc(50% - 10px);
+
+  display: inline-flex;
+
+  vertical-align: top;
+
+  margin-right: 0;
+}
+
+
+/* Brand */
+
+.merchant-add-product-form
+> .merchant-product-section:first-child
+.merchant-form-group:nth-of-type(5) {
+  width: calc(50% - 10px);
+
+  display: inline-flex;
+
+  vertical-align: top;
+
+  margin-right: 20px;
+}
+
+
+/* Size Fit */
+
+.merchant-add-product-form
+> .merchant-product-section:first-child
+.merchant-form-group:nth-of-type(6) {
+  width: calc(50% - 10px);
+
+  display: inline-flex;
+
+  vertical-align: top;
+
+  margin-right: 0;
+}
+
+
+/* Material Care */
+
+.merchant-add-product-form
+> .merchant-product-section:first-child
+.merchant-form-group:nth-of-type(7) {
+  width: 100%;
+
+  margin-right: 0;
+
+  margin-bottom: 0;
+}
+
+
+/* =========================================================
+   LABELS
+========================================================= */
+
+.merchant-form-group > label {
+  display: block;
+
+  width: 100%;
+
+  margin: 0;
+
+  color: #302936;
+
+  font-size: 13px;
+
+  line-height: 1.4;
+
+  font-weight: 700;
+}
+
+
+.merchant-form-group > label span {
+  margin-left: 3px;
+
+  color: #dc2626;
+}
+
+
+/* =========================================================
+   TOP INPUTS
+========================================================= */
+
+.merchant-add-product-form
+> .merchant-product-section:first-child
+.merchant-form-group
+input,
+
+.merchant-add-product-form
+> .merchant-product-section:first-child
+.merchant-form-group
+select {
+  width: 100%;
+
+  height: 48px;
+  min-height: 48px;
+
+  padding: 11px 14px;
+
+  border: 1px solid #ddd8e6;
+
   border-radius: 11px;
 
-  padding: 13px 20px;
+  background: #ffffff;
+
+  color: #211c27;
 
   font-family: inherit;
-  font-size: 13px;
+
+  font-size: 14px;
+
+  line-height: 1.4;
+
+  outline: none;
+
+  transition:
+    border-color 0.2s ease,
+    box-shadow 0.2s ease;
+}
+
+
+/* =========================================================
+   TOP TEXTAREA
+========================================================= */
+
+.merchant-add-product-form
+> .merchant-product-section:first-child
+.merchant-form-group
+textarea {
+  width: 100%;
+
+  min-height: 120px;
+  height: 120px;
+
+  padding: 13px 14px;
+
+  border: 1px solid #ddd8e6;
+
+  border-radius: 11px;
+
+  background: #ffffff;
+
+  color: #211c27;
+
+  font-family: inherit;
+
+  font-size: 14px;
+
+  line-height: 1.55;
+
+  resize: vertical;
+
+  outline: none;
+
+  transition:
+    border-color 0.2s ease,
+    box-shadow 0.2s ease;
+}
+
+
+/* =========================================================
+   PLACEHOLDER
+========================================================= */
+
+.merchant-form-group
+input::placeholder,
+
+.merchant-form-group
+textarea::placeholder {
+  color: #aaa4b0;
+
+  opacity: 1;
+}
+
+
+/* =========================================================
+   HOVER
+========================================================= */
+
+.merchant-form-group
+input:hover,
+
+.merchant-form-group
+select:hover,
+
+.merchant-form-group
+textarea:hover {
+  border-color: #c8bfd4;
+}
+
+
+/* =========================================================
+   FOCUS
+========================================================= */
+
+.merchant-form-group
+input:focus,
+
+.merchant-form-group
+select:focus,
+
+.merchant-form-group
+textarea:focus {
+  border-color: #8b5cf6;
+
+  box-shadow:
+    0 0 0 3px rgba(124, 58, 237, 0.09);
+
+  outline: none;
+}
+
+
+/* =========================================================
+   PRODUCT SPECIFIC DETAILS
+========================================================= */
+
+.merchant-product-specific-grid {
+  width: 100%;
+
+  display: grid;
+
+  grid-template-columns:
+    repeat(4, minmax(0, 1fr));
+
+  gap: 22px;
+
+  align-items: start;
+}
+
+
+/* =========================================================
+   VARIANTS
+========================================================= */
+
+.variant-size-section {
+  width: 100%;
+
+  margin-top: 4px;
+
+  padding: 26px;
+
+  border: 1px solid #e7e1ef;
+
+  border-radius: 16px;
+
+  background:
+    linear-gradient(
+      145deg,
+      #fcfbff 0%,
+      #faf8ff 100%
+    );
+
+  box-sizing: border-box;
+}
+
+
+/* =========================================================
+   VARIANT HEADER
+========================================================= */
+
+.variant-size-header {
+  width: 100%;
+
+  display: flex;
+
+  align-items: center;
+
+  justify-content: space-between;
+
+  gap: 20px;
+
+  margin-bottom: 22px;
+
+  padding-bottom: 18px;
+
+  border-bottom: 1px solid #eeeaf3;
+}
+
+
+.variant-size-header > div {
+  min-width: 0;
+}
+
+
+.variant-size-header label {
+  display: block;
+
+  margin: 0;
+
+  color: #25202c;
+
+  font-size: 15px;
+
   font-weight: 750;
+}
+
+
+.variant-size-header label span {
+  color: #dc2626;
+
+  margin-left: 3px;
+}
+
+
+.variant-size-header p {
+  margin: 5px 0 0;
+
+  color: #89828f;
+
+  font-size: 12px;
+
+  line-height: 1.5;
+}
+
+
+/* =========================================================
+   ADD VARIANT
+========================================================= */
+
+.add-size-button {
+  flex-shrink: 0;
+
+  min-height: 40px;
+
+  padding: 9px 16px;
+
+  border: none;
+
+  border-radius: 9px;
+
+  background:
+    linear-gradient(
+      135deg,
+      #7c3aed,
+      #6d28d9
+    );
+
+  color: #ffffff;
+
+  font-family: inherit;
+
+  font-size: 13px;
+
+  font-weight: 700;
 
   cursor: pointer;
+
+  box-shadow:
+    0 6px 16px rgba(124, 58, 237, 0.20);
+
+  transition: all 0.2s ease;
+}
+
+
+.add-size-button:hover {
+  background:
+    linear-gradient(
+      135deg,
+      #8b5cf6,
+      #7c3aed
+    );
+
+  transform: translateY(-1px);
+}
+
+
+/* =========================================================
+   VARIANT CARD
+========================================================= */
+
+.product-variant-card {
+  width: 100%;
+
+  position: relative;
+
+  margin: 0 0 16px;
+
+  padding: 22px;
+
+  border: 1px solid #e5e0ea;
+
+  border-radius: 14px;
+
+  background: #ffffff;
+
+  box-shadow:
+    0 4px 16px rgba(30, 20, 40, 0.035);
+
+  box-sizing: border-box;
+}
+
+
+/* =========================================================
+   VARIANT CARD HEADER
+========================================================= */
+
+.product-variant-card-header {
+  width: 100%;
+
+  display: flex;
+
+  align-items: center;
+
+  justify-content: space-between;
+
+  margin-bottom: 20px;
+
+  padding-bottom: 14px;
+
+  border-bottom: 1px solid #f0edf3;
+}
+
+
+.product-variant-card-header h4 {
+  margin: 0;
+
+  color: #29232f;
+
+  font-size: 16px;
+
+  font-weight: 750;
+}
+
+
+/* =========================================================
+   REMOVE VARIANT
+========================================================= */
+
+.remove-size-button {
+  width: 30px;
+  height: 30px;
+
+  display: flex;
+
+  align-items: center;
+  justify-content: center;
+
+  border: 1px solid #f0d5d5;
+
+  border-radius: 8px;
+
+  background: #fff7f7;
+
+  color: #dc2626;
+
+  font-size: 18px;
+
+  cursor: pointer;
+}
+
+
+.remove-size-button:hover {
+  background: #fee2e2;
+
+  border-color: #fecaca;
+}
+
+
+/* =========================================================
+   VARIANT GRID
+========================================================= */
+
+.variant-fields-grid {
+  width: 100%;
+
+  display: grid;
+
+  grid-template-columns:
+    repeat(3, minmax(0, 1fr));
+
+  column-gap: 20px;
+
+  row-gap: 20px;
+
+  align-items: start;
+}
+
+
+.variant-input-group {
+  width: 100%;
+
+  min-width: 0;
+
+  display: flex;
+
+  flex-direction: column;
+
+  gap: 7px;
+}
+
+
+.variant-input-group label {
+  display: block;
+
+  width: 100%;
+
+  margin: 0;
+
+  color: #39323f;
+
+  font-size: 12px;
+
+  line-height: 1.4;
+
+  font-weight: 700;
+}
+
+
+.variant-input-group input,
+.variant-input-group select {
+  width: 100%;
+
+  height: 46px;
+  min-height: 46px;
+
+  padding: 11px 13px;
+
+  border: 1px solid #ddd8e5;
+
+  border-radius: 10px;
+
+  background: #ffffff;
+
+  color: #27212f;
+
+  font-family: inherit;
+
+  font-size: 13px;
+
+  outline: none;
+}
+
+
+.variant-input-group input::placeholder {
+  color: #aaa4b0;
+}
+
+
+.variant-input-group input:hover,
+.variant-input-group select:hover {
+  border-color: #c9c1d4;
+}
+
+
+.variant-input-group input:focus,
+.variant-input-group select:focus {
+  border-color: #8b5cf6;
+
+  box-shadow:
+    0 0 0 3px rgba(124, 58, 237, 0.08);
+
+  outline: none;
+}
+
+
+/* =========================================================
+   VARIANT PRICE
+========================================================= */
+
+.variant-price-input {
+  width: 100%;
+
+  height: 46px;
+
+  display: flex;
+
+  align-items: center;
+
+  overflow: hidden;
+
+  border: 1px solid #ddd8e5;
+
+  border-radius: 10px;
+
+  background: #ffffff;
+}
+
+
+.variant-price-input:focus-within {
+  border-color: #8b5cf6;
+
+  box-shadow:
+    0 0 0 3px rgba(124, 58, 237, 0.08);
+}
+
+
+.variant-price-input span {
+  flex-shrink: 0;
+
+  padding: 0 12px;
+
+  color: #625a68;
+
+  font-size: 13px;
+
+  font-weight: 700;
+}
+
+
+.variant-price-input input {
+  flex: 1;
+
+  width: 100%;
+
+  min-width: 0;
+
+  height: 44px;
+
+  padding: 10px 10px 10px 0;
+
+  border: none;
+
+  outline: none;
+
+  background: transparent;
+
+  box-shadow: none;
+}
+
+
+/* =========================================================
+   AVAILABILITY
+========================================================= */
+
+.variant-availability-group {
+  width: 100%;
+
+  min-height: 46px;
+
+  display: flex;
+
+  align-items: center;
+}
+
+
+.variant-availability-group label {
+  display: flex;
+
+  align-items: center;
+
+  gap: 8px;
+
+  color: #48414d;
+
+  font-size: 13px;
+
+  font-weight: 600;
+
+  cursor: pointer;
+}
+
+
+.variant-availability-group input {
+  width: 17px;
+
+  height: 17px;
+
+  min-height: 17px;
+
+  margin: 0;
+
+  accent-color: #7c3aed;
+}
+
+
+/* =========================================================
+   VARIANT HELP
+========================================================= */
+
+.variant-size-help {
+  margin: 12px 0 0;
+
+  color: #89828f;
+
+  font-size: 11px;
+
+  line-height: 1.5;
+
+  text-align: center;
+}
+
+
+/* =========================================================
+   PRICING
+========================================================= */
+
+.merchant-price-section {
+  width: 100%;
+
+  display: grid;
+
+  grid-template-columns:
+    repeat(4, minmax(0, 1fr));
+
+  gap: 22px;
+
+  align-items: start;
+}
+
+
+.merchant-price-section
+.merchant-form-group {
+  width: 100%;
+
+  min-width: 0;
+
+  display: flex;
+
+  flex-direction: column;
+
+  gap: 8px;
+}
+
+
+/* =========================================================
+   PRICE INPUT BOX
+========================================================= */
+
+.merchant-price-input {
+  width: 100%;
+
+  height: 50px;
+
+  min-height: 50px;
+
+  display: flex;
+
+  align-items: center;
+
+  overflow: hidden;
+
+  padding: 0;
+
+  border: 1px solid #ddd8e6;
+
+  border-radius: 12px;
+
+  background: #ffffff;
+}
+
+
+.merchant-price-input > span {
+  flex: 0 0 auto;
+
+  padding: 0 12px;
+
+  color: #625a68;
+
+  font-size: 14px;
+
+  font-weight: 700;
+}
+
+
+.merchant-price-input > input {
+  flex: 1;
+
+  width: 0;
+
+  min-width: 0;
+
+  height: 48px;
+
+  padding: 10px 12px 10px 0;
+
+  border: none;
+
+  outline: none;
+
+  background: transparent;
+
+  color: #211c27;
+
+  font-size: 14px;
+}
+
+
+.merchant-price-input:focus-within {
+  border-color: #8b5cf6;
+
+  box-shadow:
+    0 0 0 3px rgba(124, 58, 237, 0.09);
+}
+
+
+/* Discount */
+
+.merchant-price-section
+.merchant-form-group:nth-child(3)
+.merchant-price-input > input {
+  padding-left: 13px;
+}
+
+
+.merchant-price-section
+.merchant-form-group:nth-child(3)
+.merchant-price-input > span {
+  order: 2;
+
+  padding: 0 13px;
+}
+
+
+/* Stock */
+
+.merchant-price-section
+.merchant-form-group:nth-child(4)
+input {
+  width: 100%;
+
+  height: 50px;
+
+  min-height: 50px;
+
+  padding: 12px 14px;
+
+  border: 1px solid #ddd8e6;
+
+  border-radius: 12px;
+
+  background: #ffffff;
+}
+
+
+/* =========================================================
+   IMAGE UPLOAD
+========================================================= */
+
+.merchant-image-upload-area {
+  width: 100%;
+}
+
+
+.merchant-image-upload-box {
+  width: 100%;
+
+  min-height: 170px;
+
+  height: 170px;
+
+  display: flex;
+
+  flex-direction: column;
+
+  align-items: center;
+
+  justify-content: center;
+
+  gap: 7px;
+
+  padding: 20px;
+
+  border: 2px dashed #d4c6eb;
+
+  border-radius: 16px;
+
+  background:
+    linear-gradient(
+      145deg,
+      #fcfbff,
+      #f8f5ff
+    );
+
+  cursor: pointer;
+
+  text-align: center;
+
+  transition:
+    border-color 0.2s ease,
+    background 0.2s ease,
+    transform 0.2s ease,
+    box-shadow 0.2s ease;
+}
+
+
+.merchant-image-upload-box:hover {
+  border-color: #8b5cf6;
+
+  background:
+    linear-gradient(
+      145deg,
+      #faf8ff,
+      #f5efff
+    );
+
+  transform: translateY(-2px);
+
+  box-shadow:
+    0 12px 28px rgba(124, 58, 237, 0.08);
+}
+
+
+/* =========================================================
+   UPLOAD ICON
+========================================================= */
+
+.merchant-upload-icon {
+  width: 50px;
+  height: 50px;
+
+  display: flex;
+
+  align-items: center;
+  justify-content: center;
+
+  margin-bottom: 3px;
+
+  border-radius: 14px;
+
+  background:
+    linear-gradient(
+      135deg,
+      #7c3aed,
+      #6d28d9
+    );
+
+  color: #ffffff;
+
+  font-size: 27px;
+
+  box-shadow:
+    0 8px 20px rgba(124, 58, 237, 0.20);
+}
+
+
+/* =========================================================
+   UPLOAD TEXT
+========================================================= */
+
+.merchant-image-upload-box strong {
+  display: block;
+
+  margin: 0;
+
+  color: #27212f;
+
+  font-size: 14px;
+
+  font-weight: 750;
+}
+
+
+.merchant-image-upload-box span {
+  display: block;
+
+  margin: 0;
+
+  color: #85808b;
+
+  font-size: 11px;
+}
+
+
+.merchant-image-upload-box small {
+  display: block;
+
+  margin: 0;
+
+  color: #a19aa8;
+
+  font-size: 10px;
+}
+
+
+/* =========================================================
+   IMAGE PREVIEW
+========================================================= */
+
+.merchant-image-preview-grid {
+  width: 100%;
+
+  display: grid;
+
+  grid-template-columns:
+    repeat(5, minmax(0, 1fr));
+
+  gap: 14px;
+
+  margin-top: 18px;
+}
+
+
+.merchant-image-preview-card {
+  width: 100%;
+
+  height: 155px;
+
+  position: relative;
+
+  overflow: hidden;
+
+  border: 1px solid #e5e0ea;
+
+  border-radius: 13px;
+
+  background: #ffffff;
+}
+
+
+.merchant-image-preview-card img {
+  width: 100%;
+
+  height: 100%;
+
+  display: block;
+
+  object-fit: cover;
+}
+
+
+/* Primary */
+
+.merchant-primary-image-badge {
+  position: absolute;
+
+  top: 9px;
+  left: 9px;
+
+  padding: 5px 8px;
+
+  border-radius: 6px;
+
+  background: #7c3aed;
+
+  color: #ffffff;
+
+  font-size: 10px;
+
+  font-weight: 700;
+}
+
+
+/* Remove */
+
+.merchant-remove-image-button {
+  position: absolute;
+
+  top: 8px;
+  right: 8px;
+
+  width: 28px;
+  height: 28px;
+
+  display: flex;
+
+  align-items: center;
+  justify-content: center;
+
+  border: none;
+
+  border-radius: 7px;
+
+  background: rgba(0, 0, 0, 0.65);
+
+  color: #ffffff;
+
+  font-size: 18px;
+
+  cursor: pointer;
+}
+
+
+/* =========================================================
+   FORM ACTIONS
+========================================================= */
+
+.merchant-add-product-actions {
+  width: 100%;
+
+  margin: 4px auto 0;
+
+  padding: 5px 0;
+
+  display: flex;
+
+  align-items: center;
+
+  justify-content: flex-end;
+
+  gap: 12px;
+}
+
+
+.merchant-add-product-actions
+.merchant-cancel-button,
+
+.merchant-add-product-actions
+.merchant-save-button,
+
+.merchant-submit-product-button {
+  min-height: 46px;
+
+  padding: 11px 22px;
+
+  border-radius: 11px;
+
+  font-family: inherit;
+
+  font-size: 13px;
+
+  font-weight: 700;
+
+  cursor: pointer;
+}
+
+
+/* Bottom cancel */
+
+.merchant-add-product-actions
+.merchant-cancel-button {
+  border: 1px solid #ded8e6;
+
+  background: #ffffff;
+
+  color: #443d4b;
+}
+
+
+/* Submit */
+
+.merchant-submit-product-button {
+  border: none;
+
+  background:
+    linear-gradient(
+      135deg,
+      #7c3aed,
+      #6d28d9
+    );
+
+  color: #ffffff;
+
+  box-shadow:
+    0 7px 18px rgba(124, 58, 237, 0.18);
+
+  transition: all 0.2s ease;
+}
+
+
+.merchant-submit-product-button:hover {
+  background:
+    linear-gradient(
+      135deg,
+      #8b5cf6,
+      #7c3aed
+    );
+
+  transform: translateY(-1px);
+}
+
+
+/* =========================================================
+   LARGE LAPTOP
+========================================================= */
+
+@media (max-width: 1200px) {
+
+  .merchant-add-product-page {
+    padding-left: 24px;
+    padding-right: 24px;
+  }
+
+
+  .merchant-product-specific-grid {
+    grid-template-columns:
+      repeat(3, minmax(0, 1fr));
+  }
+
+
+  .merchant-price-section {
+    grid-template-columns:
+      repeat(2, minmax(0, 1fr));
+  }
+
+
+  .merchant-image-preview-grid {
+    grid-template-columns:
+      repeat(4, minmax(0, 1fr));
+  }
+}
+
+
+/* =========================================================
+   TABLET
+========================================================= */
+
+@media (max-width: 900px) {
+
+  .merchant-add-product-page {
+    padding: 25px 18px 45px;
+  }
+
+
+  .merchant-add-product-header,
+  .merchant-add-product-form,
+  .merchant-product-error {
+    width: 100%;
+  }
+
+
+  .merchant-product-section {
+    padding: 25px;
+  }
+
+
+  .merchant-product-specific-grid {
+    grid-template-columns:
+      repeat(2, minmax(0, 1fr));
+  }
+
+
+  .variant-fields-grid {
+    grid-template-columns:
+      repeat(2, minmax(0, 1fr));
+  }
+
+
+  .merchant-image-preview-grid {
+    grid-template-columns:
+      repeat(3, minmax(0, 1fr));
+  }
+}
+
+
+/* =========================================================
+   SMALL TABLET
+========================================================= */
+
+@media (max-width: 760px) {
+
+  .merchant-add-product-header h1 {
+    font-size: 34px;
+  }
+
+
+  /*
+     Top Product Information
+     becomes single column
+  */
+
+  .merchant-add-product-form
+  > .merchant-product-section:first-child
+  .merchant-form-group:nth-of-type(3),
+
+  .merchant-add-product-form
+  > .merchant-product-section:first-child
+  .merchant-form-group:nth-of-type(4),
+
+  .merchant-add-product-form
+  > .merchant-product-section:first-child
+  .merchant-form-group:nth-of-type(5),
+
+  .merchant-add-product-form
+  > .merchant-product-section:first-child
+  .merchant-form-group:nth-of-type(6) {
+
+    width: 100%;
+
+    margin-right: 0;
+  }
+}
+
+
+/* =========================================================
+   MOBILE
+========================================================= */
+
+@media (max-width: 600px) {
+
+  .merchant-add-product-page {
+    padding: 20px 14px 35px;
+  }
+
+
+  .merchant-add-product-header {
+    width: 100%;
+
+    margin-bottom: 22px;
+  }
+
+
+  .merchant-add-product-header h1 {
+    font-size: 30px;
+
+    letter-spacing: -0.7px;
+  }
+
+
+  .merchant-add-product-header p {
+    max-width: 340px;
+
+    font-size: 13px;
+  }
+
+
+  .merchant-product-section {
+    padding: 19px 17px;
+
+    border-radius: 16px;
+  }
+
+
+  .merchant-section-heading {
+    margin-bottom: 22px;
+  }
+
+
+  .merchant-section-heading h2,
+  .merchant-section-heading h3 {
+    font-size: 18px;
+  }
+
+
+  .merchant-section-heading p {
+    font-size: 12px;
+  }
+
+
+  .merchant-product-specific-grid {
+    grid-template-columns: 1fr;
+  }
+
+
+  .merchant-price-section {
+    grid-template-columns: 1fr;
+
+    gap: 17px;
+  }
+
+
+  .variant-size-section {
+    padding: 18px;
+  }
+
+
+  .variant-size-header {
+    flex-direction: column;
+
+    align-items: stretch;
+  }
+
+
+  .add-size-button {
+    width: 100%;
+  }
+
+
+  .product-variant-card {
+    padding: 17px;
+  }
+
+
+  .variant-fields-grid {
+    grid-template-columns: 1fr;
+
+    gap: 17px;
+  }
+
+
+  .merchant-image-upload-box {
+    height: 155px;
+
+    min-height: 155px;
+  }
+
+
+  .merchant-image-preview-grid {
+    grid-template-columns:
+      repeat(2, minmax(0, 1fr));
+
+    gap: 9px;
+  }
+
+
+  .merchant-image-preview-card {
+    height: 130px;
+  }
+
+
+  .merchant-add-product-actions {
+    flex-direction: column-reverse;
+
+    align-items: stretch;
+  }
+
+
+  .merchant-add-product-actions button {
+    width: 100%;
+  }
+}
+
+
+/* =========================================================
+   SMALL MOBILE
+========================================================= */
+
+@media (max-width: 420px) {
+
+  .merchant-add-product-page {
+    padding-left: 10px;
+    padding-right: 10px;
+  }
+
+
+  .merchant-product-section {
+    padding: 16px 14px;
+  }
+
+
+  .merchant-add-product-header h1 {
+    font-size: 27px;
+  }
+
+
+  .merchant-image-preview-card {
+    height: 120px;
+  }
+}
+/* =========================================================
+   FINAL FIX - TOP PRODUCT INFORMATION ONLY
+   DO NOT CHANGE LOWER SECTIONS
+========================================================= */
+
+/* Keep entire page content centered */
+.merchant-add-product-page {
+  width: 100% !important;
+
+  display: flex !important;
+  flex-direction: column !important;
+  align-items: center !important;
+
+  overflow-x: hidden !important;
+}
+
+
+/* Main form centered */
+.merchant-add-product-form {
+  width: min(1280px, 100%) !important;
+
+  margin-left: auto !important;
+  margin-right: auto !important;
+
+  display: block !important;
+}
+
+
+/* =========================================================
+   TOP PRODUCT INFORMATION CARD
+========================================================= */
+
+.merchant-add-product-form
+.merchant-product-section:first-child {
+  width: 100% !important;
+
+  max-width: 1280px !important;
+
+  margin-left: auto !important;
+  margin-right: auto !important;
+
+  padding: 30px 34px !important;
+
+  box-sizing: border-box !important;
+}
+
+
+/* =========================================================
+   TOP SECTION HEADING
+========================================================= */
+
+.merchant-add-product-form
+.merchant-product-section:first-child
+.merchant-section-heading {
+  width: 100% !important;
+
+  margin-left: auto !important;
+  margin-right: auto !important;
+
+  text-align: center !important;
+}
+
+
+/* =========================================================
+   TOP FORM AREA
+========================================================= */
+
+.merchant-add-product-form
+.merchant-product-section:first-child
+.merchant-form-grid {
+  width: 100% !important;
+
+  max-width: 100% !important;
+
+  margin-left: auto !important;
+  margin-right: auto !important;
+
+  box-sizing: border-box !important;
+}
+
+
+/* =========================================================
+   TOP INPUTS - FULL WIDTH
+========================================================= */
+
+.merchant-add-product-form
+.merchant-product-section:first-child
+.merchant-form-group {
+  box-sizing: border-box !important;
+}
+
+
+/* Product Name */
+.merchant-add-product-form
+.merchant-product-section:first-child
+.merchant-form-group:first-child {
+  width: 100% !important;
+
+  grid-column: 1 / -1 !important;
+}
+
+
+/* Product Description */
+.merchant-add-product-form
+.merchant-product-section:first-child
+.merchant-form-group:has(textarea) {
+  width: 100% !important;
+
+  grid-column: 1 / -1 !important;
+}
+
+
+/* =========================================================
+   CATEGORY + PRODUCT TYPE
+========================================================= */
+
+.merchant-add-product-form
+.merchant-product-section:first-child
+.merchant-form-group:nth-child(3),
+
+.merchant-add-product-form
+.merchant-product-section:first-child
+.merchant-form-group:nth-child(4) {
+  width: 100% !important;
+
+  box-sizing: border-box !important;
+}
+
+
+/* =========================================================
+   ALL TOP INPUTS
+========================================================= */
+
+.merchant-add-product-form
+.merchant-product-section:first-child
+input,
+
+.merchant-add-product-form
+.merchant-product-section:first-child
+select,
+
+.merchant-add-product-form
+.merchant-product-section:first-child
+textarea {
+  width: 100% !important;
+
+  max-width: 100% !important;
+
+  box-sizing: border-box !important;
+}
+
+
+/* =========================================================
+   TOP SECTION LABELS
+========================================================= */
+
+.merchant-add-product-form
+.merchant-product-section:first-child
+.merchant-form-group
+label {
+  width: 100% !important;
+
+  text-align: left !important;
+}
+
+
+/* =========================================================
+   IMPORTANT:
+   KEEP EVERYTHING BELOW UNCHANGED
+========================================================= */
+
+.merchant-add-product-form
+.merchant-product-section:not(:first-child) {
+  margin-left: auto !important;
+  margin-right: auto !important;
+}
+/* =========================================================
+   FINAL FIX - PRODUCT SPECIFICATION INPUT BOXES
+========================================================= */
+
+/* Product specific details grid */
+.merchant-product-specific-grid {
+  width: 100% !important;
+
+  display: grid !important;
+
+  grid-template-columns:
+    repeat(4, minmax(0, 1fr)) !important;
+
+  gap: 22px !important;
+
+  box-sizing: border-box !important;
+}
+
+
+/* Every specification field */
+.merchant-product-specific-grid
+.merchant-form-group {
+  width: 100% !important;
+
+  min-width: 0 !important;
+
+  display: flex !important;
+
+  flex-direction: column !important;
+
+  gap: 8px !important;
+
+  box-sizing: border-box !important;
+}
+
+
+/* Specification labels */
+.merchant-product-specific-grid
+.merchant-form-group
+label {
+  display: block !important;
+
+  width: 100% !important;
+
+  margin: 0 !important;
+
+  color: #302936 !important;
+
+  font-size: 13px !important;
+
+  font-weight: 700 !important;
+
+  line-height: 1.4 !important;
+
+  text-align: left !important;
+}
+
+
+/* =========================================================
+   SPECIFICATION INPUTS
+========================================================= */
+
+.merchant-product-specific-grid
+.merchant-form-group
+input,
+.merchant-product-specific-grid
+.merchant-form-group
+select,
+.merchant-product-specific-grid
+.merchant-form-group
+textarea {
+  display: block !important;
+
+  width: 100% !important;
+
+  max-width: 100% !important;
+
+  min-width: 0 !important;
+
+  height: 48px !important;
+
+  min-height: 48px !important;
+
+  padding: 12px 14px !important;
+
+  border: 1px solid #ddd8e6 !important;
+
+  border-radius: 11px !important;
+
+  background: #ffffff !important;
+
+  color: #211c27 !important;
+
+  font-family: inherit !important;
+
+  font-size: 14px !important;
+
+  line-height: 1.4 !important;
+
+  outline: none !important;
+
+  box-sizing: border-box !important;
+
+  appearance: auto !important;
+}
+
+
+/* Textarea */
+.merchant-product-specific-grid
+.merchant-form-group
+textarea {
+  height: 110px !important;
+
+  min-height: 110px !important;
+
+  resize: vertical !important;
+}
+
+
+/* Placeholder */
+.merchant-product-specific-grid
+.merchant-form-group
+input::placeholder,
+.merchant-product-specific-grid
+.merchant-form-group
+textarea::placeholder {
+  color: #aaa4b0 !important;
+
+  opacity: 1 !important;
+}
+
+
+/* Hover */
+.merchant-product-specific-grid
+.merchant-form-group
+input:hover,
+.merchant-product-specific-grid
+.merchant-form-group
+select:hover,
+.merchant-product-specific-grid
+.merchant-form-group
+textarea:hover {
+  border-color: #c8bfd4 !important;
+}
+
+
+/* Focus */
+.merchant-product-specific-grid
+.merchant-form-group
+input:focus,
+.merchant-product-specific-grid
+.merchant-form-group
+select:focus,
+.merchant-product-specific-grid
+.merchant-form-group
+textarea:focus {
+  border-color: #8b5cf6 !important;
+
+  box-shadow:
+    0 0 0 3px rgba(124, 58, 237, 0.09) !important;
+
+  outline: none !important;
+}
+
+
+/* =========================================================
+   FINAL FIX - DISCOUNT + STOCK
+========================================================= */
+
+
+/* Discount box */
+.merchant-price-section
+.merchant-form-group:nth-child(3)
+.merchant-price-input {
+  width: 100% !important;
+
+  height: 50px !important;
+
+  min-height: 50px !important;
+
+  display: flex !important;
+
+  align-items: center !important;
+
+  overflow: hidden !important;
+
+  padding: 0 !important;
+
+  border: 1px solid #ddd8e6 !important;
+
+  border-radius: 12px !important;
+
+  background: #ffffff !important;
+
+  box-sizing: border-box !important;
+}
+
+
+/* Discount input */
+.merchant-price-section
+.merchant-form-group:nth-child(3)
+.merchant-price-input
+input {
+  width: 100% !important;
+
+  flex: 1 !important;
+
+  height: 48px !important;
+
+  min-height: 48px !important;
+
+  padding: 10px 12px !important;
+
+  border: none !important;
+
+  outline: none !important;
+
+  background: transparent !important;
+
+  box-shadow: none !important;
+
+  font-size: 14px !important;
+
+  box-sizing: border-box !important;
+}
+
+
+/* Discount % */
+.merchant-price-section
+.merchant-form-group:nth-child(3)
+.merchant-price-input
+span {
+  flex: 0 0 auto !important;
+
+  padding: 0 14px !important;
+
+  color: #625a68 !important;
+
+  font-size: 14px !important;
+
+  font-weight: 700 !important;
+}
+
+
+/* Discount focus */
+.merchant-price-section
+.merchant-form-group:nth-child(3)
+.merchant-price-input:focus-within {
+  border-color: #8b5cf6 !important;
+
+  box-shadow:
+    0 0 0 3px rgba(124, 58, 237, 0.09) !important;
+}
+
+
+/* =========================================================
+   STOCK QUANTITY
+========================================================= */
+
+.merchant-price-section
+.merchant-form-group:nth-child(4)
+input {
+  display: block !important;
+
+  width: 100% !important;
+
+  height: 50px !important;
+
+  min-height: 50px !important;
+
+  padding: 12px 14px !important;
+
+  border: 1px solid #ddd8e6 !important;
+
+  border-radius: 12px !important;
+
+  background: #ffffff !important;
+
+  color: #211c27 !important;
+
+  font-family: inherit !important;
+
+  font-size: 14px !important;
+
+  line-height: 1.4 !important;
+
+  outline: none !important;
+
+  box-sizing: border-box !important;
+}
+
+
+/* Stock hover */
+.merchant-price-section
+.merchant-form-group:nth-child(4)
+input:hover {
+  border-color: #c8bfd4 !important;
+}
+
+
+/* Stock focus */
+.merchant-price-section
+.merchant-form-group:nth-child(4)
+input:focus {
+  border-color: #8b5cf6 !important;
+
+  box-shadow:
+    0 0 0 3px rgba(124, 58, 237, 0.09) !important;
+
+  outline: none !important;
+}
+
+
+/* =========================================================
+   RESPONSIVE
+========================================================= */
+
+@media (max-width: 1000px) {
+
+  .merchant-product-specific-grid {
+    grid-template-columns:
+      repeat(2, minmax(0, 1fr)) !important;
+  }
+
+}
+
+
+@media (max-width: 600px) {
+
+  .merchant-product-specific-grid {
+    grid-template-columns: 1fr !important;
+  }
+
+}
+/* =========================================================
+   PRODUCT IMAGE REQUIREMENTS
+========================================================= */
+
+.merchant-image-requirements {
+  width: 100%;
+  display: grid;
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+  gap: 14px;
+  margin-bottom: 24px;
+}
+
+.merchant-image-requirement {
+  min-width: 0;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 14px;
+  border: 1px solid #e6e1eb;
+  border-radius: 12px;
+  background: #faf9fc;
+  box-sizing: border-box;
+}
+
+.merchant-image-requirement-number {
+  flex: 0 0 30px;
+  width: 30px;
+  height: 30px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  background: #f0ebff;
+  color: #6d28d9;
+  font-size: 12px;
+  font-weight: 800;
+}
+
+.merchant-image-requirement > div {
+  min-width: 0;
+  flex: 1;
+}
+
+.merchant-image-requirement strong {
+  display: block;
+  color: #2b2530;
+  font-size: 13px;
+  font-weight: 700;
+  line-height: 1.3;
+}
+
+.merchant-image-requirement small {
+  display: block;
+  margin-top: 3px;
+  color: #8a8290;
+  font-size: 11px;
+}
+
+.merchant-image-added {
+  flex-shrink: 0;
+  color: #15803d;
+  font-size: 11px;
+  font-weight: 700;
+}
+
+
+/* =========================================================
+   IMAGE PREVIEW LABEL
+========================================================= */
+
+.merchant-image-preview-label {
+  position: absolute;
+  left: 8px;
+  right: 8px;
+  bottom: 8px;
+  padding: 6px 8px;
+  border-radius: 7px;
+  background: rgba(25, 20, 30, 0.78);
+  color: #ffffff;
+  font-size: 11px;
+  font-weight: 700;
+  text-align: center;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+
+/* =========================================================
+   RESPONSIVE
+========================================================= */
+
+@media (max-width: 1100px) {
+
+  .merchant-image-requirements {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+
+}
+
+@media (max-width: 700px) {
+
+  .merchant-image-requirements {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+}
+
+@media (max-width: 480px) {
+
+  .merchant-image-requirements {
+    grid-template-columns: 1fr;
+  }
+
+}
+/* =========================================================
+   FINAL POLISH - ADDITIONAL PRODUCT IMAGES
+========================================================= */
+
+.merchant-product-section:has(.merchant-image-upload-area) {
+  overflow: hidden;
+}
+
+
+/* =========================================================
+   ADDITIONAL IMAGE UPLOAD SECTION
+========================================================= */
+
+.merchant-image-upload-area {
+  width: 100%;
+  position: relative;
+}
+
+
+/* Upload box enhancement */
+
+.merchant-image-upload-box {
+  position: relative;
+
+  min-height: 180px;
+  height: 180px;
+
+  border: 2px dashed #d8cbed;
+  border-radius: 18px;
+
+  background:
+    radial-gradient(
+      circle at center,
+      rgba(124, 58, 237, 0.045),
+      transparent 65%
+    ),
+    linear-gradient(
+      145deg,
+      #fdfcff,
+      #f8f5ff
+    );
+}
+
+
+/* Hover */
+
+.merchant-image-upload-box:hover {
+  border-color: #8b5cf6;
+
+  background:
+    radial-gradient(
+      circle at center,
+      rgba(124, 58, 237, 0.08),
+      transparent 65%
+    ),
+    linear-gradient(
+      145deg,
+      #fcfaff,
+      #f6f0ff
+    );
+
+  box-shadow:
+    0 14px 32px rgba(124, 58, 237, 0.09);
+}
+
+
+/* Upload icon */
+
+.merchant-upload-icon {
+  width: 54px;
+  height: 54px;
+
+  border-radius: 15px;
+
+  background:
+    linear-gradient(
+      135deg,
+      #8b5cf6,
+      #6d28d9
+    );
+
+  box-shadow:
+    0 9px 22px rgba(124, 58, 237, 0.24);
+
+  font-size: 28px;
+  font-weight: 400;
+}
+
+
+/* =========================================================
+   IMAGE PREVIEW CARDS
+========================================================= */
+
+.merchant-image-preview-grid {
+  grid-template-columns:
+    repeat(6, minmax(0, 1fr));
+
+  gap: 14px;
+
+  margin-top: 20px;
+}
+
+
+.merchant-image-preview-card {
+  height: 165px;
+
+  border: 1px solid #e4dfeb;
+  border-radius: 14px;
+
+  box-shadow:
+    0 5px 16px rgba(30, 20, 40, 0.045);
 
   transition:
     transform 0.2s ease,
     box-shadow 0.2s ease,
-    opacity 0.2s ease;
+    border-color 0.2s ease;
 }
 
-.merchant-cancel-button {
-  background: #ffffff;
-  color: #3c3544;
-  border: 1px solid #ddd8e5;
-}
 
-.merchant-cancel-button:hover {
-  background: #faf9fb;
-}
+.merchant-image-preview-card:hover {
+  transform: translateY(-3px);
 
-.merchant-save-button {
-  background: #7c3aed;
-  color: #ffffff;
+  border-color: #cfc1e2;
 
   box-shadow:
-    0 6px 16px rgba(124, 58, 237, 0.20);
+    0 12px 25px rgba(30, 20, 40, 0.09);
 }
 
-.merchant-save-button:hover {
-  background: #6d28d9;
+
+.merchant-image-preview-card img {
+  transition: transform 0.25s ease;
+}
+
+
+.merchant-image-preview-card:hover img {
+  transform: scale(1.04);
+}
+
+
+/* =========================================================
+   IMAGE LABEL
+========================================================= */
+
+.merchant-image-preview-label {
+  left: 8px;
+  right: 8px;
+  bottom: 8px;
+
+  padding: 6px 9px;
+
+  border-radius: 8px;
+
+  background: rgba(25, 20, 35, 0.78);
+
+  backdrop-filter: blur(5px);
+
+  font-size: 10px;
+  letter-spacing: 0.1px;
+}
+
+
+/* =========================================================
+   REMOVE IMAGE BUTTON
+========================================================= */
+
+.merchant-remove-image-button {
+  width: 29px;
+  height: 29px;
+
+  top: 8px;
+  right: 8px;
+
+  border: 1px solid rgba(255,255,255,0.18);
+
+  border-radius: 8px;
+
+  background: rgba(20, 16, 25, 0.72);
+
+  backdrop-filter: blur(5px);
+
+  transition:
+    background 0.2s ease,
+    transform 0.2s ease;
+}
+
+
+.merchant-remove-image-button:hover {
+  background: #dc2626;
+
+  transform: scale(1.06);
+}
+
+
+/* =========================================================
+   PRIMARY BADGE
+========================================================= */
+
+.merchant-primary-image-badge {
+  top: 8px;
+  left: 8px;
+
+  padding: 5px 9px;
+
+  border-radius: 7px;
+
+  background:
+    linear-gradient(
+      135deg,
+      #7c3aed,
+      #6d28d9
+    );
+
+  box-shadow:
+    0 4px 10px rgba(124, 58, 237, 0.22);
+
+  font-size: 9px;
+
+  letter-spacing: 0.2px;
+}
+
+
+/* =========================================================
+   VARIANT IMAGE SECTION
+========================================================= */
+
+.variant-images-section {
+  width: 100%;
+
+  margin-top: 24px;
+
+  padding: 20px;
+
+  border: 1px solid #e7e1ef;
+
+  border-radius: 14px;
+
+  background:
+    linear-gradient(
+      145deg,
+      #fcfbff,
+      #faf8ff
+    );
+
+  box-sizing: border-box;
+}
+
+
+/* =========================================================
+   VARIANT IMAGE HEADER
+========================================================= */
+
+.variant-images-header {
+  width: 100%;
+
+  display: flex;
+
+  align-items: center;
+
+  justify-content: space-between;
+
+  gap: 18px;
+
+  margin-bottom: 18px;
+
+  padding-bottom: 15px;
+
+  border-bottom: 1px solid #eeeaf3;
+}
+
+
+.variant-images-header > div {
+  min-width: 0;
+}
+
+
+.variant-images-header h5 {
+  margin: 0;
+
+  color: #2b2532;
+
+  font-size: 14px;
+
+  font-weight: 750;
+
+  line-height: 1.4;
+}
+
+
+.variant-images-header p {
+  margin: 4px 0 0;
+
+  color: #918996;
+
+  font-size: 11px;
+
+  line-height: 1.5;
+}
+
+
+/* =========================================================
+   VARIANT UPLOAD BUTTON
+========================================================= */
+
+.variant-upload-button {
+  flex-shrink: 0;
+
+  min-height: 38px;
+
+  display: inline-flex;
+
+  align-items: center;
+
+  justify-content: center;
+
+  gap: 7px;
+
+  padding: 9px 14px;
+
+  border: 1px solid #d8cbed;
+
+  border-radius: 9px;
+
+  background: #ffffff;
+
+  color: #6d28d9;
+
+  font-family: inherit;
+
+  font-size: 12px;
+
+  font-weight: 700;
+
+  cursor: pointer;
+
+  transition:
+    background 0.2s ease,
+    border-color 0.2s ease,
+    transform 0.2s ease,
+    box-shadow 0.2s ease;
+}
+
+
+.variant-upload-button:hover {
+  border-color: #a78bfa;
+
+  background: #faf7ff;
+
   transform: translateY(-1px);
 
   box-shadow:
-    0 9px 22px rgba(124, 58, 237, 0.25);
+    0 5px 14px rgba(124, 58, 237, 0.10);
 }
 
-.merchant-cancel-button:disabled,
-.merchant-save-button:disabled {
-  opacity: 0.55;
+
+/* =========================================================
+   VARIANT IMAGE PREVIEW GRID
+========================================================= */
+
+.variant-image-preview-grid {
+  width: 100%;
+
+  display: grid;
+
+  grid-template-columns:
+    repeat(4, minmax(0, 1fr));
+
+  gap: 12px;
+}
+
+
+/* =========================================================
+   VARIANT IMAGE CARD
+========================================================= */
+
+.variant-image-preview-card {
+  position: relative;
+
+  width: 100%;
+
+  height: 130px;
+
+  overflow: hidden;
+
+  border: 1px solid #e3ddea;
+
+  border-radius: 11px;
+
+  background: #ffffff;
+
+  box-shadow:
+    0 4px 12px rgba(30, 20, 40, 0.035);
+
+  transition:
+    transform 0.2s ease,
+    box-shadow 0.2s ease,
+    border-color 0.2s ease;
+}
+
+
+.variant-image-preview-card:hover {
+  transform: translateY(-2px);
+
+  border-color: #cdbfe0;
+
+  box-shadow:
+    0 9px 20px rgba(30, 20, 40, 0.08);
+}
+
+
+/* Variant image */
+
+.variant-image-preview-card img {
+  width: 100%;
+
+  height: 100%;
+
+  display: block;
+
+  object-fit: cover;
+
+  transition: transform 0.25s ease;
+}
+
+
+.variant-image-preview-card:hover img {
+  transform: scale(1.05);
+}
+
+
+/* =========================================================
+   VARIANT IMAGE REMOVE BUTTON
+========================================================= */
+
+.variant-image-preview-card button {
+  position: absolute;
+
+  top: 7px;
+  right: 7px;
+
+  width: 27px;
+  height: 27px;
+
+  display: flex;
+
+  align-items: center;
+  justify-content: center;
+
+  padding: 0;
+
+  border: 1px solid rgba(255,255,255,0.18);
+
+  border-radius: 7px;
+
+  background: rgba(20, 16, 25, 0.72);
+
+  color: #ffffff;
+
+  font-size: 17px;
+
+  line-height: 1;
+
+  cursor: pointer;
+
+  backdrop-filter: blur(5px);
+
+  transition:
+    background 0.2s ease,
+    transform 0.2s ease;
+}
+
+
+.variant-image-preview-card button:hover {
+  background: #dc2626;
+
+  transform: scale(1.07);
+}
+
+
+/* =========================================================
+   VARIANT IMAGE EMPTY STATE
+========================================================= */
+
+.variant-images-section:has(
+  .variant-image-preview-grid:empty
+) {
+  min-height: 0;
+}
+
+
+/* =========================================================
+   VARIANT CARD IMPROVEMENT
+========================================================= */
+
+.product-variant-card {
+  transition:
+    border-color 0.2s ease,
+    box-shadow 0.2s ease;
+}
+
+
+.product-variant-card:hover {
+  border-color: #ddd4e8;
+
+  box-shadow:
+    0 8px 22px rgba(30, 20, 40, 0.055);
+}
+
+
+/* =========================================================
+   VARIANT SECTION IMPROVEMENT
+========================================================= */
+
+.variant-size-section {
+  box-shadow:
+    inset 0 1px 0 rgba(255,255,255,0.8);
+}
+
+
+/* =========================================================
+   ADD VARIANT BUTTON
+========================================================= */
+
+.add-size-button {
+  display: inline-flex;
+
+  align-items: center;
+
+  justify-content: center;
+
+  gap: 6px;
+}
+
+
+/* =========================================================
+   DISABLED STATES
+========================================================= */
+
+.merchant-image-upload-box:has(input:disabled) {
   cursor: not-allowed;
+
+  opacity: 0.65;
+
   transform: none;
 }
 
 
-/* =====================================================
-   MOBILE
-===================================================== */
+.variant-upload-button:has(input:disabled) {
+  cursor: not-allowed;
 
-@media (max-width: 800px) {
-
-  .merchant-add-product-page {
-    padding: 22px 16px 35px;
-  }
-
-  .merchant-add-header {
-    margin-bottom: 22px;
-  }
-
-  .merchant-add-header h1 {
-    font-size: 26px;
-  }
-
-  .merchant-add-header span {
-    font-size: 12px;
-  }
-
-  .merchant-form-card {
-    padding: 20px;
-    border-radius: 15px;
-  }
-
-  .merchant-form-grid {
-    grid-template-columns: 1fr;
-    gap: 18px;
-  }
-
-  .merchant-form-group.full {
-    grid-column: auto;
-  }
-
-  .merchant-image-section {
-    grid-template-columns: 1fr;
-    gap: 20px;
-  }
-
-  .merchant-image-preview {
-    min-height: 240px;
-  }
-
-  .merchant-image-preview img {
-    height: 240px;
-  }
-
-  .merchant-form-actions {
-    flex-direction: column-reverse;
-    width: 100%;
-  }
-
-  .merchant-cancel-button,
-  .merchant-save-button {
-    width: 100%;
-  }
+  opacity: 0.55;
 }
 
 
-/* =====================================================
-   SMALL MOBILE
-===================================================== */
+/* =========================================================
+   ADDITIONAL IMAGE SECTION
+========================================================= */
+
+.merchant-product-section
+.merchant-image-upload-area
++ * {
+  box-sizing: border-box;
+}
+
+
+/* =========================================================
+   RESPONSIVE - IMAGE GRID
+========================================================= */
+
+@media (max-width: 1200px) {
+
+  .merchant-image-preview-grid {
+    grid-template-columns:
+      repeat(4, minmax(0, 1fr));
+  }
+
+}
+
+
+@media (max-width: 900px) {
+
+  .merchant-image-preview-grid {
+    grid-template-columns:
+      repeat(3, minmax(0, 1fr));
+  }
+
+
+  .variant-image-preview-grid {
+    grid-template-columns:
+      repeat(3, minmax(0, 1fr));
+  }
+
+}
+
+
+@media (max-width: 700px) {
+
+  .merchant-image-preview-grid {
+    grid-template-columns:
+      repeat(2, minmax(0, 1fr));
+  }
+
+
+  .variant-image-preview-grid {
+    grid-template-columns:
+      repeat(2, minmax(0, 1fr));
+  }
+
+
+  .variant-images-header {
+    flex-direction: column;
+
+    align-items: stretch;
+  }
+
+
+  .variant-upload-button {
+    width: 100%;
+  }
+
+}
+
 
 @media (max-width: 480px) {
 
-  .merchant-add-product-page {
-    padding: 16px 12px 28px;
+  .merchant-image-preview-grid {
+    grid-template-columns:
+      repeat(2, minmax(0, 1fr));
+
+    gap: 8px;
   }
 
-  .merchant-add-header {
-    gap: 12px;
+
+  .merchant-image-preview-card {
+    height: 125px;
   }
 
-  .merchant-back-button {
-    width: 40px;
-    height: 40px;
-    font-size: 19px;
+
+  .variant-images-section {
+    padding: 15px;
   }
 
-  .merchant-add-header h1 {
-    font-size: 23px;
+
+  .variant-image-preview-grid {
+    gap: 8px;
   }
 
-  .merchant-form-card {
-    padding: 17px;
+
+  .variant-image-preview-card {
+    height: 115px;
   }
 
-  .merchant-form-card-header {
-    padding-bottom: 17px;
-    margin-bottom: 19px;
-  }
-
-  .merchant-form-card-header h2 {
-    font-size: 16px;
-  }
-
-  .merchant-form-card-header p {
-    font-size: 12px;
-  }
 }

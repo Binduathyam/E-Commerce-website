@@ -220,3 +220,332 @@
     width: 100%;
   }
 }
+/* =====================================
+   MERCHANT STATUS
+===================================== */
+
+.merchant-status {
+  display: inline-block;
+  padding: 6px 12px;
+  border-radius: 20px;
+  font-size: 12px;
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+.status-approved {
+  background: #dcfce7;
+  color: #166534;
+}
+
+.status-pending {
+  background: #fef3c7;
+  color: #92400e;
+}
+
+.status-rejected {
+  background: #fee2e2;
+  color: #991b1b;
+}
+
+
+/* =====================================
+   DETAILS BUTTON
+===================================== */
+
+.merchant-details-button {
+  border: none;
+  background: #eef2ff;
+  color: #4338ca;
+  padding: 8px 14px;
+  border-radius: 7px;
+  cursor: pointer;
+  font-weight: 600;
+  font-size: 13px;
+}
+
+.merchant-details-button:hover {
+  background: #e0e7ff;
+}
+
+
+/* =====================================
+   ACTION BUTTONS
+===================================== */
+
+.merchant-action-buttons {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+
+.merchant-accept-button,
+.merchant-reject-button {
+  border: none;
+  padding: 8px 12px;
+  border-radius: 7px;
+  cursor: pointer;
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.merchant-accept-button {
+  background: #16a34a;
+  color: white;
+}
+
+.merchant-accept-button:hover {
+  background: #15803d;
+}
+
+.merchant-reject-button {
+  background: #dc2626;
+  color: white;
+}
+
+.merchant-reject-button:hover {
+  background: #b91c1c;
+}
+
+.merchant-accept-button:disabled,
+.merchant-reject-button:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+
+/* =====================================
+   MODAL OVERLAY
+===================================== */
+
+.merchant-modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.6);
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  z-index: 9999;
+
+  padding: 20px;
+}
+
+
+/* =====================================
+   MODAL
+===================================== */
+
+.merchant-modal {
+  width: min(850px, 95vw);
+  max-height: 90vh;
+
+  overflow-y: auto;
+
+  background: white;
+  border-radius: 16px;
+
+  padding: 25px;
+
+  box-shadow:
+    0 20px 50px rgba(0, 0, 0, 0.25);
+}
+
+
+/* =====================================
+   MODAL HEADER
+===================================== */
+
+.merchant-modal-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+
+  border-bottom: 1px solid #e5e7eb;
+
+  padding-bottom: 18px;
+  margin-bottom: 20px;
+}
+
+.merchant-modal-header p {
+  margin: 0 0 5px;
+  font-size: 12px;
+  color: #6b7280;
+  font-weight: 600;
+}
+
+.merchant-modal-header h2 {
+  margin: 0;
+  font-size: 24px;
+}
+
+.merchant-modal-close {
+  border: none;
+  background: transparent;
+
+  font-size: 30px;
+  cursor: pointer;
+
+  color: #6b7280;
+}
+
+
+/* =====================================
+   DETAILS GRID
+===================================== */
+
+.merchant-details-grid {
+  display: grid;
+
+  grid-template-columns:
+    repeat(2, minmax(0, 1fr));
+
+  gap: 18px;
+
+  margin-bottom: 25px;
+}
+
+.merchant-details-grid > div {
+  background: #f9fafb;
+
+  padding: 14px;
+
+  border-radius: 10px;
+}
+
+.merchant-details-grid label {
+  display: block;
+
+  font-size: 12px;
+
+  color: #6b7280;
+
+  margin-bottom: 5px;
+
+  font-weight: 600;
+}
+
+.merchant-details-grid p {
+  margin: 0;
+
+  font-size: 15px;
+
+  color: #111827;
+
+  font-weight: 500;
+}
+
+
+/* =====================================
+   AADHAAR DOCUMENT
+===================================== */
+
+.merchant-document-section {
+  border-top: 1px solid #e5e7eb;
+
+  padding-top: 20px;
+
+  margin-top: 10px;
+}
+
+.merchant-document-section h3 {
+  margin: 0 0 15px;
+
+  font-size: 18px;
+}
+
+.merchant-aadhaar-image {
+  display: block;
+
+  width: 100%;
+  max-width: 600px;
+
+  max-height: 500px;
+
+  object-fit: contain;
+
+  margin: 0 auto;
+
+  border-radius: 10px;
+
+  border: 1px solid #d1d5db;
+
+  background: #f9fafb;
+}
+
+.merchant-no-document {
+  padding: 25px;
+
+  text-align: center;
+
+  background: #f9fafb;
+
+  border-radius: 10px;
+
+  color: #6b7280;
+}
+
+
+/* =====================================
+   MODAL ACTIONS
+===================================== */
+
+.merchant-modal-actions {
+  display: flex;
+
+  justify-content: flex-end;
+
+  gap: 10px;
+
+  margin-top: 25px;
+
+  padding-top: 20px;
+
+  border-top: 1px solid #e5e7eb;
+}
+
+.merchant-close-button {
+  border: 1px solid #d1d5db;
+
+  background: white;
+
+  color: #374151;
+
+  padding: 9px 16px;
+
+  border-radius: 7px;
+
+  cursor: pointer;
+
+  font-weight: 600;
+}
+
+.merchant-close-button:hover {
+  background: #f3f4f6;
+}
+
+
+/* =====================================
+   MOBILE
+===================================== */
+
+@media (max-width: 768px) {
+
+  .merchant-details-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .merchant-action-buttons {
+    flex-direction: column;
+  }
+
+  .merchant-modal {
+    padding: 18px;
+  }
+
+  .merchant-modal-actions {
+    flex-wrap: wrap;
+  }
+
+}

@@ -6,20 +6,13 @@ function MyAddresses({
   loggedInUser,
   onBack,
 }) {
-  const [addresses, setAddresses] =
-    useState([]);
+  const [addresses, setAddresses] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState("");
 
-  const [loading, setLoading] =
-    useState(true);
-
-  const [error, setError] =
-    useState("");
-
-  const [showAddForm, setShowAddForm] =
-    useState(false);
-
-  const [saving, setSaving] =
-    useState(false);
+  const [saving, setSaving] = useState(false);
+  const [defaultLoading, setDefaultLoading] =
+    useState(null);
 
   const [form, setForm] = useState({
     full_name: "",
@@ -30,9 +23,9 @@ function MyAddresses({
     pincode: "",
   });
 
-  /* =========================================
-     FETCH ADDRESSES
-  ========================================= */
+  // =========================================
+  // FETCH ADDRESSES
+  // =========================================
 
   const fetchAddresses = async () => {
     if (!loggedInUser?.id) {
@@ -49,8 +42,7 @@ function MyAddresses({
         `${API_BASE_URL}/api/addresses/${loggedInUser.id}`
       );
 
-      const data =
-        await response.json();
+      const data = await response.json();
 
       if (!response.ok || !data.success) {
         throw new Error(
@@ -59,12 +51,7 @@ function MyAddresses({
         );
       }
 
-      /*
-        Remove duplicate addresses
-        without deleting anything
-        from database.
-      */
-
+      // Remove duplicate addresses
       const uniqueAddresses = [];
       const seen = new Set();
 
@@ -87,17 +74,19 @@ function MyAddresses({
 
           if (!seen.has(key)) {
             seen.add(key);
-            uniqueAddresses.push(
-              address
-            );
+            uniqueAddresses.push(address);
           }
         }
       );
 
-      setAddresses(
-        uniqueAddresses
+      // Default address first
+      uniqueAddresses.sort(
+        (a, b) =>
+          Number(b.is_default) -
+          Number(a.is_default)
       );
 
+      setAddresses(uniqueAddresses);
     } catch (err) {
       console.error(
         "My Addresses error:",
@@ -107,7 +96,6 @@ function MyAddresses({
       setError(
         "Unable to load saved addresses."
       );
-
     } finally {
       setLoading(false);
     }
@@ -117,9 +105,9 @@ function MyAddresses({
     fetchAddresses();
   }, [loggedInUser]);
 
-  /* =========================================
-     FORM CHANGE
-  ========================================= */
+  // =========================================
+  // FORM CHANGE
+  // =========================================
 
   const handleChange = (event) => {
     const {
@@ -133,9 +121,9 @@ function MyAddresses({
     }));
   };
 
-  /* =========================================
-     ADD ADDRESS
-  ========================================= */
+  // =========================================
+  // ADD ADDRESS
+  // =========================================
 
   const handleAddAddress = async (
     event
@@ -149,41 +137,44 @@ function MyAddresses({
     try {
       setSaving(true);
 
-      const response =
-        await fetch(
-          `${API_BASE_URL}/api/addresses`,
-          {
-            method: "POST",
+      const response = await fetch(
+        `${API_BASE_URL}/api/addresses`,
+        {
+          method: "POST",
 
-            headers: {
-              "Content-Type":
-                "application/json",
-            },
+          headers: {
+            "Content-Type":
+              "application/json",
+          },
 
-            body: JSON.stringify({
-              user_id:
-                loggedInUser.id,
+          body: JSON.stringify({
+            user_id:
+              loggedInUser.id,
 
-              full_name:
-                form.full_name,
+            full_name:
+              form.full_name.trim(),
 
-              phone:
-                form.phone,
+            phone:
+              form.phone.trim(),
 
-              address_line:
-                form.address_line,
+            address_line:
+              form.address_line.trim(),
 
-              city:
-                form.city,
+            city:
+              form.city.trim(),
 
-              state:
-                form.state,
+            state:
+              form.state.trim(),
 
-              pincode:
-                form.pincode,
-            }),
-          }
-        );
+            pincode:
+              form.pincode.trim(),
+
+            // First address becomes default
+            is_default:
+              addresses.length === 0,
+          }),
+        }
+      );
 
       const data =
         await response.json();
@@ -198,6 +189,7 @@ function MyAddresses({
         );
       }
 
+      // Clear form
       setForm({
         full_name: "",
         phone: "",
@@ -207,10 +199,13 @@ function MyAddresses({
         pincode: "",
       });
 
-      setShowAddForm(false);
-
       await fetchAddresses();
 
+      alert(
+        addresses.length === 0
+          ? "Address saved as default address."
+          : "Address saved successfully."
+      );
     } catch (err) {
       console.error(
         "Add address error:",
@@ -221,15 +216,74 @@ function MyAddresses({
         err.message ||
           "Failed to save address"
       );
-
     } finally {
       setSaving(false);
     }
   };
 
-  /* =========================================
-     DELETE ADDRESS
-  ========================================= */
+  // =========================================
+  // SET DEFAULT
+  // =========================================
+
+  const handleSetDefault = async (
+    addressId
+  ) => {
+    if (!loggedInUser?.id) {
+      return;
+    }
+
+    try {
+      setDefaultLoading(addressId);
+
+      const response = await fetch(
+        `${API_BASE_URL}/api/addresses/${addressId}/default`,
+        {
+          method: "PUT",
+
+          headers: {
+            "Content-Type":
+              "application/json",
+          },
+
+          body: JSON.stringify({
+            user_id:
+              loggedInUser.id,
+          }),
+        }
+      );
+
+      const data =
+        await response.json();
+
+      if (
+        !response.ok ||
+        !data.success
+      ) {
+        throw new Error(
+          data.message ||
+            "Failed to set default address"
+        );
+      }
+
+      await fetchAddresses();
+    } catch (err) {
+      console.error(
+        "Set default address error:",
+        err
+      );
+
+      alert(
+        err.message ||
+          "Failed to set default address"
+      );
+    } finally {
+      setDefaultLoading(null);
+    }
+  };
+
+  // =========================================
+  // DELETE
+  // =========================================
 
   const handleDelete = async (
     addressId
@@ -243,14 +297,27 @@ function MyAddresses({
       return;
     }
 
+    if (!loggedInUser?.id) {
+      return;
+    }
+
     try {
-      const response =
-        await fetch(
-          `${API_BASE_URL}/api/addresses/${addressId}`,
-          {
-            method: "DELETE",
-          }
-        );
+      const response = await fetch(
+        `${API_BASE_URL}/api/addresses/${addressId}`,
+        {
+          method: "DELETE",
+
+          headers: {
+            "Content-Type":
+              "application/json",
+          },
+
+          body: JSON.stringify({
+            user_id:
+              loggedInUser.id,
+          }),
+        }
+      );
 
       const data =
         await response.json();
@@ -265,15 +332,7 @@ function MyAddresses({
         );
       }
 
-      setAddresses(
-        (previous) =>
-          previous.filter(
-            (address) =>
-              address.id !==
-              addressId
-          )
-      );
-
+      await fetchAddresses();
     } catch (err) {
       console.error(
         "Delete address error:",
@@ -287,426 +346,575 @@ function MyAddresses({
     }
   };
 
-  return (
-    <section className="my-addresses-page">
+  // =========================================
+  // LOADING
+  // =========================================
 
-      <div className="my-addresses-container">
-
-        {/* =====================================
-            HEADER
-        ====================================== */}
-
-        <header className="my-addresses-header">
+  if (loading) {
+    return (
+      <section className="my-addresses-page">
+        <div className="my-addresses-container">
 
           <button
             type="button"
             className="my-addresses-back"
             onClick={onBack}
           >
-            ← My Profile
+            ← Back to My Profile
           </button>
 
-          <div>
-            <p>
-              ACCOUNT
-            </p>
-
-            <h1>
-              My Addresses
-            </h1>
-
-            <span>
-              Saved delivery addresses
-            </span>
-          </div>
-
-          <button
-            type="button"
-            className="my-addresses-add-top"
-            onClick={() =>
-              setShowAddForm(
-                (previous) =>
-                  !previous
-              )
-            }
-          >
-            + Add Address
-          </button>
-
-        </header>
-
-
-        {/* =====================================
-            ADD ADDRESS FORM
-        ====================================== */}
-
-        {showAddForm && (
-
-          <form
-            className="address-form"
-            onSubmit={
-              handleAddAddress
-            }
-          >
-
-            <div className="address-form-header">
-
-              <div>
-                <p>
-                  NEW ADDRESS
-                </p>
-
-                <h2>
-                  Add Delivery Address
-                </h2>
-              </div>
-
-              <button
-                type="button"
-                onClick={() =>
-                  setShowAddForm(false)
-                }
-              >
-                ✕
-              </button>
-
-            </div>
-
-
-            <div className="address-form-grid">
-
-              <div>
-                <label>
-                  Full Name
-                </label>
-
-                <input
-                  name="full_name"
-                  value={
-                    form.full_name
-                  }
-                  onChange={
-                    handleChange
-                  }
-                  required
-                />
-              </div>
-
-
-              <div>
-                <label>
-                  Phone
-                </label>
-
-                <input
-                  name="phone"
-                  value={
-                    form.phone
-                  }
-                  onChange={
-                    handleChange
-                  }
-                  required
-                />
-              </div>
-
-
-              <div className="address-form-full">
-
-                <label>
-                  Address
-                </label>
-
-                <textarea
-                  name="address_line"
-                  value={
-                    form.address_line
-                  }
-                  onChange={
-                    handleChange
-                  }
-                  required
-                />
-
-              </div>
-
-
-              <div>
-                <label>
-                  City
-                </label>
-
-                <input
-                  name="city"
-                  value={
-                    form.city
-                  }
-                  onChange={
-                    handleChange
-                  }
-                  required
-                />
-              </div>
-
-
-              <div>
-                <label>
-                  State
-                </label>
-
-                <input
-                  name="state"
-                  value={
-                    form.state
-                  }
-                  onChange={
-                    handleChange
-                  }
-                  required
-                />
-              </div>
-
-
-              <div>
-                <label>
-                  Pincode
-                </label>
-
-                <input
-                  name="pincode"
-                  value={
-                    form.pincode
-                  }
-                  onChange={
-                    handleChange
-                  }
-                  required
-                />
-              </div>
-
-            </div>
-
-
-            <div className="address-form-actions">
-
-              <button
-                type="button"
-                onClick={() =>
-                  setShowAddForm(false)
-                }
-              >
-                Cancel
-              </button>
-
-              <button
-                type="submit"
-                disabled={saving}
-              >
-                {saving
-                  ? "Saving..."
-                  : "Save Address"}
-              </button>
-
-            </div>
-
-          </form>
-        )}
-
-
-        {/* =====================================
-            LOADING
-        ====================================== */}
-
-        {loading && (
-          <div className="my-addresses-message">
-
-            <div>
+          <div className="address-loading">
+            <div className="address-loading-icon">
               📍
             </div>
 
             <h2>
-              Loading addresses...
+              Loading your addresses...
             </h2>
 
             <p>
-              Please wait.
+              Please wait a moment.
             </p>
+          </div>
+
+        </div>
+      </section>
+    );
+  }
+
+  // =========================================
+  // MAIN UI
+  // =========================================
+
+  return (
+    <section className="my-addresses-page">
+
+      <div className="my-addresses-container">
+
+        {/* =====================================
+            TOP HEADER
+        ====================================== */}
+
+        <header className="my-addresses-header">
+
+          <div className="address-header-left">
+
+            <button
+              type="button"
+              className="my-addresses-back"
+              onClick={onBack}
+            >
+              ← Back to My Profile
+            </button>
+
+            <div className="address-title">
+
+              <span>
+                ACCOUNT
+              </span>
+
+              <h1>
+                My Addresses
+              </h1>
+
+              <p>
+                Saved delivery addresses
+                for faster checkout
+              </p>
+
+            </div>
 
           </div>
-        )}
+
+        </header>
 
 
         {/* =====================================
             ERROR
         ====================================== */}
 
-        {!loading &&
-          error && (
-            <div className="my-addresses-message error">
+        {error && (
+          <div className="address-error">
 
-              <div>
-                ⚠️
-              </div>
+            <div className="address-error-icon">
+              ⚠️
+            </div>
 
-              <h2>
+            <div>
+              <strong>
                 Something went wrong
-              </h2>
+              </strong>
 
               <p>
                 {error}
               </p>
-
-              <button
-                type="button"
-                onClick={
-                  fetchAddresses
-                }
-              >
-                Try Again
-              </button>
-
             </div>
-          )}
+
+            <button
+              type="button"
+              onClick={
+                fetchAddresses
+              }
+            >
+              Try Again
+            </button>
+
+          </div>
+        )}
 
 
         {/* =====================================
-            EMPTY
+            MAIN TWO COLUMN AREA
         ====================================== */}
 
-        {!loading &&
-          !error &&
-          addresses.length === 0 && (
+        {!error && (
+          <div className="addresses-layout">
 
-            <div className="my-addresses-message">
+            {/* =================================
+                LEFT SIDE - SAVED ADDRESSES
+            ================================== */}
 
-              <div>
-                📍
+            <div className="saved-addresses-section">
+
+              <div className="section-heading">
+
+                <div>
+                  <h2>
+                    Saved Addresses
+                  </h2>
+
+                  <p>
+                    {addresses.length === 0
+                      ? "No saved addresses yet"
+                      : `${addresses.length} saved ${
+                          addresses.length === 1
+                            ? "address"
+                            : "addresses"
+                        }`}
+                  </p>
+                </div>
+
               </div>
 
-              <h2>
-                No saved addresses
-              </h2>
 
-              <p>
-                Add an address for
-                faster checkout.
-              </p>
+              {/* EMPTY */}
 
-              <button
-                type="button"
-                onClick={() =>
-                  setShowAddForm(true)
-                }
-              >
-                + Add New Address
-              </button>
+              {addresses.length === 0 && (
 
-            </div>
-          )}
+                <div className="empty-address-card">
+
+                  <div className="empty-address-icon">
+                    🏠
+                  </div>
+
+                  <h3>
+                    No saved addresses
+                  </h3>
+
+                  <p>
+                    Add your first delivery
+                    address using the form.
+                  </p>
+
+                </div>
+
+              )}
 
 
-        {/* =====================================
-            ADDRESS LIST
-        ====================================== */}
+              {/* ADDRESS LIST */}
 
-        {!loading &&
-          !error &&
-          addresses.length > 0 && (
+              <div className="my-addresses-list">
 
-            <div className="my-addresses-list">
+                {addresses.map(
+                  (address) => (
 
-              {addresses.map(
-                (address) => (
+                    <article
+                      key={address.id}
+                      className={
+                        address.is_default
+                          ? "my-address-card default-address-card"
+                          : "my-address-card"
+                      }
+                    >
 
-                  <article
-                    className="my-address-card"
-                    key={address.id}
-                  >
+                      {/* CARD TOP */}
 
-                    <div className="my-address-card-header">
+                      <div className="address-card-top">
 
-                      <div className="my-address-icon">
-                        📍
+                        <div className="address-main-info">
+
+                          <div className="address-home-icon">
+                            🏠
+                          </div>
+
+                          <div>
+
+                            <h3>
+                              {
+                                address.full_name
+                              }
+                            </h3>
+
+                            <p className="address-phone">
+                              ☎{" "}
+                              {address.phone}
+                            </p>
+
+                          </div>
+
+                        </div>
+
+
+                        {Boolean(
+                          address.is_default
+                        ) ? (
+
+                          <span className="default-badge">
+                            ⭐ Default
+                          </span>
+
+                        ) : (
+
+                          <button
+                            type="button"
+                            className="set-default-button"
+                            onClick={() =>
+                              handleSetDefault(
+                                address.id
+                              )
+                            }
+                            disabled={
+                              defaultLoading ===
+                              address.id
+                            }
+                          >
+                            {defaultLoading ===
+                            address.id
+                              ? "Setting..."
+                              : "☆ Set as Default"}
+                          </button>
+
+                        )}
+
                       </div>
 
-                      <div>
+
+                      {/* ADDRESS */}
+
+                      <div className="address-card-content">
+
+                        <div className="address-location-icon">
+                          📍
+                        </div>
+
                         <p>
-                          SAVED ADDRESS
+                          {
+                            address.address_line
+                          }
                         </p>
 
-                        <h2>
-                          {
-                            address.full_name
-                          }
-                        </h2>
                       </div>
 
-                    </div>
+
+                      {/* LOCATION DETAILS */}
+
+                      <div className="address-tags">
+
+                        <span>
+                          🏙{" "}
+                          {address.city}
+                        </span>
+
+                        <span>
+                          🗺{" "}
+                          {address.state}
+                        </span>
+
+                        <span>
+                          📌{" "}
+                          {address.pincode}
+                        </span>
+
+                      </div>
 
 
-                    <div className="my-address-card-body">
+                      {/* DEFAULT MESSAGE */}
 
-                      <p>
-                        {address.phone}
-                      </p>
+                      {Boolean(
+                        address.is_default
+                      ) && (
 
-                      <p>
-                        {
-                          address.address_line
-                        }
-                      </p>
+                        <div className="default-message">
+                          <span>
+                            ✓
+                          </span>
 
-                      <p>
-                        {address.city}
+                          <p>
+                            This is your default
+                            delivery address.
+                          </p>
+                        </div>
 
-                        {address.state
-                          ? `, ${address.state}`
-                          : ""}
-                      </p>
-
-                      <p>
-                        {address.pincode}
-                      </p>
-
-                    </div>
+                      )}
 
 
-                    <div className="my-address-card-footer">
+                      {/* CARD FOOTER */}
 
-                      <span>
-                        SAVED ADDRESS
-                      </span>
-
-                      <div>
+                      <div className="address-card-footer">
 
                         <button
                           type="button"
+                          className="edit-address-button"
                         >
-                          Edit
+                          ✏ Edit
                         </button>
 
                         <button
                           type="button"
+                          className="delete-address-button"
                           onClick={() =>
                             handleDelete(
                               address.id
                             )
                           }
                         >
-                          Delete
+                          🗑 Delete
                         </button>
 
                       </div>
 
-                    </div>
+                    </article>
+                  )
+                )}
 
-                  </article>
-
-                )
-              )}
+              </div>
 
             </div>
-          )}
+
+
+            {/* =================================
+                RIGHT SIDE - NEW ADDRESS
+            ================================== */}
+
+            <aside className="new-address-section">
+
+              <div className="new-address-header">
+
+                <div className="new-address-icon">
+                  +
+                </div>
+
+                <div>
+
+                  <h2>
+                    New Address
+                  </h2>
+
+                  <p>
+                    Add a new delivery
+                    address
+                  </p>
+
+                </div>
+
+              </div>
+
+
+              <form
+                className="new-address-form"
+                onSubmit={
+                  handleAddAddress
+                }
+              >
+
+                {/* FULL NAME */}
+
+                <div className="address-input-group">
+
+                  <label>
+                    Full Name
+                    <span>*</span>
+                  </label>
+
+                  <input
+                    type="text"
+                    name="full_name"
+                    placeholder="Enter your full name"
+                    value={
+                      form.full_name
+                    }
+                    onChange={
+                      handleChange
+                    }
+                    required
+                  />
+
+                </div>
+
+
+                {/* PHONE */}
+
+                <div className="address-input-group">
+
+                  <label>
+                    Phone Number
+                    <span>*</span>
+                  </label>
+
+                  <input
+                    type="tel"
+                    name="phone"
+                    placeholder="10-digit mobile number"
+                    value={
+                      form.phone
+                    }
+                    onChange={
+                      handleChange
+                    }
+                    maxLength="10"
+                    required
+                  />
+
+                </div>
+
+
+                {/* ADDRESS */}
+
+                <div className="address-input-group">
+
+                  <label>
+                    Address
+                    <span>*</span>
+                  </label>
+
+                  <textarea
+                    name="address_line"
+                    placeholder="House No, Street, Area, Landmark"
+                    value={
+                      form.address_line
+                    }
+                    onChange={
+                      handleChange
+                    }
+                    rows="4"
+                    required
+                  />
+
+                </div>
+
+
+                {/* CITY + STATE */}
+
+                <div className="address-input-row">
+
+                  <div className="address-input-group">
+
+                    <label>
+                      City
+                      <span>*</span>
+                    </label>
+
+                    <input
+                      type="text"
+                      name="city"
+                      placeholder="Enter city"
+                      value={
+                        form.city
+                      }
+                      onChange={
+                        handleChange
+                      }
+                      required
+                    />
+
+                  </div>
+
+
+                  <div className="address-input-group">
+
+                    <label>
+                      State
+                      <span>*</span>
+                    </label>
+
+                    <input
+                      type="text"
+                      name="state"
+                      placeholder="Enter state"
+                      value={
+                        form.state
+                      }
+                      onChange={
+                        handleChange
+                      }
+                      required
+                    />
+
+                  </div>
+
+                </div>
+
+
+                {/* PINCODE */}
+
+                <div className="address-input-group">
+
+                  <label>
+                    PIN Code
+                    <span>*</span>
+                  </label>
+
+                  <input
+                    type="text"
+                    name="pincode"
+                    placeholder="6-digit PIN code"
+                    value={
+                      form.pincode
+                    }
+                    onChange={
+                      handleChange
+                    }
+                    maxLength="6"
+                    required
+                  />
+
+                </div>
+
+
+                {/* SAVE */}
+
+                <button
+                  type="submit"
+                  className="save-address-button"
+                  disabled={saving}
+                >
+
+                  {saving ? (
+                    <>
+                      <span className="button-spinner"></span>
+                      Saving...
+                    </>
+                  ) : (
+                    <>
+                      💾 Save Address
+                    </>
+                  )}
+
+                </button>
+
+
+                <p className="address-form-note">
+                  Your first saved address
+                  will automatically become
+                  your default address.
+                </p>
+
+              </form>
+
+            </aside>
+
+          </div>
+        )}
 
       </div>
 

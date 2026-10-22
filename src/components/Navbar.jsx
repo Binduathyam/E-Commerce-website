@@ -1,3 +1,5 @@
+import { useEffect, useRef, useState } from "react";
+
 function Navbar({
   search,
   setSearch,
@@ -7,7 +9,71 @@ function Navbar({
   onWishlistClick,
   onLoginClick,
   loggedInUser,
+  onOrders,
+  onAddresses,
+  onAccountSettings,
+  onLogout,
 }) {
+  const [showProfileMenu, setShowProfileMenu] =
+    useState(false);
+
+  const profileMenuRef = useRef(null);
+
+  // Close dropdown when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (
+        profileMenuRef.current &&
+        !profileMenuRef.current.contains(event.target)
+      ) {
+        setShowProfileMenu(false);
+      }
+    };
+
+    document.addEventListener(
+      "mousedown",
+      handleClickOutside
+    );
+
+    return () => {
+      document.removeEventListener(
+        "mousedown",
+        handleClickOutside
+      );
+    };
+  }, []);
+
+  const handleProfileClick = () => {
+    if (!loggedInUser) {
+      onLoginClick();
+      return;
+    }
+
+    setShowProfileMenu(
+      (current) => !current
+    );
+  };
+
+  const handleMenuClick = (callback) => {
+    setShowProfileMenu(false);
+
+    if (callback) {
+      callback();
+    }
+  };
+
+  const userName =
+    loggedInUser?.name ||
+    loggedInUser?.fullName ||
+    "User";
+
+  const userEmail =
+    loggedInUser?.email ||
+    "";
+
+  const userInitial =
+    userName.charAt(0).toUpperCase();
+
   return (
     <header className="navbar">
 
@@ -18,8 +84,10 @@ function Navbar({
 
 
       {/* SEARCH */}
-      <div className="search-box" id="tour-search">
-
+      <div
+        className="search-box"
+        id="tour-search"
+      >
         <input
           type="text"
           placeholder="Search products..."
@@ -35,29 +103,11 @@ function Navbar({
         >
           🔍
         </button>
-
       </div>
 
 
       {/* NAVIGATION ACTIONS */}
       <div className="nav-actions">
-
-        {/* LOGIN / PROFILE */}
-        <button
-          type="button"
-          className="nav-action-button"
-          id="tour-profile"
-          onClick={onLoginClick}
-        >
-          <span className="nav-icon">
-            👤
-          </span>
-
-          <span>
-            {loggedInUser ? "Profile" : "Login"}
-          </span>
-        </button>
-
 
         {/* WISHLIST */}
         <button
@@ -79,7 +129,6 @@ function Navbar({
               {wishlistCount}
             </span>
           )}
-
         </button>
 
 
@@ -103,8 +152,149 @@ function Navbar({
               {cartCount}
             </span>
           )}
-
         </button>
+
+
+        {/* PROFILE */}
+        <div
+          className="navbar-profile-wrapper"
+          ref={profileMenuRef}
+        >
+          <button
+            type="button"
+            className="nav-action-button"
+            id="tour-profile"
+            onClick={handleProfileClick}
+          >
+            <span className="nav-icon">
+              👤
+            </span>
+
+            <span>
+              {loggedInUser
+                ? "Profile"
+                : "Login"}
+            </span>
+          </button>
+
+
+          {/* PROFILE DROPDOWN */}
+          {loggedInUser &&
+            showProfileMenu && (
+              <div className="profile-dropdown">
+
+                {/* USER HEADER */}
+                <div className="profile-dropdown-user">
+
+                  <div className="profile-dropdown-avatar">
+                    {userInitial}
+                  </div>
+
+                  <div className="profile-dropdown-user-info">
+
+                    <strong>
+                      {userName}
+                    </strong>
+
+                    <span>
+                      {userEmail}
+                    </span>
+
+                  </div>
+
+                </div>
+
+
+                {/* DIVIDER */}
+                <div className="profile-dropdown-divider" />
+
+
+                {/* MY ORDERS */}
+                <button
+                  type="button"
+                  className="profile-dropdown-item"
+                  onClick={() =>
+                    handleMenuClick(
+                      onOrders
+                    )
+                  }
+                >
+                  <span className="profile-dropdown-item-icon">
+                    📦
+                  </span>
+
+                  <span>
+                    My Orders
+                  </span>
+                </button>
+
+
+                {/* MY ADDRESSES */}
+                <button
+                  type="button"
+                  className="profile-dropdown-item"
+                  onClick={() =>
+                    handleMenuClick(
+                      onAddresses
+                    )
+                  }
+                >
+                  <span className="profile-dropdown-item-icon">
+                    📍
+                  </span>
+
+                  <span>
+                    My Addresses
+                  </span>
+                </button>
+
+
+                {/* ACCOUNT SETTINGS */}
+                <button
+                  type="button"
+                  className="profile-dropdown-item"
+                  onClick={() =>
+                    handleMenuClick(
+                      onAccountSettings
+                    )
+                  }
+                >
+                  <span className="profile-dropdown-item-icon">
+                    ⚙️
+                  </span>
+
+                  <span>
+                    Account Settings
+                  </span>
+                </button>
+
+
+                {/* DIVIDER */}
+                <div className="profile-dropdown-divider" />
+
+
+                {/* LOGOUT */}
+                <button
+                  type="button"
+                  className="profile-dropdown-item profile-dropdown-logout"
+                  onClick={() =>
+                    handleMenuClick(
+                      onLogout
+                    )
+                  }
+                >
+                  <span className="profile-dropdown-item-icon">
+                    🚪
+                  </span>
+
+                  <span>
+                    Logout
+                  </span>
+                </button>
+
+              </div>
+            )}
+        </div>
 
       </div>
 

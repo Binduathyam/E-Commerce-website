@@ -33,10 +33,41 @@ const DeliveryDashboard = ({
      AVAILABILITY
   ===================================================== */
 
-  const [isAvailable, setIsAvailable] =
-    useState(true);
+  const [isAvailable, setIsAvailable] = useState(
+  deliveryPartner?.availability_status === "Online"
+);
 
+const handleAvailabilityToggle = async () => {
+  if (!deliveryPartner?.id) return;
 
+  const newStatus = isAvailable ? "Offline" : "Online";
+
+  try {
+    const response = await fetch(
+      `${API_BASE_URL}/api/delivery/availability/${deliveryPartner.id}`,
+      {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          availability_status: newStatus,
+        }),
+      }
+    );
+
+    const data = await response.json();
+
+    if (!response.ok) {
+      throw new Error(data.message || "Failed to update availability");
+    }
+
+    setIsAvailable(data.availability_status === "Online");
+  } catch (error) {
+    console.error("Availability update error:", error);
+    alert(error.message || "Failed to update availability");
+  }
+};
   /* =====================================================
      DASHBOARD STATS
   ===================================================== */
@@ -1262,22 +1293,9 @@ const DeliveryDashboard = ({
             </span>
 
 
-            <button
-              onClick={() =>
-                setIsAvailable(
-                  !isAvailable
-                )
-              }
-            >
-
-              {
-                isAvailable
-                  ? "Go Offline"
-                  : "Go Online"
-              }
-
-            </button>
-
+           <button onClick={handleAvailabilityToggle}>
+  {isAvailable ? "Go Offline" : "Go Online"}
+</button>
           </div>
 
 

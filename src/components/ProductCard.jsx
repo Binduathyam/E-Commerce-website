@@ -32,10 +32,19 @@ function ProductCard({
         <h3>{product.name}</h3>
 
         <div className="product-bottom">
-          <strong>
-            ₹{product.price.toLocaleString("en-IN")}
-          </strong>
-
+         <strong>
+  ₹{(
+    product.product_variants?.length > 0
+      ? Math.min(
+          ...product.product_variants
+            .filter((v) => v.available !== false)
+            .map((v) =>
+              Number(v.discount_price ?? v.price)
+            )
+        )
+      : Number(product.price || 0)
+  ).toLocaleString("en-IN")}
+</strong>
           <button
             className="add-button"
             onClick={(e) => {

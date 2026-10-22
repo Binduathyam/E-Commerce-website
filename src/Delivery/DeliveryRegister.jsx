@@ -19,9 +19,32 @@ const DeliveryRegister = ({
     licenseNumber: "",
     password: "",
     confirmPassword: "",
+    securityQuestion: "",
+    securityAnswer: "",
   });
 
   const [message, setMessage] = useState("");
+
+  // =========================
+  // PASSWORD POPUP
+  // =========================
+
+  const [passwordFocused, setPasswordFocused] =
+    useState(false);
+
+  // =========================
+  // DRIVING LICENCE IMAGE
+  // =========================
+
+  const [licenseImage, setLicenseImage] =
+    useState(null);
+
+  const securityQuestions = [
+    "What was the name of your first school?",
+    "What was the name of your first pet?",
+    "What is your childhood nickname?",
+    "What is your favourite food?",
+  ];
 
   /* =========================
      INPUT CHANGE
@@ -132,41 +155,131 @@ const DeliveryRegister = ({
       return;
     }
 
+    /* =========================
+       SECURITY QUESTION
+    ========================= */
+
+    if (!formData.securityQuestion) {
+      setMessage(
+        "Please select a security question."
+      );
+      return;
+    }
+
+    /* =========================
+       SECURITY ANSWER
+    ========================= */
+
+    if (!formData.securityAnswer.trim()) {
+      setMessage(
+        "Please enter your security answer."
+      );
+      return;
+    }
+
+    /* =========================
+       DRIVING LICENCE VALIDATION
+    ========================= */
+
+    if (!licenseImage) {
+      setMessage(
+        "Please upload your Driving Licence image."
+      );
+      return;
+    }
+
     try {
+      /* =========================
+         FORM DATA
+      ========================= */
+
+      const uploadData = new FormData();
+
+      uploadData.append(
+        "name",
+        formData.name.trim()
+      );
+
+      uploadData.append(
+        "email",
+        formData.email
+          .trim()
+          .toLowerCase()
+      );
+
+      uploadData.append(
+        "phone",
+        formData.phone.trim()
+      );
+
+      uploadData.append(
+        "password",
+        formData.password
+      );
+
+      uploadData.append(
+        "address",
+        formData.address.trim()
+      );
+
+      uploadData.append(
+        "city",
+        formData.city.trim()
+      );
+
+      uploadData.append(
+        "state",
+        formData.state.trim()
+      );
+
+      uploadData.append(
+        "vehicle_type",
+        formData.vehicleType
+      );
+
+      uploadData.append(
+        "vehicle_number",
+        formData.vehicleNumber.trim()
+      );
+
+      uploadData.append(
+        "license_number",
+        formData.licenseNumber.trim()
+      );
+
+      uploadData.append(
+        "security_question",
+        formData.securityQuestion
+      );
+
+      uploadData.append(
+        "security_answer",
+        formData.securityAnswer.trim()
+      );
+
+      uploadData.append(
+        "license",
+        licenseImage
+      );
+
+      /* =========================
+         SEND REQUEST
+      ========================= */
+
       const response = await fetch(
         `${API_BASE_URL}/api/delivery/register`,
         {
           method: "POST",
-
-          headers: {
-            "Content-Type": "application/json",
-          },
-
-          body: JSON.stringify({
-            name: formData.name,
-            email: formData.email,
-            phone: formData.phone,
-            password: formData.password,
-            address: formData.address,
-
-            city: formData.city.trim(),
-
-            state: formData.state.trim(),
-
-            vehicle_type:
-              formData.vehicleType,
-
-            vehicle_number:
-              formData.vehicleNumber,
-
-            license_number:
-              formData.licenseNumber,
-          }),
+          body: uploadData,
         }
       );
 
       const data =
         await response.json();
+
+      /* =========================
+         ERROR
+      ========================= */
 
       if (!response.ok) {
         setMessage(
@@ -177,18 +290,22 @@ const DeliveryRegister = ({
         return;
       }
 
+      /* =========================
+         SUCCESS
+      ========================= */
+
       setMessage(
-        "Registration successful! Please login."
+        "Registration submitted successfully! Your account is pending admin approval."
       );
 
       console.log(
         "Delivery Partner Registered:",
-        data.deliveryPartner
+        data.delivery_partner
       );
 
       setTimeout(() => {
         onRegistered(
-          data.deliveryPartner
+          data.delivery_partner
         );
       }, 1500);
 
@@ -461,14 +578,82 @@ const DeliveryRegister = ({
                 Password
               </label>
 
-              <input
-                type="password"
-                name="password"
-                placeholder="Create password"
-                value={formData.password}
-                onChange={handleChange}
-                required
-              />
+              <div
+                style={{
+                  position: "relative",
+                }}
+              >
+
+                <input
+                  type="password"
+                  name="password"
+                  placeholder="Create password"
+                  value={formData.password}
+                  onChange={handleChange}
+                  required
+                  onFocus={() =>
+                    setPasswordFocused(true)
+                  }
+                  onBlur={() =>
+                    setPasswordFocused(false)
+                  }
+                />
+
+                {/* PASSWORD POPUP */}
+
+                {passwordFocused && (
+                  <div
+                    style={{
+                      position: "absolute",
+                      top: "calc(100% + 6px)",
+                      left: "0",
+                      width: "100%",
+                      padding: "10px 12px",
+                      background: "#ffffff",
+                      border: "1px solid #ddd",
+                      borderRadius: "8px",
+                      boxShadow:
+                        "0 4px 12px rgba(0,0,0,0.12)",
+                      fontSize: "11px",
+                      lineHeight: "1.6",
+                      color: "#666",
+                      zIndex: 50,
+                      boxSizing: "border-box",
+                    }}
+                  >
+
+                    <strong
+                      style={{
+                        color: "#333",
+                      }}
+                    >
+                      Password must contain:
+                    </strong>
+
+                    <div>
+                      • At least 8 characters
+                    </div>
+
+                    <div>
+                      • At least one uppercase letter
+                    </div>
+
+                    <div>
+                      • At least one lowercase letter
+                    </div>
+
+                    <div>
+                      • At least one number
+                    </div>
+
+                    <div>
+                      • At least one special character
+                    </div>
+
+                  </div>
+                )}
+
+              </div>
 
             </div>
 
@@ -484,7 +669,9 @@ const DeliveryRegister = ({
                 type="password"
                 name="confirmPassword"
                 placeholder="Confirm password"
-                value={formData.confirmPassword}
+                value={
+                  formData.confirmPassword
+                }
                 onChange={handleChange}
                 required
               />
@@ -494,34 +681,99 @@ const DeliveryRegister = ({
           </div>
 
           {/* =========================
-              PASSWORD REQUIREMENTS
+              DRIVING LICENCE DOCUMENT
           ========================= */}
 
-          <div className="delivery-password-rules">
+          <div className="delivery-form-group full-width">
 
-            <p>
-              Password must contain:
-            </p>
+            <label>
+              Driving Licence
+            </label>
 
-            <span>
-              • At least 8 characters
-            </span>
+            <input
+              type="file"
+              accept="image/jpeg,image/png,image/jpg"
+              onChange={(e) => {
 
-            <span>
-              • At least one uppercase letter
-            </span>
+                const file =
+                  e.target.files?.[0] ||
+                  null;
 
-            <span>
-              • At least one lowercase letter
-            </span>
+                setLicenseImage(file);
+                setMessage("");
 
-            <span>
-              • At least one number
-            </span>
+              }}
+              required
+            />
 
-            <span>
-              • At least one special character
-            </span>
+            <small>
+              Upload your Driving Licence image
+              for admin verification.
+              JPG, JPEG or PNG only.
+              Maximum size: 5MB.
+            </small>
+
+          </div>
+
+          {/* =========================
+              SECURITY QUESTION
+          ========================= */}
+
+          <div className="delivery-form-group full-width">
+
+            <label>
+              Security Question
+            </label>
+
+            <select
+              name="securityQuestion"
+              value={
+                formData.securityQuestion
+              }
+              onChange={handleChange}
+              required
+            >
+
+              <option value="">
+                Select a security question
+              </option>
+
+              {securityQuestions.map(
+                (question, index) => (
+                  <option
+                    key={index}
+                    value={question}
+                  >
+                    {question}
+                  </option>
+                )
+              )}
+
+            </select>
+
+          </div>
+
+          {/* =========================
+              SECURITY ANSWER
+          ========================= */}
+
+          <div className="delivery-form-group full-width">
+
+            <label>
+              Security Answer
+            </label>
+
+            <input
+              type="text"
+              name="securityAnswer"
+              placeholder="Enter your answer"
+              value={
+                formData.securityAnswer
+              }
+              onChange={handleChange}
+              autoComplete="off"
+              required
+            />
 
           </div>
 

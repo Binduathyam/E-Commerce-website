@@ -9,6 +9,7 @@ function Login({
   onDeliveryLogin,
   onAdminLogin,
   onLoginSuccess,
+  onForgotPassword,
 }) {
   const [loginRole, setLoginRole] = useState("customer");
 
@@ -503,6 +504,19 @@ function Login({
                   {errors.password}
                 </span>
               )}
+              <button
+  type="button"
+  className="forgot-password-button"
+  onClick={() =>
+    onForgotPassword(
+      loginRole === "delivery_partner"
+        ? "delivery"
+        : loginRole
+    )
+  }
+>
+  Forgot Password?
+</button>
 
             </div>
 

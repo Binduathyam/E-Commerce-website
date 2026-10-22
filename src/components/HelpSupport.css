@@ -1,0 +1,661 @@
+/* =========================================
+   SHOPEASE - HELP & SUPPORT PAGE
+========================================= */
+
+.help-page {
+  min-height: 100vh;
+  padding: 48px 24px 70px;
+  background: #f7f8fc;
+  color: #172033;
+  font-family: inherit;
+}
+
+.help-container {
+  width: 100%;
+  max-width: 1180px;
+  margin: 0 auto;
+  box-sizing: border-box;
+}
+
+.help-container *,
+.help-container *::before,
+.help-container *::after {
+  box-sizing: border-box;
+}
+
+/* =========================================
+   HERO SECTION
+========================================= */
+
+.help-hero {
+  position: relative;
+  display: grid;
+  grid-template-columns: 1.2fr 0.8fr;
+  align-items: center;
+  gap: 40px;
+  min-height: 365px;
+  padding: 54px 58px;
+  overflow: hidden;
+  border: 1px solid #e8ebf4;
+  border-radius: 26px;
+  background: linear-gradient(
+    125deg,
+    #ffffff 45%,
+    #eef2ff 100%
+  );
+  box-shadow: 0 12px 40px rgba(28, 42, 80, 0.05);
+}
+
+.help-hero-content {
+  position: relative;
+  z-index: 2;
+}
+
+.help-eyebrow {
+  display: inline-flex;
+  align-items: center;
+  gap: 9px;
+  margin-bottom: 22px;
+  color: #4f46e5;
+  font-size: 12px;
+  font-weight: 800;
+  letter-spacing: 1.4px;
+}
+
+.help-hero h1 {
+  margin: 0 0 18px;
+  color: #172033;
+  font-size: clamp(34px, 4vw, 49px);
+  font-weight: 800;
+  line-height: 1.16;
+  letter-spacing: -1.8px;
+}
+
+.help-hero h1 span {
+  color: #5145df;
+}
+
+.help-hero-content > p {
+  max-width: 510px;
+  margin: 0 0 28px;
+  color: #697386;
+  font-size: 15px;
+  line-height: 1.9;
+}
+
+/* Primary Button */
+
+.help-primary-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 11px;
+  min-height: 48px;
+  padding: 0 22px;
+  border: none;
+  border-radius: 10px;
+  background: #5145df;
+  color: #ffffff;
+  font-family: inherit;
+  font-size: 14px;
+  font-weight: 700;
+  cursor: pointer;
+  transition:
+    background 0.2s ease,
+    transform 0.2s ease,
+    box-shadow 0.2s ease;
+}
+
+.help-primary-btn:hover {
+  background: #3f35c4;
+  transform: translateY(-2px);
+  box-shadow: 0 8px 20px rgba(81, 69, 223, 0.2);
+}
+
+/* =========================================
+   HERO VISUAL
+========================================= */
+
+.help-hero-visual {
+  position: relative;
+  display: flex;
+  min-width: 0;
+  min-height: 250px;
+  align-items: center;
+  justify-content: center;
+}
+
+.help-visual-circle {
+  display: flex;
+  width: 190px;
+  height: 190px;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid #dce2ff;
+  border-radius: 50%;
+  background: linear-gradient(
+    145deg,
+    #e6eaff,
+    #ffffff
+  );
+  color: #5145df;
+  box-shadow: 0 20px 55px rgba(81, 69, 223, 0.13);
+}
+
+.help-floating-card {
+  position: absolute;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 15px 17px;
+  border: 1px solid #edf0f7;
+  border-radius: 14px;
+  background: #ffffff;
+  box-shadow: 0 10px 30px rgba(23, 32, 51, 0.09);
+}
+
+.help-floating-card > svg {
+  flex-shrink: 0;
+  color: #5145df;
+}
+
+.help-floating-card div {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
+
+.help-floating-card strong {
+  color: #202940;
+  font-size: 12px;
+  font-weight: 750;
+}
+
+.help-floating-card span {
+  color: #818a9b;
+  font-size: 11px;
+}
+
+.help-floating-top {
+  top: 16px;
+  right: -2px;
+}
+
+.help-floating-bottom {
+  bottom: 17px;
+  left: -2px;
+}
+
+/* =========================================
+   SECTION HEADING
+========================================= */
+
+.help-topics-section {
+  padding: 72px 0 56px;
+}
+
+.help-section-heading {
+  margin-bottom: 30px;
+  text-align: center;
+}
+
+.help-section-label {
+  color: #5145df;
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 1.8px;
+}
+
+.help-section-heading h2 {
+  margin: 12px 0;
+  color: #172033;
+  font-size: clamp(25px, 3vw, 33px);
+  font-weight: 800;
+  letter-spacing: -0.8px;
+  line-height: 1.35;
+}
+
+.help-section-heading p {
+  margin: 0;
+  color: #778195;
+  font-size: 14px;
+  line-height: 1.8;
+}
+
+/* =========================================
+   SUPPORT TOPIC CARDS
+========================================= */
+
+.help-topics-grid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 20px;
+}
+
+.help-topic-card {
+  display: flex;
+  min-width: 0;
+  flex-direction: column;
+  align-items: flex-start;
+  padding: 26px 23px 23px;
+  border: 1px solid #e8ebf3;
+  border-radius: 18px;
+  background: #ffffff;
+  box-shadow: 0 5px 18px rgba(28, 42, 80, 0.025);
+  animation: helpCardIn 0.45s ease both;
+  animation-delay: calc(var(--topic-index, 0) * 80ms);
+  transition:
+    transform 0.25s ease,
+    box-shadow 0.25s ease,
+    border-color 0.25s ease;
+}
+
+.help-topic-card:hover {
+  transform: translateY(-5px);
+  border-color: #d9d7ff;
+  box-shadow: 0 15px 35px rgba(28, 42, 80, 0.08);
+}
+
+@keyframes helpCardIn {
+  from {
+    opacity: 0;
+    transform: translateY(12px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Card Icons */
+
+.help-topic-icon {
+  display: flex;
+  width: 52px;
+  height: 52px;
+  flex-shrink: 0;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 22px;
+  border-radius: 14px;
+}
+
+.help-topic-icon.blue {
+  background: #eaf1ff;
+  color: #3568db;
+}
+
+.help-topic-icon.green {
+  background: #e6f8ef;
+  color: #17945a;
+}
+
+.help-topic-icon.purple {
+  background: #f0eaff;
+  color: #8251d4;
+}
+
+.help-topic-icon.orange {
+  background: #fff0e3;
+  color: #dc782b;
+}
+
+/* Card Content */
+
+.help-topic-card h3 {
+  margin: 0 0 11px;
+  color: #202940;
+  font-size: 16px;
+  font-weight: 750;
+  line-height: 1.5;
+}
+
+.help-topic-card > p {
+  flex-grow: 1;
+  margin: 0 0 22px;
+  color: #778195;
+  font-size: 13px;
+  line-height: 1.85;
+}
+
+/* Card Action */
+
+.help-topic-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 0;
+  border: none;
+  background: transparent;
+  color: #5145df;
+  font-family: inherit;
+  font-size: 13px;
+  font-weight: 750;
+  cursor: pointer;
+}
+
+.help-topic-link:hover {
+  color: #3428bb;
+}
+
+.help-topic-link svg {
+  transition: transform 0.2s ease;
+}
+
+.help-topic-link:hover svg {
+  transform: translateX(4px);
+}
+
+/* =========================================
+   CONTACT BANNER
+========================================= */
+
+.help-contact-banner {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+  margin-top: 6px;
+  padding: 30px 34px;
+  border-radius: 20px;
+  background: #202746;
+  color: #ffffff;
+}
+
+.help-contact-icon {
+  display: flex;
+  width: 58px;
+  height: 58px;
+  flex-shrink: 0;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid rgba(255, 255, 255, 0.13);
+  border-radius: 16px;
+  background: rgba(255, 255, 255, 0.09);
+  color: #d9d6ff;
+}
+
+.help-contact-copy {
+  flex: 1;
+  min-width: 0;
+}
+
+.help-contact-copy h2 {
+  margin: 0 0 8px;
+  color: #ffffff;
+  font-size: 19px;
+  font-weight: 750;
+  line-height: 1.45;
+}
+
+.help-contact-copy p {
+  max-width: 590px;
+  margin: 0;
+  color: #c4cadd;
+  font-size: 13px;
+  line-height: 1.8;
+}
+
+.help-contact-btn {
+  display: inline-flex;
+  flex-shrink: 0;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  min-height: 46px;
+  padding: 0 21px;
+  border: none;
+  border-radius: 10px;
+  background: #ffffff;
+  color: #292e50;
+  font-family: inherit;
+  font-size: 13px;
+  font-weight: 750;
+  cursor: pointer;
+  transition:
+    background 0.2s ease,
+    transform 0.2s ease;
+}
+
+.help-contact-btn:hover {
+  background: #efedff;
+  transform: translateY(-2px);
+}
+
+/* =========================================
+   CLOSING NOTE
+========================================= */
+
+.help-closing-note {
+  display: flex;
+  align-items: flex-start;
+  justify-content: center;
+  gap: 10px;
+  margin-top: 28px;
+  color: #7c8597;
+}
+
+.help-closing-note svg {
+  flex-shrink: 0;
+  margin-top: 2px;
+  color: #5145df;
+}
+
+.help-closing-note p {
+  max-width: 680px;
+  margin: 0;
+  font-size: 12px;
+  line-height: 1.8;
+  text-align: center;
+}
+
+/* =========================================
+   TABLET RESPONSIVE
+========================================= */
+
+@media (max-width: 1050px) {
+  .help-hero {
+    gap: 20px;
+    padding: 42px 36px;
+  }
+
+  .help-topics-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .help-floating-top {
+    right: -8px;
+  }
+
+  .help-floating-bottom {
+    left: -8px;
+  }
+}
+
+/* =========================================
+   MOBILE RESPONSIVE
+========================================= */
+
+@media (max-width: 650px) {
+  .help-page {
+    padding: 22px 14px 40px;
+  }
+
+  .help-hero {
+    grid-template-columns: 1fr;
+    gap: 10px;
+    padding: 32px 23px 20px;
+    border-radius: 20px;
+  }
+
+  .help-eyebrow {
+    margin-bottom: 18px;
+    font-size: 10px;
+    letter-spacing: 1.1px;
+  }
+
+  .help-hero h1 {
+    font-size: 35px;
+    letter-spacing: -1.2px;
+  }
+
+  .help-hero-content > p {
+    font-size: 14px;
+    line-height: 1.8;
+  }
+
+  .help-primary-btn {
+    min-height: 46px;
+    padding: 0 17px;
+  }
+
+  .help-hero-visual {
+    min-height: 215px;
+    margin: 0 10px;
+  }
+
+  .help-visual-circle {
+    width: 145px;
+    height: 145px;
+  }
+
+  .help-floating-top {
+    top: 8px;
+    right: -7px;
+  }
+
+  .help-floating-bottom {
+    bottom: 8px;
+    left: -7px;
+  }
+
+  .help-floating-card {
+    gap: 8px;
+    padding: 11px;
+  }
+
+  .help-floating-card strong {
+    font-size: 11px;
+  }
+
+  .help-floating-card span {
+    font-size: 10px;
+  }
+
+  .help-topics-section {
+    padding: 48px 0 35px;
+  }
+
+  .help-section-heading {
+    margin-bottom: 24px;
+  }
+
+  .help-section-heading h2 {
+    font-size: 26px;
+  }
+
+  .help-section-heading p {
+    font-size: 13px;
+  }
+
+  .help-topics-grid {
+    grid-template-columns: 1fr;
+    gap: 14px;
+  }
+
+  .help-topic-card {
+    padding: 23px;
+  }
+
+  .help-topic-icon {
+    margin-bottom: 17px;
+  }
+
+  .help-topic-card > p {
+    margin-bottom: 18px;
+  }
+
+  .help-contact-banner {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 16px;
+    padding: 25px 22px;
+  }
+
+  .help-contact-copy h2 {
+    font-size: 19px;
+  }
+
+  .help-contact-copy p {
+    font-size: 13px;
+  }
+
+  .help-contact-btn {
+    width: 100%;
+  }
+
+  .help-closing-note {
+    padding: 0 5px;
+  }
+}
+
+/* =========================================
+   SMALL MOBILE DEVICES
+========================================= */
+
+@media (max-width: 380px) {
+  .help-page {
+    padding-right: 10px;
+    padding-left: 10px;
+  }
+
+  .help-hero {
+    padding: 27px 17px 18px;
+  }
+
+  .help-hero h1 {
+    font-size: 30px;
+  }
+
+  .help-floating-card {
+    padding: 9px;
+  }
+
+  .help-floating-card span {
+    font-size: 9px;
+  }
+
+  .help-topic-card {
+    padding: 20px;
+  }
+}
+
+/* =========================================
+   ACCESSIBILITY
+========================================= */
+
+.help-primary-btn:focus-visible,
+.help-contact-btn:focus-visible,
+.help-topic-link:focus-visible {
+  outline: 3px solid #a5a0ff;
+  outline-offset: 4px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .help-topic-card {
+    animation: none;
+    transition: none;
+  }
+
+  .help-primary-btn,
+  .help-contact-btn,
+  .help-topic-link svg {
+    transition: none;
+  }
+
+  .help-topic-card:hover,
+  .help-primary-btn:hover,
+  .help-contact-btn:hover {
+    transform: none;
+  }
+}

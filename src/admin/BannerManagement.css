@@ -1,0 +1,448 @@
+/* =========================================================
+   BANNER MANAGEMENT PAGE
+========================================================= */
+
+.banner-management-page {
+  min-height: 100vh;
+  padding: 35px;
+  background: #f6f8fb;
+  box-sizing: border-box;
+}
+
+
+/* =========================================================
+   HEADER
+========================================================= */
+
+.banner-management-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 20px;
+  margin-bottom: 30px;
+}
+
+.banner-eyebrow {
+  margin: 0 0 6px;
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 1.2px;
+  color: #168a45;
+}
+
+.banner-management-header h1 {
+  margin: 0;
+  font-size: 30px;
+  font-weight: 700;
+  color: #1f2937;
+}
+
+.banner-management-header span {
+  display: block;
+  margin-top: 7px;
+  font-size: 14px;
+  color: #6b7280;
+}
+
+
+/* =========================================================
+   BACK BUTTON
+========================================================= */
+
+.banner-back-button {
+  border: none;
+  background: #ffffff;
+  color: #374151;
+  padding: 11px 18px;
+  border-radius: 8px;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  border: 1px solid #e5e7eb;
+  transition: 0.2s ease;
+}
+
+.banner-back-button:hover {
+  background: #f3f4f6;
+}
+
+
+/* =========================================================
+   MAIN GRID
+========================================================= */
+
+.banner-management-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(420px, 1fr);
+  gap: 25px;
+  align-items: start;
+}
+
+
+/* =========================================================
+   CARDS
+========================================================= */
+
+.banner-form-card,
+.banner-preview-card {
+  background: #ffffff;
+  border: 1px solid #e8ebef;
+  border-radius: 14px;
+  padding: 25px;
+  box-shadow: 0 3px 14px rgba(0, 0, 0, 0.04);
+}
+
+.banner-card-title {
+  margin-bottom: 25px;
+}
+
+.banner-card-title h2 {
+  margin: 0;
+  font-size: 20px;
+  font-weight: 700;
+  color: #202124;
+}
+
+.banner-card-title p {
+  margin: 6px 0 0;
+  font-size: 13px;
+  color: #777;
+}
+
+
+/* =========================================================
+   FORM
+========================================================= */
+
+.banner-form-group {
+  margin-bottom: 20px;
+}
+
+.banner-form-group label:not(.banner-upload-box) {
+  display: block;
+  margin-bottom: 8px;
+  font-size: 13px;
+  font-weight: 600;
+  color: #374151;
+}
+
+.banner-form-group input[type="text"],
+.banner-form-group textarea {
+  width: 100%;
+  box-sizing: border-box;
+  padding: 12px 14px;
+  border: 1px solid #dfe3e8;
+  border-radius: 8px;
+  background: #ffffff;
+  color: #222;
+  font-size: 14px;
+  outline: none;
+  transition: 0.2s ease;
+  font-family: inherit;
+}
+
+.banner-form-group input[type="text"]:focus,
+.banner-form-group textarea:focus {
+  border-color: #168a45;
+  box-shadow: 0 0 0 3px rgba(22, 138, 69, 0.08);
+}
+
+.banner-form-group textarea {
+  resize: vertical;
+  min-height: 100px;
+}
+
+
+/* =========================================================
+   TWO COLUMN FORM ROW
+========================================================= */
+
+.banner-form-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 15px;
+}
+
+
+/* =========================================================
+   STATUS
+========================================================= */
+
+.banner-status-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 15px;
+  padding: 15px;
+  margin-bottom: 22px;
+  border: 1px solid #e7e9ec;
+  border-radius: 10px;
+  background: #fafafa;
+}
+
+.banner-status-row strong {
+  display: block;
+  font-size: 14px;
+  color: #333;
+}
+
+.banner-status-row span {
+  display: block;
+  margin-top: 4px;
+  font-size: 12px;
+  color: #888;
+}
+
+
+/* =========================================================
+   TOGGLE
+========================================================= */
+
+.banner-toggle {
+  min-width: 90px;
+  border: none;
+  border-radius: 20px;
+  padding: 8px 13px;
+  background: #e5e7eb;
+  color: #6b7280;
+  font-size: 12px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: 0.2s ease;
+}
+
+.banner-toggle.active {
+  background: #e7f7ed;
+  color: #168a45;
+}
+
+
+/* =========================================================
+   IMAGE UPLOAD
+========================================================= */
+
+.banner-upload-box {
+  width: 100%;
+  min-height: 135px;
+  box-sizing: border-box;
+  border: 2px dashed #d8dde3;
+  border-radius: 10px;
+  background: #fafbfc;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: 0.2s ease;
+}
+
+.banner-upload-box:hover {
+  border-color: #168a45;
+  background: #f7fcf9;
+}
+
+.banner-upload-box input {
+  display: none;
+}
+
+.banner-upload-icon {
+  font-size: 30px;
+  margin-bottom: 8px;
+}
+
+.banner-upload-box strong {
+  font-size: 14px;
+  color: #374151;
+}
+
+.banner-upload-box small {
+  margin-top: 5px;
+  font-size: 11px;
+  color: #999;
+}
+
+
+/* =========================================================
+   SAVE BUTTON
+========================================================= */
+
+.banner-save-button {
+  width: 100%;
+  border: none;
+  border-radius: 9px;
+  padding: 13px 18px;
+  background: #168a45;
+  color: #ffffff;
+  font-size: 14px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: 0.2s ease;
+}
+
+.banner-save-button:hover {
+  background: #11733a;
+}
+
+
+/* =========================================================
+   PREVIEW
+========================================================= */
+
+.banner-preview {
+  position: relative;
+  width: 100%;
+  min-height: 330px;
+  overflow: hidden;
+  border-radius: 12px;
+  background: linear-gradient(
+    135deg,
+    #1b5e20,
+    #43a047
+  );
+}
+
+.banner-preview img {
+  width: 100%;
+  height: 330px;
+  display: block;
+  object-fit: cover;
+}
+
+.banner-preview-placeholder {
+  height: 330px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  color: #ffffff;
+  text-align: center;
+}
+
+.banner-preview-placeholder span {
+  font-size: 45px;
+  margin-bottom: 10px;
+}
+
+.banner-preview-placeholder strong {
+  font-size: 18px;
+}
+
+.banner-preview-placeholder small {
+  margin-top: 6px;
+  font-size: 12px;
+  opacity: 0.8;
+}
+
+
+/* =========================================================
+   PREVIEW OVERLAY
+========================================================= */
+
+.banner-preview-overlay {
+  position: absolute;
+  inset: 0;
+  padding: 35px;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  justify-content: center;
+  background: linear-gradient(
+    90deg,
+    rgba(0, 0, 0, 0.68),
+    rgba(0, 0, 0, 0.15),
+    rgba(0, 0, 0, 0)
+  );
+  box-sizing: border-box;
+}
+
+.preview-sale-label {
+  display: inline-block;
+  margin-bottom: 10px;
+  padding: 6px 10px;
+  border-radius: 5px;
+  background: #ffffff;
+  color: #168a45 !important;
+  font-size: 12px !important;
+  font-weight: 800;
+}
+
+.banner-preview-overlay h2 {
+  max-width: 420px;
+  margin: 0;
+  color: #ffffff;
+  font-size: 34px;
+  line-height: 1.1;
+  font-weight: 800;
+}
+
+.banner-preview-overlay p {
+  max-width: 400px;
+  margin: 12px 0 18px;
+  color: #ffffff;
+  font-size: 14px;
+  line-height: 1.5;
+}
+
+.banner-preview-overlay button {
+  border: none;
+  padding: 11px 20px;
+  border-radius: 7px;
+  background: #ffffff;
+  color: #168a45;
+  font-size: 13px;
+  font-weight: 700;
+}
+
+
+/* =========================================================
+   RESPONSIVE
+========================================================= */
+
+@media (max-width: 950px) {
+
+  .banner-management-grid {
+    grid-template-columns: 1fr;
+  }
+
+}
+
+
+@media (max-width: 650px) {
+
+  .banner-management-page {
+    padding: 20px;
+  }
+
+  .banner-management-header {
+    flex-direction: column;
+  }
+
+  .banner-management-header h1 {
+    font-size: 25px;
+  }
+
+  .banner-form-row {
+    grid-template-columns: 1fr;
+  }
+
+  .banner-form-card,
+  .banner-preview-card {
+    padding: 18px;
+  }
+
+  .banner-preview,
+  .banner-preview img,
+  .banner-preview-placeholder {
+    min-height: 260px;
+    height: 260px;
+  }
+
+  .banner-preview-overlay {
+    padding: 22px;
+  }
+
+  .banner-preview-overlay h2 {
+    font-size: 27px;
+  }
+
+}

@@ -21,6 +21,7 @@ function AdminHome({
   onReports,
   onDeliveryPartners,
   onProfit,
+  onBanners,
 }) {
 
 
@@ -649,6 +650,31 @@ function AdminHome({
 
   <span>
     Profit
+  </span>
+</button>
+
+{/* BANNER MANAGEMENT */}
+
+<button
+  type="button"
+  className={
+    activeSection === "Banners"
+      ? "admin-nav-item active"
+      : "admin-nav-item"
+  }
+  onClick={() =>
+    handleNavigation(
+      "Banners",
+      onBanners
+    )
+  }
+>
+  <span className="admin-nav-icon">
+    🖼️
+  </span>
+
+  <span>
+    Banners
   </span>
 </button>
 

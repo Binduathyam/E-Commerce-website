@@ -21,6 +21,20 @@ function Cart({
     0
   );
 
+ const gstAmount = cart.reduce(
+  (sum, item) => {
+    const itemTotal =
+      Number(item.price) * item.quantity;
+
+    const gstRate =
+      Number(item.gst_rate) || 0;
+
+    return sum + (itemTotal * gstRate) / 100;
+  },
+  0
+);
+
+
   const totalItems = cart.reduce(
     (sum, item) =>
       sum + item.quantity,
@@ -40,13 +54,14 @@ function Cart({
     couponDiscount +
     (subtotal >= 999 ? 40 : 0);
 
-  const amountPayable = Math.max(
-    0,
-    subtotal +
-      deliveryFee +
-      platformFee -
-      couponDiscount
-  );
+ const amountPayable = Math.max(
+  0,
+  subtotal +
+    gstAmount +
+    deliveryFee +
+    platformFee -
+    couponDiscount
+);
 
   const applyCoupon = () => {
     if (coupon.trim() !== "") {
@@ -164,7 +179,7 @@ function Cart({
 
           <div
             className="cart-product-card"
-            key={item.id}
+            key={item.cartItemId}
           >
 
             {/* IMAGE */}
@@ -205,12 +220,12 @@ function Cart({
 
                 <button
                   type="button"
-                  onClick={() =>
-                    onUpdateQuantity(
-                      item.id,
-                      -1
-                    )
-                  }
+                 onClick={() =>
+  onUpdateQuantity(
+    item.cartItemId,
+    -1
+  )
+}
                 >
                   −
                 </button>
@@ -221,12 +236,12 @@ function Cart({
 
                 <button
                   type="button"
-                  onClick={() =>
-                    onUpdateQuantity(
-                      item.id,
-                      1
-                    )
-                  }
+                 onClick={() =>
+  onUpdateQuantity(
+    item.cartItemId,
+    1
+  )
+}
                 >
                   +
                 </button>
@@ -409,6 +424,26 @@ function Cart({
 
         </div>
 
+
+        <div className="order-row">
+
+  <span>
+    GST
+  </span>
+
+  <strong>
+    ₹
+    {gstAmount.toLocaleString(
+      "en-IN",
+      {
+        minimumFractionDigits: 2,
+        maximumFractionDigits: 2,
+      }
+    )}
+  </strong>
+
+</div>
+
         <div className="order-divider"></div>
 
         <div className="amount-payable">
@@ -504,11 +539,9 @@ function Cart({
                 type="button"
                 className="cart-remove-action"
                 onClick={() => {
-
-                  onRemove(
-                    actionItem.id
-                  );
-
+onRemove(
+  actionItem.cartItemId
+);
                   setActionItem(null);
 
                 }}
