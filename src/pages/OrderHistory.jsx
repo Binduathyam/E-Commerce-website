@@ -548,23 +548,6 @@ function OrderHistory({
 
                   {/* TRACK ORDER */}
 
-                  <button
-                    type="button"
-                    style={
-                      styles.secondaryButton
-                    }
-                    onClick={() => {
-
-                      if (onTrackOrder) {
-                        onTrackOrder(
-                          order
-                        );
-                      }
-
-                    }}
-                  >
-                    🚚 Track Order
-                  </button>
 
 
 

@@ -15,6 +15,7 @@ function AdminHome({
   onLogout,
   onCustomers,
   onMerchants,
+  onDispatchRequests,
   onProducts,
   onOrders,
   onPayments,
@@ -40,7 +41,6 @@ function AdminHome({
 
   const [activeSection, setActiveSection] =
     useState("Dashboard");
-
 
   /* ===============================
      LOAD ADMIN DASHBOARD
@@ -224,6 +224,73 @@ function AdminHome({
 
   }, []);
 
+
+const fetchDispatchRequests = async () => {
+  try {
+    setDispatchLoading(true);
+    setDispatchError("");
+
+    const token = localStorage.getItem("adminToken");
+
+    const response = await fetch(
+      `${API_BASE_URL}/api/admin/dispatch-requests`,
+      {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      }
+    );
+
+    const data = await response.json();
+
+    if (!response.ok || !data.success) {
+      throw new Error(data.message || "Failed to load dispatch requests");
+    }
+
+    setDispatchRequests(data.requests || []);
+  } catch (error) {
+    setDispatchError(error.message || "Unable to load requests");
+  } finally {
+    setDispatchLoading(false);
+  }
+};
+
+const updateDispatchRequest = async (id, action) => {
+  const actionText = action === "approved" ? "approve" : "reject";
+
+  if (!window.confirm(`Are you sure you want to ${actionText} this request?`)) {
+    return;
+  }
+
+  try {
+    setDispatchError("");
+    setDispatchMessage("");
+
+    const token = localStorage.getItem("adminToken");
+
+    const response = await fetch(
+      `${API_BASE_URL}/api/admin/dispatch-requests/${id}/${action}`,
+      {
+        method: "PUT",
+        headers: {
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "application/json",
+        },
+      }
+    );
+
+    const data = await response.json();
+
+    if (!response.ok || !data.success) {
+      throw new Error(data.message || `Failed to ${actionText} request`);
+    }
+
+    setDispatchMessage(data.message);
+    await fetchDispatchRequests();
+  } catch (error) {
+    setDispatchError(error.message || "Request update failed");
+  }
+};
 
 
   /* ===============================
@@ -603,6 +670,21 @@ function AdminHome({
 
             </button>
             
+
+<button
+  type="button"
+  className={
+    activeSection === "Dispatch Requests"
+      ? "admin-nav-item active"
+      : "admin-nav-item"
+  }
+  onClick={() =>
+    handleNavigation("Dispatch Requests", onDispatchRequests)
+  }
+>
+  <span className="admin-nav-icon">📋</span>
+  <span>Dispatch Requests</span>
+</button>
 {/* DELIVERY PARTNERS */}
 
 <button
@@ -824,6 +906,7 @@ function AdminHome({
         ============================ */}
 
         <main className="admin-main">
+  
 
 
           {/* PAGE HEADING */}

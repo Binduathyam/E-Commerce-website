@@ -129,114 +129,88 @@ function MerchantOrders({
 
   }, [merchant?.id]);
 
+
   // =====================================================
-  // UPDATE ORDER STATUS
+  // UPDATE ORDER STATUS + CREATE SHIPMENT
   // =====================================================
 
-  const handleStatusChange = async (
-    orderId,
-    newStatus
-  ) => {
+  
+const handleStatusChange = async (orderId, newStatus) => {
+  try {
+    setUpdatingOrder(orderId);
 
-    try {
+    const token = getToken();
 
-      setUpdatingOrder(
-        orderId
+    if (!token) {
+      throw new Error("Authentication required. Please login again.");
+    }
+
+    const headers = {
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${token}`,
+      "x-user-id": String(merchant.id),
+    };
+
+    // STEP 1: Create shipment before marking order as shipped
+    if (newStatus === "Shipped") {
+      const shipmentResponse = await fetch(
+        `${API_BASE_URL}/api/orders/${orderId}/ready-for-pickup`,
+        {
+          method: "PUT",
+          headers,
+          body: JSON.stringify({}),
+        }
       );
 
-      const token =
-        getToken();
+      const shipmentData = await shipmentResponse.json();
 
-      if (!token) {
+      if (!shipmentResponse.ok || !shipmentData.success) {
         throw new Error(
-          "Authentication required. Please login again."
+          shipmentData.message || "Shipment creation failed."
         );
       }
-
-      const response =
-        await fetch(
-          `${API_BASE_URL}/api/orders/${orderId}/status`,
-          {
-            method: "PUT",
-
-            headers: {
-              "Content-Type":
-                "application/json",
-
-              Authorization:
-                `Bearer ${token}`,
-
-              "x-user-id":
-                merchant?.id,
-            },
-
-            body: JSON.stringify({
-              merchant_id:
-                merchant.id,
-
-              order_status:
-                newStatus,
-            }),
-          }
-        );
-
-      const data =
-        await response.json();
-
-      console.log(
-        "Order status update response:",
-        data
-      );
-
-      if (
-        !response.ok ||
-        !data.success
-      ) {
-        throw new Error(
-          data.message ||
-            "Failed to update order status"
-        );
-      }
-
-      // ===============================================
-      // UPDATE ORDER IMMEDIATELY
-      // ===============================================
-
-      setOrders(
-        (currentOrders) =>
-          currentOrders.map(
-            (order) =>
-              order.id === orderId
-                ? {
-                    ...order,
-
-                    order_status:
-                      newStatus,
-                  }
-                : order
-          )
-      );
-
-    } catch (error) {
-
-      console.error(
-        "Order status update error:",
-        error
-      );
 
       alert(
-        error.message ||
-          "Failed to update order status"
+        `Shipment created successfully!\nTracking Number: ${shipmentData.shipment.tracking_number}`
       );
-
-    } finally {
-
-      setUpdatingOrder(
-        null
-      );
-
     }
-  };
+
+    // STEP 2: Update order status
+    const statusResponse = await fetch(
+      `${API_BASE_URL}/api/orders/${orderId}/status`,
+      {
+        method: "PUT",
+        headers,
+        body: JSON.stringify({
+          order_status: newStatus,
+        }),
+      }
+    );
+
+    const statusData = await statusResponse.json();
+
+    if (!statusResponse.ok || !statusData.success) {
+      throw new Error(
+        statusData.message || "Failed to update order status"
+      );
+    }
+
+    // STEP 3: Update UI
+    setOrders((currentOrders) =>
+      currentOrders.map((order) =>
+        order.id === orderId
+          ? { ...order, order_status: newStatus }
+          : order
+      )
+    );
+
+  } catch (error) {
+    console.error("Order status update error:", error);
+    alert(error.message);
+  } finally {
+    setUpdatingOrder(null);
+  }
+};
 
   // =====================================================
   // STATUS CLASS

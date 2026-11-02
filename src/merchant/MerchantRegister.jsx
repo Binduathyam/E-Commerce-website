@@ -1,31 +1,30 @@
+
 import React, { useState } from "react";
 import { API_BASE_URL } from "../api";
 import "./MerchantRegister.css";
 
-function MerchantRegister({
-  onBack,
-  onLogin,
-  onRegistered,
-}) {
-  const [formData, setFormData] = useState({
-    name: "",
-    businessName: "",
-    email: "",
-    phone: "",
-    password: "",
-    confirmPassword: "",
-    securityQuestion: "",
-    securityAnswer: "",
-  });
+const INITIAL_FORM = {
+  name: "",
+  businessName: "",
+  businessAddress: "",
+  city: "",
+  state: "",
+  pincode: "",
+  email: "",
+  phone: "",
+  password: "",
+  confirmPassword: "",
+  securityQuestion: "",
+  securityAnswer: "",
+};
 
+function MerchantRegister({ onBack, onLogin, onRegistered }) {
+  const [formData, setFormData] = useState({ ...INITIAL_FORM });
   const [aadhaarImage, setAadhaarImage] = useState(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
-
-  // Password popup state
-  const [passwordFocused, setPasswordFocused] =
-    useState(false);
+  const [passwordFocused, setPasswordFocused] = useState(false);
 
   const securityQuestions = [
     "What was the name of your first school?",
@@ -34,15 +33,8 @@ function MerchantRegister({
     "What is your favourite food?",
   ];
 
-  /* =========================
-     INPUT CHANGE
-  ========================= */
-
   const handleChange = (e) => {
-    const {
-      name,
-      value,
-    } = e.target;
+    const { name, value } = e.target;
 
     setFormData((current) => ({
       ...current,
@@ -53,46 +45,34 @@ function MerchantRegister({
     setSuccess("");
   };
 
-  /* =========================
-     PASSWORD VALIDATION
-  ========================= */
-
   const validatePassword = (password) => {
     if (password.length < 8) {
       return "Password must be at least 8 characters long.";
     }
-
     if (!/[A-Z]/.test(password)) {
       return "Password must contain at least one uppercase letter.";
     }
-
     if (!/[a-z]/.test(password)) {
       return "Password must contain at least one lowercase letter.";
     }
-
     if (!/[0-9]/.test(password)) {
       return "Password must contain at least one number.";
     }
-
-    if (
-      !/[!@#$%^&*(),.?":{}|<>_\-\\[\]/`~+=;']/.test(
-        password
-      )
-    ) {
+    if (!/[!@#$%^&*(),.?":{}|<>_\-\\[\]/`~+=;']/.test(password)) {
       return "Password must contain at least one special character.";
     }
 
     return "";
   };
 
-  /* =========================
-     VALIDATION
-  ========================= */
-
   const validateForm = () => {
     const {
       name,
       businessName,
+      businessAddress,
+      city,
+      state,
+      pincode,
       email,
       phone,
       password,
@@ -109,35 +89,37 @@ function MerchantRegister({
       return "Please enter your business name.";
     }
 
+    if (!businessAddress.trim()) {
+      return "Please enter your business street address.";
+    }
+
+    if (!city.trim()) {
+      return "Please enter your city.";
+    }
+
+    if (!state.trim()) {
+      return "Please enter your state.";
+    }
+
+    if (!/^[0-9]{6}$/.test(pincode.trim())) {
+      return "Pincode must contain exactly 6 digits.";
+    }
+
     if (!email.trim()) {
       return "Please enter your email.";
     }
 
-    if (!email.includes("@")) {
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email.trim())) {
       return "Please enter a valid email address.";
     }
 
-    if (!phone.trim()) {
-      return "Please enter your phone number.";
-    }
-
     if (!/^[0-9]{10}$/.test(phone.trim())) {
-      return "Phone number must contain 10 digits.";
+      return "Phone number must contain exactly 10 digits.";
     }
 
-    if (!password) {
-      return "Please enter a password.";
-    }
-
-    const passwordError =
-      validatePassword(password);
-
+    const passwordError = validatePassword(password);
     if (passwordError) {
       return passwordError;
-    }
-
-    if (!confirmPassword) {
-      return "Please confirm your password.";
     }
 
     if (password !== confirmPassword) {
@@ -155,18 +137,12 @@ function MerchantRegister({
     return "";
   };
 
-  /* =========================
-     REGISTER MERCHANT
-  ========================= */
-
   const handleSubmit = async (e) => {
     e.preventDefault();
-
     setError("");
     setSuccess("");
 
-    const validationError =
-      validateForm();
+    const validationError = validateForm();
 
     if (validationError) {
       setError(validationError);
@@ -178,46 +154,20 @@ function MerchantRegister({
 
       const uploadData = new FormData();
 
-      uploadData.append(
-        "name",
-        formData.name.trim()
-      );
-
-      uploadData.append(
-        "businessName",
-        formData.businessName.trim()
-      );
-
-      uploadData.append(
-        "email",
-        formData.email.trim().toLowerCase()
-      );
-
-      uploadData.append(
-        "phone",
-        formData.phone.trim()
-      );
-
-      uploadData.append(
-        "password",
-        formData.password
-      );
-
-      uploadData.append(
-        "security_question",
-        formData.securityQuestion
-      );
-
-      uploadData.append(
-        "security_answer",
-        formData.securityAnswer.trim()
-      );
+      uploadData.append("name", formData.name.trim());
+      uploadData.append("businessName", formData.businessName.trim());
+      uploadData.append("businessAddress", formData.businessAddress.trim());
+      uploadData.append("city", formData.city.trim());
+      uploadData.append("state", formData.state.trim());
+      uploadData.append("pincode", formData.pincode.trim());
+      uploadData.append("email", formData.email.trim().toLowerCase());
+      uploadData.append("phone", formData.phone.trim());
+      uploadData.append("password", formData.password);
+      uploadData.append("security_question", formData.securityQuestion);
+      uploadData.append("security_answer", formData.securityAnswer.trim());
 
       if (aadhaarImage) {
-        uploadData.append(
-          "aadhaar",
-          aadhaarImage
-        );
+        uploadData.append("aadhaar", aadhaarImage);
       }
 
       const response = await fetch(
@@ -228,23 +178,13 @@ function MerchantRegister({
         }
       );
 
-      const data =
-        await response.json();
+      const data = await response.json();
 
-      if (
-        !response.ok ||
-        !data.success
-      ) {
+      if (!response.ok || !data.success) {
         throw new Error(
-          data.message ||
-            "Merchant registration failed."
+          data.message || "Merchant registration failed."
         );
       }
-
-      console.log(
-        "Merchant registered:",
-        data.user
-      );
 
       setSuccess(
         "Registration submitted successfully! Your account is pending admin approval."
@@ -254,29 +194,16 @@ function MerchantRegister({
         onRegistered(data.user);
       }
 
-      setFormData({
-        name: "",
-        businessName: "",
-        email: "",
-        phone: "",
-        password: "",
-        confirmPassword: "",
-        securityQuestion: "",
-        securityAnswer: "",
-      });
-
+      setFormData({ ...INITIAL_FORM });
       setAadhaarImage(null);
 
-    } catch (error) {
-      console.error(
-        "Merchant registration error:",
-        error
-      );
-
-      setError(
-        error.message ||
-          "Unable to register merchant."
-      );
+      const fileInput = document.getElementById("merchant-aadhaar");
+      if (fileInput) {
+        fileInput.value = "";
+      }
+    } catch (err) {
+      console.error("Merchant registration error:", err);
+      setError(err.message || "Unable to register merchant.");
     } finally {
       setLoading(false);
     }
@@ -284,384 +211,321 @@ function MerchantRegister({
 
   return (
     <section className="merchant-register-page">
-
-      {/* =========================
-          HEADER
-      ========================= */}
-
-      <div className="merchant-register-header">
-
+      <header className="merchant-register-header">
         <button
           type="button"
           className="merchant-register-back"
           onClick={onBack}
+          aria-label="Go back"
         >
           ←
         </button>
 
         <div>
-
-          <p>
-            MERCHANT
-          </p>
-
-          <h1>
-            Create Merchant Account
-          </h1>
-
-          <span>
-            Start selling your products
-            on ShopEase
-          </span>
-
+          <p>MERCHANT</p>
+          <h1>Create Merchant Account</h1>
+          <span>Start selling your products on ShopEase</span>
         </div>
+      </header>
 
-      </div>
-
-      {/* =========================
-          MAIN CARD
-      ========================= */}
-
-      <div className="merchant-register-card">
-
-        <div className="merchant-register-icon">
-          🏪
-        </div>
+      <main className="merchant-register-card">
+        <div className="merchant-register-icon">🏪</div>
 
         <div className="merchant-register-title">
-
-          <h2>
-            Register Your Store
-          </h2>
-
-          <p>
-            Enter your details to create
-            a merchant account.
-          </p>
-
+          <h2>Register Your Store</h2>
+          <p>Enter your details to create a merchant account.</p>
         </div>
 
-        {/* ERROR */}
-
         {error && (
-          <div className="merchant-register-error">
+          <div className="merchant-register-error" role="alert">
             ⚠️ {error}
           </div>
         )}
 
-        {/* SUCCESS */}
-
         {success && (
-          <div className="merchant-register-success">
+          <div className="merchant-register-success" role="status">
             ✓ {success}
           </div>
         )}
-
-        {/* FORM */}
 
         <form
           onSubmit={handleSubmit}
           className="merchant-register-form"
         >
-
-          {/* FULL NAME */}
+          <div className="merchant-register-section">
+            <h3>Personal & Business Details</h3>
+            <p>Your store information for orders and pickups.</p>
+          </div>
 
           <div className="merchant-register-field">
-
-            <label>
-              Full Name
-            </label>
-
+            <label htmlFor="merchant-name">Full Name</label>
             <input
+              id="merchant-name"
               type="text"
               name="name"
               value={formData.name}
               onChange={handleChange}
               placeholder="Enter your full name"
+              autoComplete="name"
               disabled={loading}
+              required
             />
-
           </div>
 
-          {/* BUSINESS NAME */}
-
           <div className="merchant-register-field">
-
-            <label>
-              Business Name
-            </label>
-
+            <label htmlFor="merchant-business">Business Name</label>
             <input
+              id="merchant-business"
               type="text"
               name="businessName"
-              value={
-                formData.businessName
-              }
+              value={formData.businessName}
               onChange={handleChange}
               placeholder="Enter your store name"
               disabled={loading}
+              required
             />
-
           </div>
 
-          {/* EMAIL */}
+          <div className="merchant-register-field">
+            <label htmlFor="merchant-phone">Phone Number</label>
+            <input
+              id="merchant-phone"
+              type="tel"
+              name="phone"
+              value={formData.phone}
+              onChange={handleChange}
+              placeholder="10-digit mobile number"
+              inputMode="numeric"
+              maxLength={10}
+              autoComplete="tel"
+              disabled={loading}
+              required
+            />
+          </div>
+
+          <div className="merchant-register-section">
+            <h3>Business Pickup Address</h3>
+            <p>
+              This address helps pickup partners find your store.
+              It will be used as the shipment pickup location.
+            </p>
+          </div>
 
           <div className="merchant-register-field">
+            <label htmlFor="merchant-address">Street Address</label>
+            <textarea
+              id="merchant-address"
+              name="businessAddress"
+              value={formData.businessAddress}
+              onChange={handleChange}
+              placeholder="Door number, street, area, landmark"
+              rows={3}
+              autoComplete="street-address"
+              disabled={loading}
+              required
+            />
+          </div>
 
-            <label>
-              Email Address
-            </label>
+          <div className="merchant-register-address-grid">
+            <div className="merchant-register-field">
+              <label htmlFor="merchant-city">City</label>
+              <input
+                id="merchant-city"
+                type="text"
+                name="city"
+                value={formData.city}
+                onChange={handleChange}
+                placeholder="e.g. Chennai"
+                autoComplete="address-level2"
+                disabled={loading}
+                required
+              />
+            </div>
 
+            <div className="merchant-register-field">
+              <label htmlFor="merchant-state">State</label>
+              <input
+                id="merchant-state"
+                type="text"
+                name="state"
+                value={formData.state}
+                onChange={handleChange}
+                placeholder="e.g. Tamil Nadu"
+                autoComplete="address-level1"
+                disabled={loading}
+                required
+              />
+            </div>
+
+            <div className="merchant-register-field">
+              <label htmlFor="merchant-pincode">Pincode</label>
+              <input
+                id="merchant-pincode"
+                type="text"
+                name="pincode"
+                value={formData.pincode}
+                onChange={(e) => {
+                  const digits = e.target.value
+                    .replace(/\D/g, "")
+                    .slice(0, 6);
+
+                  setFormData((current) => ({
+                    ...current,
+                    pincode: digits,
+                  }));
+
+                  setError("");
+                  setSuccess("");
+                }}
+                placeholder="6 digits"
+                inputMode="numeric"
+                autoComplete="postal-code"
+                maxLength={6}
+                disabled={loading}
+                required
+              />
+            </div>
+          </div>
+
+          <div className="merchant-register-section">
+            <h3>Login & Security</h3>
+            <p>Use these details to access your merchant account.</p>
+          </div>
+
+          <div className="merchant-register-field">
+            <label htmlFor="merchant-email">Email Address</label>
             <input
+              id="merchant-email"
               type="email"
               name="email"
               value={formData.email}
               onChange={handleChange}
               placeholder="merchant@example.com"
+              autoComplete="email"
               disabled={loading}
+              required
             />
-
           </div>
 
-          {/* PHONE */}
-
           <div className="merchant-register-field">
-
-            <label>
-              Phone Number
-            </label>
+            <label htmlFor="merchant-password">Password</label>
 
             <input
-              type="tel"
-              name="phone"
-              value={formData.phone}
+              id="merchant-password"
+              type="password"
+              name="password"
+              value={formData.password}
               onChange={handleChange}
-              placeholder="10 digit mobile number"
-              maxLength={10}
+              placeholder="Minimum 8 characters"
+              autoComplete="new-password"
               disabled={loading}
+              onFocus={() => setPasswordFocused(true)}
+              onBlur={() => setPasswordFocused(false)}
+              required
             />
 
+            {passwordFocused && (
+              <div className="merchant-password-rules">
+                <p>Password must contain:</p>
+                <span>• At least 8 characters</span>
+                <span>• At least one uppercase letter</span>
+                <span>• At least one lowercase letter</span>
+                <span>• At least one number</span>
+                <span>• At least one special character</span>
+              </div>
+            )}
           </div>
 
-          {/* PASSWORD */}
-
           <div className="merchant-register-field">
-
-            <label>
-              Password
-            </label>
-
-            <div
-              style={{
-                position: "relative",
-              }}
-            >
-
-              <input
-                type="password"
-                name="password"
-                value={formData.password}
-                onChange={handleChange}
-                placeholder="Minimum 8 characters"
-                disabled={loading}
-                onFocus={() =>
-                  setPasswordFocused(true)
-                }
-                onBlur={() =>
-                  setPasswordFocused(false)
-                }
-              />
-
-              {/* PASSWORD POPUP */}
-
-              {passwordFocused && (
-                <div
-                  style={{
-                    position: "absolute",
-                    top: "calc(100% + 6px)",
-                    left: "0",
-                    width: "100%",
-                    padding: "10px 12px",
-                    background: "#ffffff",
-                    border: "1px solid #ddd",
-                    borderRadius: "8px",
-                    boxShadow:
-                      "0 4px 12px rgba(0,0,0,0.12)",
-                    fontSize: "11px",
-                    lineHeight: "1.6",
-                    color: "#666",
-                    zIndex: 50,
-                    boxSizing: "border-box",
-                  }}
-                >
-
-                  <strong
-                    style={{
-                      color: "#333",
-                    }}
-                  >
-                    Password must contain:
-                  </strong>
-
-                  <div>
-                    • At least 8 characters
-                  </div>
-
-                  <div>
-                    • At least one uppercase letter
-                  </div>
-
-                  <div>
-                    • At least one lowercase letter
-                  </div>
-
-                  <div>
-                    • At least one number
-                  </div>
-
-                  <div>
-                    • At least one special character
-                  </div>
-
-                </div>
-              )}
-
-            </div>
-
-          </div>
-
-          {/* CONFIRM PASSWORD */}
-
-          <div className="merchant-register-field">
-
-            <label>
+            <label htmlFor="merchant-confirm-password">
               Confirm Password
             </label>
-
             <input
+              id="merchant-confirm-password"
               type="password"
               name="confirmPassword"
-              value={
-                formData.confirmPassword
-              }
+              value={formData.confirmPassword}
               onChange={handleChange}
               placeholder="Re-enter your password"
+              autoComplete="new-password"
               disabled={loading}
+              required
             />
-
           </div>
 
-          {/* SECURITY QUESTION */}
-
           <div className="merchant-register-field">
-
-            <label>
+            <label htmlFor="merchant-security-question">
               Security Question
             </label>
-
             <select
+              id="merchant-security-question"
               name="securityQuestion"
-              value={
-                formData.securityQuestion
-              }
+              value={formData.securityQuestion}
               onChange={handleChange}
               disabled={loading}
+              required
             >
-
-              <option value="">
-                Select a security question
-              </option>
-
-              {securityQuestions.map(
-                (question, index) => (
-                  <option
-                    key={index}
-                    value={question}
-                  >
-                    {question}
-                  </option>
-                )
-              )}
-
+              <option value="">Select a security question</option>
+              {securityQuestions.map((question) => (
+                <option key={question} value={question}>
+                  {question}
+                </option>
+              ))}
             </select>
-
           </div>
 
-          {/* SECURITY ANSWER */}
-
           <div className="merchant-register-field">
-
-            <label>
+            <label htmlFor="merchant-security-answer">
               Security Answer
             </label>
-
             <input
+              id="merchant-security-answer"
               type="text"
               name="securityAnswer"
-              value={
-                formData.securityAnswer
-              }
+              value={formData.securityAnswer}
               onChange={handleChange}
               placeholder="Enter your answer"
               autoComplete="off"
               disabled={loading}
+              required
             />
-
           </div>
 
-          {/* AADHAAR DOCUMENT */}
+          <div className="merchant-register-section">
+            <h3>Identity Verification</h3>
+            <p>Upload the document required for admin verification.</p>
+          </div>
 
           <div className="merchant-register-field">
-
-            <label>
-              Aadhaar Card
-            </label>
-
+            <label htmlFor="merchant-aadhaar">Aadhaar Card Image</label>
             <input
+              id="merchant-aadhaar"
               type="file"
               accept="image/*"
               onChange={(e) => {
-                const file =
-                  e.target.files?.[0] ||
-                  null;
-
-                setAadhaarImage(file);
+                setAadhaarImage(e.target.files?.[0] || null);
                 setError("");
                 setSuccess("");
               }}
               disabled={loading}
             />
-
             <small>
-              Upload your Aadhaar card image
-              for admin verification.
+              Upload only if required by your application's verification
+              process. Handle identity documents securely.
             </small>
-
           </div>
-
-          {/* SUBMIT */}
 
           <button
             type="submit"
             className="merchant-register-submit"
             disabled={loading}
           >
-            {loading
-              ? "Creating Account..."
-              : "Register as Merchant"}
+            {loading ? "Creating Account..." : "Register as Merchant"}
           </button>
-
         </form>
 
-        {/* LOGIN */}
-
         <div className="merchant-register-login">
-
-          <span>
-            Already have a merchant
-            account?
-          </span>
-
+          <span>Already have a merchant account?</span>
           <button
             type="button"
             onClick={onLogin}
@@ -669,11 +533,8 @@ function MerchantRegister({
           >
             Login
           </button>
-
         </div>
-
-      </div>
-
+      </main>
     </section>
   );
 }

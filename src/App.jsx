@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
-
+import { DispatchLogin, DispatchDashboard } from "./dispatch/DispatchPortal";
+import DispatchRegister from "./dispatch/DispatchRegister";
 
 import Navbar from "./components/Navbar";
 
@@ -10,6 +11,9 @@ import LiveTour from "./components/LiveTour";
 import Hero from "./components/Hero";
 
 import ProductCard from "./components/ProductCard";
+
+
+   import ProductFilters, { applyFilters, DEFAULT_FILTERS } from "./components/ProductFilters";
 
 import Chatbot from "./components/Chatbot";
 import About from "./components/About";
@@ -40,7 +44,7 @@ import Terms from "./pages/Terms";
 
 import Contact from "./pages/Contact";
 
-
+import HomePage from "./pages/HomePage";
 
 import Login from "./pages/Login";
 
@@ -73,6 +77,8 @@ import AdminHome from "./admin/AdminHome";
 import AdminCustomers from "./admin/AdminCustomers";
 
 import AdminMerchants from "./admin/AdminMerchants";
+
+import AdminDispatchRequests from "./admin/AdminDispatchRequests";
 
 import AdminProducts from "./admin/AdminProducts";
 
@@ -233,7 +239,7 @@ function App() {
 
   const [visibleCount, setVisibleCount] = useState(20);
 
-
+  const [filters, setFilters] = useState(DEFAULT_FILTERS);
 
   /* =========================================================
 
@@ -373,7 +379,8 @@ const [loggedInUser, setLoggedInUser] = useState(() => {
 
     useState(false);
 
-
+const [showAdminDispatchRequests, setShowAdminDispatchRequests] =
+  useState(false);
 
   const [showAdminProducts, setShowAdminProducts] =
 
@@ -415,6 +422,9 @@ const [loggedInUser, setLoggedInUser] = useState(() => {
   const [showAdminLogin, setShowAdminLogin] =
 
     useState(false);
+
+  const [dispatchPage, setDispatchPage] = useState("");
+
 
 
 
@@ -921,6 +931,7 @@ useEffect(() => {
     setShowAdminHome(false);
     setShowAdminCustomers(false);
     setShowAdminMerchants(false);
+    setShowAdminDispatchRequests(false);
     setShowAdminProducts(false);
     setShowAdminOrders(false);
     setShowAdminPayments(false);
@@ -928,6 +939,7 @@ useEffect(() => {
     setShowAdminDeliveryPartners(false);
     setShowAdminProfit(false);
     setShowAdminLogin(false);
+    setDispatchPage("");
 
     setShowMyAddresses(false);
     setShowAccountSettings(false);
@@ -1149,6 +1161,12 @@ if (path === "/shopease/returns-refunds") {
       return;
     }
 
+
+    if (path === "/shopease/admin/dispatch-requests") {
+      setShowAdminDispatchRequests(true);
+      return;
+    }
+
     if (path === "/shopease/admin/products") {
       setShowAdminProducts(true);
       return;
@@ -1183,7 +1201,32 @@ if (path === "/shopease/returns-refunds") {
       setShowAdminLogin(true);
       return;
     }
+// ==============================
+// DISPATCH PAGES
+// ==============================
+if (path === "/shopease/dispatch-login") {
+  setDispatchPage("login");
+  return;
+}
 
+if (path === "/shopease/dispatch-register") {
+  setDispatchPage("register");
+  return;
+}
+
+if (path === "/shopease/dispatch") {
+  if (localStorage.getItem("dispatchToken")) {
+    setDispatchPage("dashboard");
+  } else {
+    setDispatchPage("login");
+    window.history.replaceState(
+      { page: "dispatch-login" },
+      "",
+      "/shopease/dispatch-login"
+    );
+  }
+  return;
+}
     // ==============================
     // DELIVERY PAGES
     // ==============================
@@ -2197,17 +2240,8 @@ const updateQuantity = async (
   ========================================================= */
 
 
-
-  const visibleProducts =
-
-    filteredProducts.slice(
-
-      0,
-
-      visibleCount
-
-    );
-
+   const finalProducts = applyFilters(filteredProducts, filters);
+   const visibleProducts = finalProducts.slice(0, visibleCount);
 
 
   /* =========================================================
@@ -2269,6 +2303,8 @@ const updateQuantity = async (
   ) => {
 
     setCategory(value);
+
+    setFilters(DEFAULT_FILTERS);
 
     setVisibleCount(20);
 
@@ -3266,7 +3302,26 @@ onBack={() => {
 
   }
 
+/* ADMIN DISPATCH REQUESTS */
 
+if (showAdminDispatchRequests) {
+  return (
+    <AdminDispatchRequests
+      admin={loggedInUser}
+      onBack={() => {
+        setShowAdminDispatchRequests(false);
+        setShowAdminHome(true);
+
+        window.history.pushState(
+          { page: "admin-home" },
+          "",
+          "/shopease/admin"
+        );
+      }}
+    />
+  );
+}
+  
 
   /* =========================================================
 
@@ -3547,6 +3602,16 @@ onCustomers={() => {
     "/shopease/admin/merchants"
   );
 }}
+onDispatchRequests={() => {
+  setShowAdminHome(false);
+  setShowAdminDispatchRequests(true);
+
+  window.history.pushState(
+    { page: "admin-dispatch-requests" },
+    "",
+    "/shopease/admin/dispatch-requests"
+  );
+}}
 
 onProducts={() => {
   setShowAdminHome(false);
@@ -3768,7 +3833,87 @@ onProfile={() => {
 
   }
 
+// ==============================
+// DISPATCH LOGIN
+// ==============================
+if (dispatchPage === "login") {
+  return (
+    <DispatchLogin
+      onBack={() => {
+        setDispatchPage("");
+        window.history.pushState(
+          { page: "home" },
+          "",
+          "/shopease/"
+        );
+      }}
+      onRegister={() => {
+        setDispatchPage("register");
+        window.history.pushState(
+          { page: "dispatch-register" },
+          "",
+          "/shopease/dispatch-register"
+        );
+      }}
+      onLoginSuccess={() => {
+        setDispatchPage("dashboard");
+        window.history.pushState(
+          { page: "dispatch" },
+          "",
+          "/shopease/dispatch"
+        );
+      }}
+    />
+  );
+}
 
+// ==============================
+// DISPATCH REGISTER
+// ==============================
+if (dispatchPage === "register") {
+  return (
+    <DispatchRegister
+      onGoLogin={() => {
+        setDispatchPage("login");
+        window.history.pushState(
+          { page: "dispatch-login" },
+          "",
+          "/shopease/dispatch-login"
+        );
+      }}
+      onBack={() => {
+        setDispatchPage("");
+        window.history.pushState(
+          { page: "home" },
+          "",
+          "/shopease/"
+        );
+      }}
+    />
+  );
+}
+
+// ==============================
+// DISPATCH DASHBOARD
+// ==============================
+if (dispatchPage === "dashboard") {
+  return (
+    <DispatchDashboard
+      onLogout={() => {
+        localStorage.removeItem("dispatchToken");
+        localStorage.removeItem("dispatchUser");
+
+        setDispatchPage("login");
+
+        window.history.replaceState(
+          { page: "dispatch-login" },
+          "",
+          "/shopease/dispatch-login"
+        );
+      }}
+    />
+  );
+}
 
   /* =========================================================
 
@@ -3777,6 +3922,8 @@ onProfile={() => {
   ========================================================= */
 
 
+
+  
 
   if (showAdminLogin) {
 
@@ -4748,18 +4895,12 @@ if (showReturnsRefunds) {
 
     return (
  <div className="app">
-      <OrderTracking
-
-        order={orderData}
-
-       onBack={() => {
-  window.history.back();
-}}
-
-        onCancel={handleCancelOrder}
-        onReturn={handleReturnOrder}
-
-      />
+      <OrderDetails
+  order={orderData}
+  onBack={() => {
+    window.history.back();
+  }}
+/>
 
     {renderFooter()}
 
@@ -4864,85 +5005,50 @@ onManageAddresses={() => {
 
 
 onOrderPlaced={async (order) => {
-  try {
-    // Save the newly created order
-    setOrderData(order);
+  setOrderData(order);
 
-    // ==============================
-    // REMOVE ORDERED PRODUCTS FROM CART
-    // ==============================
+  if (loggedInUser?.id) {
+    for (const item of cart) {
+      // Buy Now items are not in the cart table
+      if (!item.cartItemId) continue;
 
-    if (loggedInUser?.id && cart.length > 0) {
-      for (const item of cart) {
-        try {
-          const response = await fetch(
-            `${CART_API_URL}/${item.id}`,
-            {
-              method: "DELETE",
-
-              headers: {
-                "Content-Type": "application/json",
-              },
-
-              body: JSON.stringify({
-                user_id: loggedInUser.id,
-              }),
-            }
-          );
-
-          const data = await response.json();
-
-          if (!response.ok || !data.success) {
-            console.error(
-              `Failed to remove product ${item.id} from cart:`,
-              data.message
-            );
+      try {
+        const response = await fetch(
+          `${CART_API_URL}/${item.cartItemId}`,
+          {
+            method: "DELETE",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ user_id: loggedInUser.id }),
           }
-        } catch (error) {
+        );
+
+        const data = await response.json();
+
+        if (!response.ok || !data.success) {
           console.error(
-            `Cart removal error for product ${item.id}:`,
-            error
+            `Failed to remove cart item ${item.cartItemId}:`,
+            data.message
           );
         }
+      } catch (error) {
+        console.error("Cart removal error:", error);
       }
     }
 
-    // ==============================
-    // CLEAR CART FROM UI
-    // ==============================
-
+    // Sync the UI with what is really in the database
+    await loadCart(loggedInUser.id);
+  } else {
     setCart([]);
-
-// ==============================
-// GO TO ORDER SUCCESS
-// ==============================
-
-setShowCheckout(false);
-setShowOrderSuccess(true);
-
-window.history.pushState(
-  { page: "order-success" },
-  "",
-  "/shopease/order-success"
-);
-  } catch (error) {
-    console.error(
-      "Post-order cart cleanup error:",
-      error
-    );
-
-    // Even if cart cleanup has an issue,
-    // show the successful order page.
-    setCart([]);
-setShowCheckout(false);
-setShowOrderSuccess(true);
-
-window.history.pushState(
-  { page: "order-success" },
-  "",
-  "/shopease/order-success"
-);
   }
+
+  setShowCheckout(false);
+  setShowOrderSuccess(true);
+
+  window.history.pushState(
+    { page: "order-success" },
+    "",
+    "/shopease/order-success"
+  );
 }}
 
       />
@@ -5430,573 +5536,35 @@ onCheckout={() => {
 
 
 
-      {/* HERO */}
-
-
-
-      {!search.trim() && (
-
-        <Hero />
-
-      )}
-
-
-
-      {/* CATEGORIES */}
-
-
-
-      {!search.trim() && (
-
-        <section className="categories">
-
-
-
-          <div className="section-title">
-
-            <p>
-
-              EXPLORE
-
-            </p>
-
-
-
-            <h2>
-
-              Shop by Category
-
-            </h2>
-
-          </div>
-
-
-
-          <div className="category-buttons">
-
-
-
-            {[
-
-              "All",
-
-              "Electronics",
-
-              "Fashion",
-
-              "Home",
-
-            ].map((item) => (
-
-
-
-              <button
-
-                key={item}
-
-                type="button"
-
-
-
-                className={
-
-                  category === item
-
-                    ? "category active-category"
-
-                    : "category"
-
-                }
-
-
-
-                onClick={() =>
-
-                  handleCategoryChange(
-
-                    item
-
-                  )
-
-                }
-
-              >
-
-                {item}
-
-              </button>
-
-
-
-            ))}
-
-
-
-          </div>
-
-
-
-        </section>
-
-      )}
-
-
-
-      {/* PRODUCTS */}
-
-
-
-      <section
-
-        className="products-section"
-
-        id="products"
-
-      >
-
-
-
-        <div className="section-heading">
-
-
-
-          <div>
-
-
-
-            <p>
-
-              OUR COLLECTION
-
-            </p>
-
-
-
-            <h2>
-
-              {search.trim()
-
-                ? `Search Results for "${search}"`
-
-                : "Popular Products"}
-
-            </h2>
-
-
-
-          </div>
-
-
-
-          <span>
-
-            {filteredProducts.length} products
-
-          </span>
-
-
-
-        </div>
-
-
-
-        {/* LOADING */}
-
-
-
-        {productsLoading && (
-
-          <div className="no-products">
-
-
-
-            <h3>
-
-              Loading products...
-
-            </h3>
-
-
-
-            <p>
-
-              Please wait while we load
-
-              the latest products.
-
-            </p>
-
-
-
-          </div>
-
-        )}
-
-
-
-        {/* ERROR */}
-
-
-
-        {!productsLoading &&
-
-          productsError && (
-
-
-
-            <div className="no-products">
-
-
-
-              <div className="no-products-icon">
-
-                ⚠️
-
-              </div>
-
-
-
-              <h3>
-
-                Unable to load products
-
-              </h3>
-
-
-
-              <p>
-
-                {productsError}
-
-              </p>
-
-
-
-            </div>
-
-
-
-          )}
-
-
-
-        {/* PRODUCT GRID */}
-
-
-
-        {!productsLoading &&
-
-          !productsError && (
-
-
-
-            <div className="product-grid">
-
-
-
-              {visibleProducts.map(
-
-                (product) => (
-
-
-
-                  <ProductCard
-
-                    key={product.id}
-
-
-
-                    product={product}
-
-
-onAddToCart={(item) => addToCart(item, { openCart: false })}
-
-
-                    onToggleWishlist={
-
-                      toggleWishlist
-
-                    }
-
-
-
-                    isWishlisted={
-
-                      wishlist.some(
-
-                        (item) =>
-
-                          item.id ===
-
-                          product.id
-
-                      )
-
-                    }
-
-
-onViewDetails={() => {
-  setSelectedProduct(product);
-  window.history.pushState(
-  { page: "product-details" },
-  "",
-  `/shopease/product/${product.id}`
-);
-}}
-
-                  />
-
-
-
-                )
-
-              )}
-
-
-
-            </div>
-
-          )}
-
-
-
-        {/* LOAD MORE */}
-
-
-
-        {!productsLoading &&
-
-          !productsError &&
-
-          visibleCount <
-
-            filteredProducts.length && (
-
-
-
-            <div className="load-more-container">
-
-
-
-              <button
-
-                type="button"
-
-                className="load-more-button"
-
-
-
-                onClick={
-
-                  loadMoreProducts
-
-                }
-
-              >
-
-                Load More
-
-              </button>
-
-
-
-            </div>
-
-          )}
-
-
-
-        {/* NO PRODUCTS */}
-
-
-
-        {!productsLoading &&
-
-          !productsError &&
-
-          filteredProducts.length ===
-
-            0 && (
-
-
-
-            <div className="no-products">
-
-
-
-              <div className="no-products-icon">
-
-                🔍
-
-              </div>
-
-
-
-              <h3>
-
-                No products found
-
-              </h3>
-
-
-
-              <p>
-
-                Try searching for another
-
-                product or category.
-
-              </p>
-
-
-
-            </div>
-
-          )}
-
-
-
-      </section>
-
-
-
-      {/* FEATURES */}
-
-
-
-      <section className="features">
-
-
-
-        <div className="feature">
-
-
-
-          <span className="feature-icon">
-
-            🚚
-
-          </span>
-
-
-
-          <h3>
-
-            Free Delivery
-
-          </h3>
-
-
-
-          <p>
-
-            On orders above ₹999
-
-          </p>
-
-
-
-        </div>
-
-
-
-        <div className="feature">
-
-
-
-          <span className="feature-icon">
-
-            🔒
-
-          </span>
-
-
-
-          <h3>
-
-            Secure Payment
-
-          </h3>
-
-
-
-          <p>
-
-            100% secure checkout
-
-          </p>
-
-
-
-        </div>
-
-
-
-        <div className="feature">
-
-
-
-          <span className="feature-icon">
-
-            ↩️
-
-          </span>
-
-
-
-          <h3>
-
-            Easy Returns
-
-          </h3>
-
-
-
-          <p>
-
-            7-day return policy
-
-          </p>
-
-
-
-        </div>
-
-
-
-        <div className="feature">
-
-
-
-          <span className="feature-icon">
-
-            💬
-
-          </span>
-
-
-
-          <h3>
-
-            24/7 Support
-
-          </h3>
-
-
-
-          <p>
-
-            We're here to help
-
-          </p>
-
-
-
-        </div>
-
-
-
-      </section>
+    <HomePage
+  search={search}
+  category={category}
+  products={products}
+  filteredProducts={filteredProducts}
+  finalProducts={finalProducts}
+  visibleProducts={visibleProducts}
+  visibleCount={visibleCount}
+  productsLoading={productsLoading}
+  productsError={productsError}
+  filters={filters}
+  wishlist={wishlist}
+  onCategoryChange={handleCategoryChange}
+  onFiltersChange={(newFilters) => {
+    setFilters(newFilters);
+    setVisibleCount(20);
+  }}
+  onLoadMore={loadMoreProducts}
+  onAddToCart={(item) => addToCart(item, { openCart: false })}
+  onToggleWishlist={toggleWishlist}
+  onViewDetails={(product) => {
+    setSelectedProduct(product);
+    window.history.pushState(
+      { page: "product-details" },
+      "",
+      `/shopease/product/${product.id}`
+    );
+  }}
+/>
 
 
 

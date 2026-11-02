@@ -11,7 +11,7 @@ import Returns from "./Returns";
 import DeliveryHistory from "./DeliveryHistory";
 import Earnings from "./Earnings";
 import Profile from "./Profile";
-
+import Shipments from "./Shipments";
 
 const API_BASE_URL = "http://3.110.90.184";
 
@@ -475,6 +475,11 @@ const handleAvailabilityToggle = async () => {
     },
 
     {
+  name: "Shipments",
+  icon: "🚚",
+},
+
+    {
       name: "Assigned Orders",
       icon: "📋",
     },
@@ -627,6 +632,10 @@ const handleAvailabilityToggle = async () => {
 
         );
 
+case "Shipments":
+  return (
+    <Shipments deliveryPartner={deliveryPartner} />
+  );
 
       /* ================================================
          ASSIGNED ORDERS
@@ -1406,6 +1415,9 @@ const handleAvailabilityToggle = async () => {
   id={
     item.name === "My Deliveries"
       ? "tour-delivery-my-deliveries"
+      :item.name === "Shipments"
+  ? "tour-delivery-shipments"
+  
       : item.name === "Assigned Orders"
       ? "tour-delivery-assigned-orders"
       : item.name === "Returns"
