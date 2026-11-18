@@ -256,9 +256,7 @@ function OrderHistory({
 
         <div>
 
-          <div style={styles.headerSmall}>
-            ACCOUNT
-          </div>
+          
 
           <h1 style={styles.headerTitle}>
             My Orders
