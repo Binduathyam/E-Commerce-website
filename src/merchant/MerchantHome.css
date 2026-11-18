@@ -799,40 +799,86 @@
   }
 }
 
+/* =========================
+   MOBILE (800px and below)
+========================= */
+
 @media (max-width: 800px) {
+  .merchant-dashboard {
+    flex-direction: column;
+  }
+
+  /* sidebar becomes a top bar */
   .merchant-sidebar {
-    width: 72px;
+    position: static;
+    width: 100%;
+    height: auto;
+    min-height: 0;
+    flex-direction: row;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    padding: 10px 14px;
+    border-right: none;
+    border-bottom: 1px solid #e8e8ed;
   }
 
   .merchant-logo {
-    justify-content: center;
+    order: 1;
+    height: auto;
     padding: 0;
+    border-bottom: none;
   }
 
-  .merchant-logo > div:last-child,
-  .merchant-nav-title,
-  .merchant-nav-item span:last-child,
-  .merchant-help-box,
-  .merchant-logout-button span:last-child {
+  .merchant-sidebar-bottom {
+    order: 2;
+    padding: 0;
+    border-top: none;
+  }
+
+  .merchant-help-box {
+    display: none;
+  }
+
+  .merchant-logout-button {
+    width: auto;
+    height: 38px;
+    padding: 0 12px;
+  }
+
+  /* menu = row you can swipe sideways */
+  .merchant-nav {
+    order: 3;
+    flex: none;
+    width: 100%;
+    display: flex;
+    flex-direction: row;
+    gap: 8px;
+    overflow-x: auto;
+    padding: 10px 0 2px;
+    scrollbar-width: none;
+  }
+
+  .merchant-nav::-webkit-scrollbar {
+    display: none;
+  }
+
+  .merchant-nav-title {
     display: none;
   }
 
   .merchant-nav-item {
-    justify-content: center;
-    padding: 0;
-  }
-
-  .merchant-sidebar-bottom {
-    padding: 10px;
-  }
-
-  .merchant-logout-button {
-    justify-content: center;
-    padding: 0;
+    width: auto;
+    flex: 0 0 auto;
+    height: 40px;
+    margin-bottom: 0;
+    padding: 0 14px;
+    gap: 8px;
+    white-space: nowrap;
   }
 
   .merchant-main {
-    padding: 0 18px 25px;
+    padding: 0 14px 25px;
   }
 
   .merchant-quick-actions {
@@ -842,8 +888,14 @@
 
 @media (max-width: 600px) {
   .merchant-header {
-    align-items: flex-start;
-    padding-top: 18px;
+    min-height: 70px;
+    align-items: center;
+    padding-top: 0;
+    margin-bottom: 18px;
+  }
+
+  .merchant-header h1 {
+    font-size: 21px;
   }
 
   .merchant-header-right {
@@ -862,21 +914,34 @@
     gap: 18px;
   }
 
+  .merchant-welcome h2 {
+    font-size: 22px;
+  }
+
   .merchant-add-product-button {
     width: 100%;
     justify-content: center;
   }
 
   .merchant-stats {
-    grid-template-columns: 1fr;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 12px;
+  }
+
+  .merchant-stat-card {
+    padding: 14px;
+  }
+
+  .merchant-stat-card h3 {
+    font-size: 21px;
+  }
+
+  .merchant-panel {
+    padding: 16px;
   }
 
   .merchant-order-row {
-    gap: 7px;
-  }
-
-  .order-amount {
-    display: none;
+    gap: 8px;
   }
 
   .merchant-store-summary {
@@ -891,6 +956,14 @@
 
   .merchant-footer {
     flex-direction: column;
+    align-items: center;
     gap: 6px;
+  }
+}
+
+/* very small phones */
+@media (max-width: 380px) {
+  .merchant-stats {
+    grid-template-columns: 1fr;
   }
 }
