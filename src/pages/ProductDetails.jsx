@@ -645,9 +645,7 @@ function ProductDetails({
       {/* BACK */}
 
       <div className="product-details-back">
-        <button type="button" onClick={onBack}>
-          ← Back
-        </button>
+        
       </div>
 
       {/* MAIN PRODUCT AREA */}
